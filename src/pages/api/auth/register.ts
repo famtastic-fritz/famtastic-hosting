@@ -19,6 +19,7 @@
 
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase/client.js';
+import type { UserInsert } from '../../../lib/supabase/types.js';
 import {
   hashRateLimit,
   rateLimitResetSeconds,
@@ -100,12 +101,14 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // ── Insert into public.users ──────────────────────────────────────────────
-  const { error: insertError } = await supabaseAdmin.from('users').insert({
+  // Cast through UserInsert — Supabase generic inference can narrow insert type to 'never'
+  const newUser: UserInsert = {
     id: data.user.id,
     email,
     role: 'customer',
     godaddy_shopper_id: null,
-  });
+  };
+  const { error: insertError } = await supabaseAdmin.from('users').insert(newUser as never);
 
   if (insertError) {
     // Clean up the auth user if the profile insert fails

@@ -1,0 +1,149 @@
+---
+/**
+ * /dashboard/login
+ *
+ * Customer login page. If the user is already authenticated, redirects
+ * to /dashboard. Otherwise renders the LoginForm Svelte island.
+ *
+ * Server-rendered (SSR) — never prerendered.
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import LoginForm from '../../components/auth/LoginForm.svelte';
+import { getSession } from '../../lib/auth/middleware.js';
+
+// If already logged in, go straight to the dashboard
+const user = await getSession(Astro.request);
+if (user) {
+  return Astro.redirect(user.role === 'admin' ? '/admin' : '/dashboard', 302);
+}
+
+const title = 'Sign In';
+const description = 'Sign in to your FAMtastic Hosting customer portal to manage your domains, hosting, and email.';
+---
+
+<DashboardLayout {title} {description} variant="customer" currentPath="/dashboard/login">
+  <div class="auth-page">
+    <div class="auth-card">
+      <!-- Brand -->
+      <div class="auth-brand">
+        <a href="/" class="brand-wordmark" aria-label="FAMtastic Hosting home">
+          <span class="brand-fam">FAM</span><span class="brand-tastic">tastic</span>
+          <span class="brand-hosting">Hosting</span>
+        </a>
+      </div>
+
+      <!-- Heading -->
+      <div class="auth-header">
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Sign in to manage your hosting, domains, and email.</p>
+      </div>
+
+      <!-- Login form (Svelte island) -->
+      <LoginForm client:load />
+
+      <!-- Support callout -->
+      <div class="auth-support">
+        <p>
+          Need help?
+          <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+          — 24/7 support.
+        </p>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>
+
+<style>
+  /* ── Auth page layout ───────────────────────────────────────── */
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: #0a0a0f;
+  }
+
+  /* ── Auth card ──────────────────────────────────────────────── */
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: #111114;
+    border: 1px solid #2a2a38;
+    border-radius: 16px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  /* ── Brand wordmark ─────────────────────────────────────────── */
+  .auth-brand {
+    text-align: center;
+  }
+  .brand-wordmark {
+    display: inline-block;
+    text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.375rem;
+    letter-spacing: -0.02em;
+  }
+  .brand-fam { color: #f5f5f0; }
+  .brand-tastic { color: #7c3aed; }
+  .brand-hosting {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9090a0;
+    margin-top: 2px;
+  }
+
+  /* ── Auth header ─────────────────────────────────────────────── */
+  .auth-header {
+    text-align: center;
+  }
+  .auth-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f5f5f0;
+    margin: 0 0 0.5rem;
+  }
+  .auth-subtitle {
+    font-size: 0.9375rem;
+    color: #9090a0;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ── Support line ────────────────────────────────────────────── */
+  .auth-support {
+    text-align: center;
+    padding-top: 0.5rem;
+    border-top: 1px solid #1e1e28;
+  }
+  .auth-support p {
+    font-size: 0.8125rem;
+    color: #9090a0;
+    margin: 0;
+  }
+  .support-link {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .support-link:hover { text-decoration: underline; }
+
+  /* ── Responsive ─────────────────────────────────────────────── */
+  @media (max-width: 480px) {
+    .auth-card {
+      padding: 2rem 1.5rem;
+      border-radius: 12px;
+    }
+  }
+</style>

@@ -16,6 +16,7 @@
 
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase/client.js';
+import type { UserRow } from '../../../lib/supabase/types.js';
 import {
   hashRateLimit,
   clearRateLimit,
@@ -69,11 +70,13 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // ── Fetch role from public.users ──────────────────────────────────────────
-  const { data: userRow, error: userError } = await supabaseAdmin
+  const { data: rawUser, error: userError } = await supabaseAdmin
     .from('users')
     .select('id, email, role')
     .eq('id', data.user.id)
     .single();
+  // Cast through unknown — Supabase generic inference can narrow to 'never'
+  const userRow = rawUser as unknown as Pick<UserRow, 'id' | 'email' | 'role'> | null;
 
   if (userError || !userRow) {
     // Auth succeeded but no matching row in public.users — shouldn't happen
