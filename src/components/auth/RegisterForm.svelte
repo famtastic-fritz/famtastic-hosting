@@ -59,16 +59,13 @@
       });
 
       const data = await res.json() as {
-        ok: boolean;
-        user?: { id: string; email: string; role: string };
-        redirectTo?: string;
+        success: boolean;
+        sessionToken?: string;
         error?: string;
-        errors?: string[];
-        code?: string;
       };
 
-      if (!data.ok) {
-        if (data.code === 'EMAIL_TAKEN') {
+      if (!data.success) {
+        if (data.error?.includes('already')) {
           fieldErrors.email = 'An account with this email already exists.';
         } else {
           error = data.error ?? 'Registration failed. Please try again.';
@@ -76,8 +73,8 @@
         return;
       }
 
-      // Redirect to dashboard or login
-      window.location.href = data.redirectTo ?? '/dashboard';
+      // Redirect to dashboard on success
+      window.location.href = '/dashboard';
     } catch {
       error = 'A network error occurred. Please check your connection.';
     } finally {

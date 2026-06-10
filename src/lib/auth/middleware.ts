@@ -65,12 +65,12 @@ async function extractSession(request: Request): Promise<AuthUser | null> {
 
   try {
     const [rows] = await pool.query<SessionRow[]>(
-      `SELECT s.id AS s_id, s.token AS s_token, s.expires_at AS s_expires_at,
+      `SELECT s.session_id AS s_id, s.data AS s_data, s.expires AS s_expires,
               u.id AS u_id, u.email AS u_email, u.role AS u_role
        FROM sessions s
-       JOIN users u ON u.id = s.user_id
-       WHERE s.token = ?
-         AND s.expires_at > NOW()`,
+       JOIN users u ON u.id = JSON_EXTRACT(s.data, '$.user_id')
+       WHERE s.session_id = ?
+         AND s.expires > UNIX_TIMESTAMP(NOW())`,
       [token]
     );
 
@@ -78,7 +78,7 @@ async function extractSession(request: Request): Promise<AuthUser | null> {
 
     const row = rows[0];
     return {
-      id:    row.u_id,
+      id:    String(row.u_id),
       email: row.u_email,
       role:  row.u_role,
     };

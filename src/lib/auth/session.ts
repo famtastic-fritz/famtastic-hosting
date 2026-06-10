@@ -1,50 +1,63 @@
 /**
- * Session management utilities for MySQL-backed sessions.
+ * Session management — create and invalidate sessions
  *
- * Creates and deletes sessions in the `sessions` table.
- * The session token is an opaque UUID stored in the fam_session httpOnly cookie.
- *
- * Replaces Supabase Auth session management with a local implementation.
+ * Exported functions:
+ *   createSession(userId, role) → { sessionId, token, expiresAt }
+ *   invalidateSession(token)    → deletes from DB
  */
 
-import { randomUUID } from 'node:crypto';
 import { pool } from '../db/pool.js';
+import { generateSessionToken } from './password.js';
 
-/** Session lifetime: 30 days */
-const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
+const SESSION_TTL_HOURS = 24;
 
-/**
- * Create a new session for the given user.
- *
- * @returns The opaque session token to store in the cookie.
- */
-export async function createSession(
-  userId: number | string,
-  ip?: string | null,
-  userAgent?: string | null,
-): Promise<string> {
-  const id = randomUUID();
-  const token = randomUUID();
-  const expiresAt = new Date(Date.now() + SESSION_LIFETIME_MS);
-
-  await pool.execute(
-    'INSERT INTO sessions (id, user_id, token, ip_address, user_agent, expires_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [
-      id,
-      userId,
-      token,
-      ip ?? null,
-      userAgent ?? null,
-      expiresAt.toISOString().slice(0, 19).replace('T', ' '),
-    ],
-  );
-
-  return token;
+interface SessionData {
+  sessionId: string;
+  token: string;
+  expiresAt: Date;
 }
 
 /**
- * Delete a session by token (e.g. on logout).
+ * Create a new session record in the DB.
+ * Returns the session token (to be set as a cookie).
  */
-export async function deleteSession(token: string): Promise<void> {
-  await pool.execute('DELETE FROM sessions WHERE token = ?', [token]);
+export async function createSession(userId: number): Promise<SessionData> {
+  const token = generateSessionToken();
+  const expiresAt = new Date(Date.now() + SESSION_TTL_HOURS * 60 * 60 * 1000);
+
+  try {
+    const [result] = await pool.execute(
+      `INSERT INTO sessions (session_id, expires, data)
+       VALUES (?, ?, ?)`,
+      [
+        token, // session_id
+        Math.floor(expiresAt.getTime() / 1000), // expires (unix timestamp)
+        JSON.stringify({ user_id: userId }), // data
+      ]
+    );
+
+    return {
+      sessionId: token,
+      token,
+      expiresAt,
+    };
+  } catch (err) {
+    console.error('[session] create failed:', err);
+    throw new Error('Failed to create session');
+  }
+}
+
+/**
+ * Delete a session from the DB.
+ */
+export async function invalidateSession(token: string): Promise<void> {
+  try {
+    await pool.execute(
+      `DELETE FROM sessions WHERE session_id = ?`,
+      [token]
+    );
+  } catch (err) {
+    console.error('[session] invalidate failed:', err);
+    throw new Error('Failed to invalidate session');
+  }
 }

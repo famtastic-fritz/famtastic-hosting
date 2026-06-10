@@ -45,20 +45,18 @@
       });
 
       const data = await res.json() as {
-        ok: boolean;
-        user?: { id: string; email: string; role: string };
-        redirectTo?: string;
+        success: boolean;
+        sessionToken?: string;
         error?: string;
-        code?: string;
       };
 
-      if (!data.ok) {
+      if (!data.success) {
         error = data.error ?? 'Login failed. Please try again.';
         return;
       }
 
-      // Navigate to the server-suggested redirect or the prop override
-      const destination = redirectTo || data.redirectTo || '/dashboard';
+      // Navigate to dashboard
+      const destination = redirectTo || '/dashboard';
       window.location.href = destination;
     } catch (err) {
       error = 'A network error occurred. Please check your connection.';

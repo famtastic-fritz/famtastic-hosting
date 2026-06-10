@@ -29,29 +29,15 @@ let upcomingRenewals: any[] = [];
 let fetchError = false;
 
 try {
-  const [domainsRes, hostingRes, billingRes] = await Promise.all([
-    fetch(`${origin}/api/customer/domains`, {
-      headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
-    }),
-    fetch(`${origin}/api/customer/hosting`, {
-      headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
-    }),
-    fetch(`${origin}/api/customer/billing?limit=25`, {
+  const [dashRes] = await Promise.all([
+    fetch(`${origin}/api/customer/dashboard`, {
       headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
     }),
   ]);
 
-  if (domainsRes.ok) {
-    const d = await domainsRes.json();
-    domains = d?.data?.domains ?? [];
-  }
-  if (hostingRes.ok) {
-    const h = await hostingRes.json();
-    hostingPlans = h?.data?.plans ?? [];
-  }
-  if (billingRes.ok) {
-    const b = await billingRes.json();
-    upcomingRenewals = b?.data?.upcomingRenewals ?? [];
+  if (dashRes.ok) {
+    const d = await dashRes.json();
+    hostingPlans = d?.data?.subscriptions ?? [];
   }
 } catch (err) {
   fetchError = true;

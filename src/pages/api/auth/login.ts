@@ -1,133 +1,92 @@
 /**
  * POST /api/auth/login
- *
- * Authenticates a customer with email + password against MySQL.
- * Sets the fam_session httpOnly cookie on success.
- *
- * Request body (JSON):
- *   { email: string; password: string }
- *
- * Response (200):
- *   { ok: true; user: { id, email, role }; redirectTo: string }
- *
- * Response (400/401/429):
- *   { ok: false; error: string; code: string }
+ * 
+ * Login with email and password.
+ * Request body: { email, password }
+ * Response: { success: true, sessionToken } or { success: false, error }
  */
 
 import type { APIRoute } from 'astro';
-import { pool } from '../../../lib/db/pool.js';
-import {
-  hashRateLimit,
-  clearRateLimit,
-  rateLimitResetSeconds,
-  buildSetCookieHeader,
-  getClientIP,
-} from '../../../lib/auth/helpers.js';
-import crypto from 'node:crypto';
+import { query } from '../../../lib/db/pool.js';
+import { verifyPassword, generateSessionToken } from '../../../lib/auth/password.js';
 
-export const prerender = false;
+const SESSION_TTL_SECONDS = 24 * 60 * 60;
 
-export const POST: APIRoute = async ({ request }) => {
-  // ── Parse body ────────────────────────────────────────────────────────────
-  let email: string;
-  let password: string;
-
-  try {
-    const body = await request.json() as { email?: unknown; password?: unknown };
-    email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-    password = typeof body.password === 'string' ? body.password : '';
-  } catch {
-    return json({ ok: false, error: 'Invalid request body.', code: 'BAD_REQUEST' }, 400);
-  }
-
-  if (!email || !password) {
-    return json({ ok: false, error: 'Email and password are required.', code: 'VALIDATION_ERROR' }, 400);
-  }
-
-  // ── Rate limit ────────────────────────────────────────────────────────────
-  const ip = getClientIP(request);
-  if (hashRateLimit(ip, 'login')) {
-    const reset = rateLimitResetSeconds(ip, 'login');
-    return json(
-      {
-        ok: false,
-        error: `Too many login attempts. Try again in ${reset} second${reset !== 1 ? 's' : ''}.`,
-        code: 'RATE_LIMITED',
-      },
-      429
-    );
-  }
-
-  // ── Look up user in MySQL ─────────────────────────────────────────────────
-  const [rows] = await pool.execute<
-    Array<{ id: string; email: string; role: string; password_hash: string }>
-  >(
-    'SELECT id, email, role, password_hash FROM users WHERE email = ?',
-    [email]
-  );
-
-  if (rows.length === 0) {
-    // Don't reveal whether the account exists — generic message
-    return json(
-      { ok: false, error: 'Invalid email or password.', code: 'AUTH_FAILED' },
-      401
-    );
-  }
-
-  const user = rows[0];
-
-  // ── Verify password (bcrypt) ──────────────────────────────────────────────
-  const bcrypt = await import('bcryptjs');
-  const passwordMatch = await bcrypt.compare(password, user.password_hash);
-
-  if (!passwordMatch) {
-    return json(
-      { ok: false, error: 'Invalid email or password.', code: 'AUTH_FAILED' },
-      401
-    );
-  }
-
-  // ── Create session ───────────────────────────────────────────────────────
-  const sessionId = crypto.randomUUID();
-  const sessionToken = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
-
-  await pool.execute(
-    'INSERT INTO sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
-    [sessionId, user.id, sessionToken, expiresAt]
-  );
-
-  // ── Clear rate limit on success ───────────────────────────────────────────
-  clearRateLimit(ip, 'login');
-
-  // ── Build response with session cookie ───────────────────────────────────
-  const redirectTo = user.role === 'admin' ? '/admin' : '/dashboard';
-  const cookie = buildSetCookieHeader(sessionToken, import.meta.env.PROD);
-
-  return new Response(
-    JSON.stringify({
-      ok: true,
-      user: { id: user.id, email: user.email, role: user.role },
-      redirectTo,
-    }),
-    {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Set-Cookie': cookie,
-      },
-    }
-  );
-};
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-function json(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+interface LoginRequest {
+  email?: string;
+  password?: string;
 }
+
+interface UserRow {
+  id: number;
+  email: string;
+  password_hash: string;
+  role: 'customer' | 'admin';
+}
+
+export const POST: APIRoute = async ({ request, cookies }) => {
+  try {
+    const body = (await request.json()) as LoginRequest;
+
+    // Validate input
+    if (!body.email || !body.password) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Missing email or password' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Query user
+    const [rows] = await query<UserRow[]>(
+      'SELECT id, email, password_hash, role FROM users WHERE email = ? LIMIT 1',
+      [body.email]
+    );
+
+    if (!rows || rows.length === 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid credentials' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const user = rows[0];
+
+    // Verify password
+    const passwordValid = await verifyPassword(body.password, user.password_hash);
+    if (!passwordValid) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid credentials' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create session
+    const sessionToken = generateSessionToken();
+    const expiresAt = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
+
+    await query(
+      'INSERT INTO sessions (session_id, expires, data) VALUES (?, ?, ?)',
+      [sessionToken, expiresAt, JSON.stringify({ user_id: user.id, email: user.email, role: user.role })]
+    );
+
+    // Set secure session cookie
+    cookies.set('fam_session', sessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: SESSION_TTL_SECONDS,
+      path: '/',
+    });
+
+    return new Response(
+      JSON.stringify({ success: true, sessionToken }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  } catch (err) {
+    console.error('[login] error:', err);
+    return new Response(
+      JSON.stringify({ success: false, error: 'Login failed' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+};

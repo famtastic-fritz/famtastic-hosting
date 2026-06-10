@@ -16,7 +16,7 @@
  *   MYSQL_PASSWORD
  */
 
-import mysql from 'mysql2/promise';
+import * as mysql from 'mysql2/promise';
 
 // ─── Lazy pool initialization ─────────────────────────────────────────────────
 // Astro's static-prerender phase imports this module but doesn't need MySQL.
@@ -66,11 +66,16 @@ export const pool = new Proxy({} as mysql.Pool, {
  *   const [rows] = await query('SELECT * FROM users WHERE id = ?', [1]);
  *   // rows is typed as RowDataPacket[] by mysql2
  */
-export async function query<T = mysql.RowDataPacket[]>(
+export async function query<T extends mysql.RowDataPacket[]>(
   sql: string,
-  params?: mysql.QueryParams,
+  params?: any[],
 ): Promise<[T, mysql.FieldPacket[]]> {
-  return getPool().execute<T>(sql, params);
+  const conn = await getPool().getConnection();
+  try {
+    return await conn.execute<T>(sql, params);
+  } finally {
+    conn.release();
+  }
 }
 
 // ─── Transaction helper ──────────────────────────────────────────────────────
