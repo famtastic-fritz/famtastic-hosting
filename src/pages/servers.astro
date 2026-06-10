@@ -1,0 +1,244 @@
+---
+import ExtremeLayout from '../layouts/ExtremeLayout.astro'
+---
+
+<ExtremeLayout
+  title="Dedicated Server Hosting — FAMtastic Hosting"
+  description="NVMe SSD, dedicated CPU and RAM, no shared resources from $37/mo. Custom nameservers. White-label support 24/7."
+>
+
+  <!-- ─── HERO: TERMINAL BOOT SEQUENCE ─────────────────────────── -->
+  <section style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--void);position:relative;overflow:hidden;padding:6rem 2rem 4rem;" aria-label="Hero">
+    <div id="matrixRain" style="position:absolute;inset:0;overflow:hidden;" aria-hidden="true"></div>
+
+    <!-- ghost character -->
+    <div style="position:absolute;right:-0.05em;top:50%;transform:translateY(-50%);font-family:var(--font-term);font-size:20vw;color:var(--green);opacity:0.04;line-height:1;pointer-events:none;user-select:none;letter-spacing:-0.04em;" aria-hidden="true">SRV</div>
+
+    <div style="position:relative;z-index:2;max-width:900px;width:100%;">
+      <!-- boot prompt -->
+      <div style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);margin-bottom:2rem;letter-spacing:0.08em;">
+        $ famtastic-hosting --type=server --status
+      </div>
+
+      <!-- typewriter status lines -->
+      <div style="font-family:var(--font-term);font-size:0.8rem;color:var(--green-dim);line-height:2.2;margin-bottom:2.5rem;">
+        <div>connecting to ns1.famtastichosting.com... <span style="color:var(--green);">OK</span></div>
+        <div>verifying NVMe SSD mount... <span style="color:var(--green);">OK</span></div>
+        <div>dedicated CPU cores... <span style="color:var(--green);">ALLOCATED</span></div>
+        <div>dedicated RAM... <span style="color:var(--green);">ALLOCATED</span></div>
+        <div>white-label nameservers... <span style="color:var(--green);">ns1.famtastichosting.com</span></div>
+      </div>
+
+      <h1 style="font-family:var(--font-term);font-size:clamp(2.5rem,6vw,5rem);color:var(--green);font-weight:400;letter-spacing:-0.02em;margin:0 0 1.5rem;line-height:1.1;text-shadow:0 0 40px rgba(0,255,65,0.3);">
+        Dedicated<br/>resources.<br/><span style="color:rgba(0,255,65,0.45);">No sharing.</span>
+      </h1>
+
+      <p style="font-family:var(--font-term);font-size:1rem;color:var(--green-dim);max-width:600px;line-height:1.8;margin-bottom:2rem;">
+        NVMe SSD. Dedicated CPU. Dedicated RAM. From $37/mo.<br/>Your infrastructure. Your nameservers. Your brand.
+      </p>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <a href="#plans" style="font-family:var(--font-term);background:var(--green);color:var(--black);padding:0.85rem 2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;transition:background 0.15s;">./view-plans</a>
+        <a href="mailto:hello@famtastichosting.com" style="font-family:var(--font-term);border:1px solid var(--green);color:var(--green);padding:0.85rem 2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;transition:color 0.15s;">./talk-to-human</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STATUS TICKER ─────────────────────────────────────────── -->
+  <div class="status-ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item"><span class="status-dot"></span>NVMe SSD storage</span>
+      <span class="ticker-item"><span class="status-dot"></span>Dedicated CPU cores</span>
+      <span class="ticker-item"><span class="status-dot"></span>Dedicated RAM allocation</span>
+      <span class="ticker-item"><span class="status-dot"></span>Custom nameservers</span>
+      <span class="ticker-item"><span class="status-dot"></span>Free SSL certificate</span>
+      <span class="ticker-item"><span class="status-dot"></span>No shared resources</span>
+      <span class="ticker-item"><span class="status-dot"></span>24/7 white-label support</span>
+      <span class="ticker-item"><span class="status-dot"></span>99.9% uptime SLA</span>
+      <!-- repeat for seamless loop -->
+      <span class="ticker-item"><span class="status-dot"></span>NVMe SSD storage</span>
+      <span class="ticker-item"><span class="status-dot"></span>Dedicated CPU cores</span>
+      <span class="ticker-item"><span class="status-dot"></span>Dedicated RAM allocation</span>
+      <span class="ticker-item"><span class="status-dot"></span>Custom nameservers</span>
+      <span class="ticker-item"><span class="status-dot"></span>Free SSL certificate</span>
+      <span class="ticker-item"><span class="status-dot"></span>No shared resources</span>
+      <span class="ticker-item"><span class="status-dot"></span>24/7 white-label support</span>
+      <span class="ticker-item"><span class="status-dot"></span>99.9% uptime SLA</span>
+    </div>
+  </div>
+
+  <!-- ─── SPECS COMPARISON TABLE ───────────────────────────────── -->
+  <section style="padding:6rem 2rem;background:var(--void-mid);" aria-labelledby="specs-headline">
+    <div style="max-width:900px;margin:0 auto;">
+      <div style="font-family:var(--font-term);font-size:0.72rem;color:var(--green-dim);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem;">// server specs</div>
+      <h2 id="specs-headline" style="font-family:var(--font-term);font-size:clamp(1.5rem,4vw,2.5rem);color:var(--green);margin-bottom:3rem;font-weight:400;">cat /etc/server-specs</h2>
+
+      <div class="term-window">
+        <div class="term-titlebar">
+          <div class="term-dot term-dot-red"></div>
+          <div class="term-dot term-dot-yel"></div>
+          <div class="term-dot term-dot-grn"></div>
+          <span class="term-title-text">server-specs.conf</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-family:var(--font-term);font-size:0.8rem;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(0,255,65,0.2);">
+                <th style="text-align:left;padding:0.75rem 1rem;color:var(--green-dim);font-weight:400;">SPEC</th>
+                <th style="text-align:left;padding:0.75rem 1rem;color:var(--green-dim);font-weight:400;">WH+ LAUNCH ($37/mo)</th>
+                <th style="text-align:left;padding:0.75rem 1rem;color:var(--green-dim);font-weight:400;">WH+ EXPAND ($127/mo)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(0,255,65,0.08);">
+                <td style="padding:0.75rem 1rem;color:var(--green-dim);">Storage</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">30GB NVMe SSD</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">120GB NVMe SSD</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(0,255,65,0.08);">
+                <td style="padding:0.75rem 1rem;color:var(--green-dim);">CPU</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">Dedicated allocation</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">Dedicated (enhanced)</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(0,255,65,0.08);">
+                <td style="padding:0.75rem 1rem;color:var(--green-dim);">RAM</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">Dedicated allocation</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">Dedicated (enhanced)</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(0,255,65,0.08);">
+                <td style="padding:0.75rem 1rem;color:var(--green-dim);">Sites</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">1</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">Unlimited</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(0,255,65,0.08);">
+                <td style="padding:0.75rem 1rem;color:var(--green-dim);">WAF</td>
+                <td style="padding:0.75rem 1rem;color:rgba(0,255,65,0.35);">—</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">Advanced WAF included</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(0,255,65,0.08);">
+                <td style="padding:0.75rem 1rem;color:var(--green-dim);">Nameservers</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">ns1/ns2.famtastichosting.com</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">ns1/ns2.famtastichosting.com</td>
+              </tr>
+              <tr>
+                <td style="padding:0.75rem 1rem;color:var(--green-dim);">Support</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">24/7 white-label</td>
+                <td style="padding:0.75rem 1rem;color:var(--green);">Priority white-label</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PLANS ─────────────────────────────────────────────────── -->
+  <section id="plans" style="padding:6rem 2rem;background:var(--void);" aria-labelledby="plans-headline">
+    <div style="max-width:900px;margin:0 auto;">
+      <div style="font-family:var(--font-term);font-size:0.72rem;color:var(--green-dim);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem;">// server plans</div>
+      <h2 id="plans-headline" style="font-family:var(--font-term);font-size:clamp(1.5rem,4vw,2.5rem);color:var(--green);margin-bottom:3rem;font-weight:400;">Two plans. Both dedicated.</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(0,255,65,0.1);">
+
+        <!-- Launch plan -->
+        <div style="background:var(--void-mid);padding:2.5rem;display:flex;flex-direction:column;gap:1rem;">
+          <div>
+            <div style="font-family:var(--font-term);font-size:0.65rem;color:var(--green-dim);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem;">WH+ LAUNCH</div>
+            <div style="font-family:var(--font-term);font-size:3rem;color:var(--green);line-height:1;">$37<span style="font-size:1rem;color:var(--green-dim);">/mo</span></div>
+            <div style="font-family:var(--font-term);font-size:0.72rem;color:var(--green-dim);margin-top:0.4rem;">or $29.60/mo billed annually</div>
+          </div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;padding:0;">
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ 1 website</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ 30GB NVMe SSD</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ Dedicated CPU allocation</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ Dedicated RAM allocation</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ Custom nameservers</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ Free SSL certificate</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ 24/7 white-label support</li>
+          </ul>
+          <a href="mailto:hello@famtastichosting.com" style="margin-top:auto;font-family:var(--font-term);border:1px solid var(--green);color:var(--green);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">./launch --plan=launch</a>
+        </div>
+
+        <!-- Expand plan (highlighted) -->
+        <div style="background:var(--void-mid);padding:2.5rem;display:flex;flex-direction:column;gap:1rem;border:1px solid rgba(0,255,65,0.3);box-shadow:0 0 30px rgba(0,255,65,0.08);">
+          <div>
+            <div style="font-family:var(--font-term);font-size:0.65rem;color:var(--green);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem;">WH+ EXPAND ★ RECOMMENDED</div>
+            <div style="font-family:var(--font-term);font-size:3rem;color:var(--green);line-height:1;text-shadow:0 0 20px rgba(0,255,65,0.3);">$127<span style="font-size:1rem;color:var(--green-dim);">/mo</span></div>
+            <div style="font-family:var(--font-term);font-size:0.72rem;color:var(--green-dim);margin-top:0.4rem;">or $101.60/mo billed annually</div>
+          </div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;padding:0;">
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Unlimited websites</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ 120GB NVMe SSD</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Dedicated CPU + RAM (enhanced)</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Full cPanel root-like control</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Advanced WAF included</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Custom nameservers</li>
+            <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Priority white-label support</li>
+          </ul>
+          <a href="mailto:hello@famtastichosting.com" style="margin-top:auto;font-family:var(--font-term);background:var(--green);color:var(--black);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">./launch --plan=expand</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQ ───────────────────────────────────────────────────── -->
+  <section style="padding:5rem 2rem;background:var(--void-mid);" aria-labelledby="faq-headline">
+    <div style="max-width:900px;margin:0 auto;">
+      <!-- Override faq-section background — write label + headline inline so dark bg survives -->
+      <div style="font-family:var(--font-term);font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--green-dim);margin-bottom:1rem;">// questions</div>
+      <h2 id="faq-headline" style="font-family:var(--font-term);font-size:clamp(1.5rem,3vw,2.2rem);color:var(--green);font-weight:400;margin-bottom:3rem;">Answers to the questions everyone has.</h2>
+
+      <div style="border-top:1px solid rgba(0,255,65,0.15);">
+
+        <div class="faq-item" style="border-bottom:1px solid rgba(0,255,65,0.15);">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false" style="font-family:var(--font-term);font-size:0.9rem;font-weight:400;color:var(--green);padding:1.2rem 0;">
+            What's the difference between Web Hosting Plus and shared hosting?
+          </div>
+          <div class="faq-a" style="font-family:var(--font-term);font-size:0.8rem;color:var(--green-dim);line-height:1.8;padding-bottom:1.2rem;">
+            Shared hosting puts hundreds of sites on one server. Everyone shares CPU and RAM — when a neighboring site spikes in traffic, your site slows down. Web Hosting Plus gives you dedicated CPU and dedicated RAM allocations. You don't share. Your performance is yours.
+          </div>
+        </div>
+
+        <div class="faq-item" style="border-bottom:1px solid rgba(0,255,65,0.15);">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false" style="font-family:var(--font-term);font-size:0.9rem;font-weight:400;color:var(--green);padding:1.2rem 0;">
+            Do I need technical experience to manage this?
+          </div>
+          <div class="faq-a" style="font-family:var(--font-term);font-size:0.8rem;color:var(--green-dim);line-height:1.8;padding-bottom:1.2rem;">
+            Not necessarily. The Launch plan comes with a control panel interface. The Expand plan gives you root-like access for developers who want full control. We offer white-label support at (480) 624-2500 — call with any question, technical or otherwise.
+          </div>
+        </div>
+
+        <div class="faq-item" style="border-bottom:1px solid rgba(0,255,65,0.15);">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false" style="font-family:var(--font-term);font-size:0.9rem;font-weight:400;color:var(--green);padding:1.2rem 0;">
+            Can I migrate from shared hosting to Web Hosting Plus?
+          </div>
+          <div class="faq-a" style="font-family:var(--font-term);font-size:0.8rem;color:var(--green-dim);line-height:1.8;padding-bottom:1.2rem;">
+            Yes. We handle the migration. File transfer, database export/import, DNS cutover. Zero downtime on most migrations. Call us at (480) 624-2500 to start the process.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DESIGN BRIDGE ─────────────────────────────────────────── -->
+  <section style="background:#0a0014;padding:6rem 2rem;border-top:1px solid rgba(0,255,65,0.1);" aria-label="Design upsell">
+    <div style="max-width:700px;">
+      <div style="font-family:var(--font-term);font-size:0.72rem;color:var(--green-dim);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1.5rem;">// next move</div>
+      <h2 style="font-family:var(--font-term);font-size:clamp(1.5rem,3vw,2.5rem);color:var(--green);line-height:1.2;margin-bottom:1.5rem;font-weight:400;">Running serious infrastructure?<br/>Your site deserves serious design.</h2>
+      <p style="font-family:var(--font-term);font-size:0.8rem;color:var(--green-dim);line-height:1.8;margin-bottom:2rem;">You've invested in dedicated resources. Invest in a visual identity that matches. FAMtasticDesigns.com builds custom sites, brand identities, and everything in between.</p>
+      <a href="https://famtasticdesigns.com" style="font-family:var(--font-term);background:#ff007a;color:#fff;padding:0.85rem 2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;" rel="noopener">Visit FAMtasticDesigns.com →</a>
+    </div>
+  </section>
+
+  <!-- ─── FAMThoughts ────────────────────────────────────────────── -->
+  <div style="background:var(--void-mid);border-top:1px solid rgba(0,255,65,0.1);border-bottom:1px solid rgba(0,255,65,0.1);padding:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;" aria-label="FAMtastic Thoughts">
+    <div>
+      <div style="font-family:var(--font-term);font-size:0.65rem;color:var(--green-dim);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.4rem;">// famtastic thoughts</div>
+      <div style="font-family:var(--font-term);font-size:1rem;color:var(--green);">How to scale from shared hosting to a dedicated server.</div>
+    </div>
+    <a href="https://famtasticthoughts.com" style="font-family:var(--font-term);font-size:0.72rem;color:var(--green);border:1px solid var(--green);padding:0.6rem 1.5rem;letter-spacing:0.06em;white-space:nowrap;display:inline-block;" rel="noopener">Read FAMtastic Thoughts →</a>
+  </div>
+
+</ExtremeLayout>
