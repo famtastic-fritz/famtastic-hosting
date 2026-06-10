@@ -16,13 +16,14 @@
 
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { timingSafeEqual } from 'node:crypto';
 
-// ─── Expected GoDaddy postback payload shape ──────────────────────────────────
+// ─── Expected GoDaddy postback payload shape ─────────────────────────────────
 
 interface GoDaddyPostbackPayload {
   orderId?: string;
   customerId?: string;
-  status?: string;           // e.g. "PROVISION_COMPLETE", "PROVISION_FAILED", "ACTIVE"
+  status?: string;          // e.g. "PROVISION_COMPLETE", "PROVISION_FAILED", "ACTIVE"
   productType?: string;
   productId?: string;
   quantity?: number;
@@ -35,22 +36,30 @@ interface GoDaddyPostbackPayload {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Validates the postback request origin.
+ * Validates the postback request origin using constant-time comparison.
  *
- * GoDaddy postbacks may include a shared secret or signature header.
- * Returns true when credentials are valid or not yet configured (development mode).
- *
- * In production: set GODADDY_POSTBACK_SECRET in your .env file.
- * When set, the Authorization header must match: "Bearer <secret>"
+ * Fails CLOSED: when GODADDY_POSTBACK_SECRET is not configured the endpoint
+ * returns 401 immediately. The only exception is explicit development mode
+ * (MODE=development AND GODADDY_POSTBACK_ALLOW_INSECURE=1).
  */
 function validatePostback(request: Request): boolean {
   const expectedSecret = import.meta.env.GODADDY_POSTBACK_SECRET;
 
-  // If no secret is configured, allow all postbacks (dev/staging only)
-  // In production this env var MUST be set
   if (!expectedSecret) {
-    console.warn('[postback] GODADDY_POSTBACK_SECRET not set — accepting all requests (dev mode)');
-    return true;
+    // Allow insecure mode ONLY in local development with explicit opt-in
+    const isDev = import.meta.env.MODE === 'development';
+    const allowInsecure = import.meta.env.GODADDY_POSTBACK_ALLOW_INSECURE === '1';
+    if (isDev && allowInsecure) {
+      console.warn(
+        '[postback] GODADDY_POSTBACK_SECRET unset — insecure dev bypass active'
+      );
+      return true;
+    }
+    // Fail closed in all other cases
+    console.error(
+      '[postback] GODADDY_POSTBACK_SECRET is not set — rejecting request'
+    );
+    return false;
   }
 
   const authHeader = request.headers.get('Authorization');
@@ -58,7 +67,25 @@ function validatePostback(request: Request): boolean {
 
   // Accept "Bearer <secret>" format
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-  return token === expectedSecret;
+
+  // Constant-time comparison to prevent timing attacks.
+  // Pad the shorter buffer to match lengths; mismatched lengths always fail.
+  try {
+    const tokenBuf = Buffer.from(token);
+    const secretBuf = Buffer.from(expectedSecret);
+
+    if (tokenBuf.length !== secretBuf.length) {
+      // Different lengths: always reject, but do a dummy comparison to
+      // preserve constant time on the branch.
+      const dummy = Buffer.alloc(secretBuf.length);
+      timingSafeEqual(dummy, secretBuf);
+      return false;
+    }
+
+    return timingSafeEqual(tokenBuf, secretBuf);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -127,30 +154,44 @@ export const POST: APIRoute = async ({ request }) => {
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
       const internalStatus = mapProvisioningStatus(payload.status);
 
-      // Upsert: update existing order row if godaddy_order_id matches,
-      // or record as a new postback event.
-      const { error: upsertError } = await supabase
+      // Safety check: only update orders we already know about.
+      // Never upsert based on an attacker-supplied godaddy_order_id.
+      const { data: existingOrder, error: lookupError } = await supabase
         .from('orders')
-        .upsert(
-          {
-            godaddy_order_id: payload.orderId,
-            status: internalStatus,
-            provisioning_status: payload.status ?? null,
-            provisioned_at: internalStatus === 'active' ? timestamp : null,
-            updated_at: timestamp,
-            raw_postback: payload,
-          },
-          {
-            onConflict: 'godaddy_order_id',
-            ignoreDuplicates: false,
-          }
-        );
+        .select('id')
+        .eq('godaddy_order_id', payload.orderId)
+        .single();
 
-      if (upsertError) {
+      if (lookupError || !existingOrder) {
+        console.warn(
+          `[postback] Order ${payload.orderId} not found in orders table — rejecting`
+        );
+        // Return 200 so GoDaddy doesn't retry; we just don't persist it.
+        return new Response(
+          JSON.stringify({ ok: true, note: 'order_not_recognized' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Update the existing, verified order row
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          status: internalStatus,
+          provisioning_status: payload.status ?? null,
+          provisioned_at: internalStatus === 'active' ? timestamp : null,
+          updated_at: timestamp,
+          raw_postback: payload,
+        })
+        .eq('godaddy_order_id', payload.orderId);
+
+      if (updateError) {
         // Log but don't surface to GoDaddy — return 200 to prevent retries
-        console.error('[postback] Supabase upsert error:', upsertError);
+        console.error('[postback] Supabase update error:', updateError);
       } else {
-        console.log(`[postback] Order ${payload.orderId} updated to status: ${internalStatus}`);
+        console.log(
+          `[postback] Order ${payload.orderId} updated to: ${internalStatus}`
+        );
       }
     } catch (dbError) {
       console.error('[postback] Database error:', dbError);
