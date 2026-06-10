@@ -25,16 +25,50 @@ import {
   setDNSRecord,
 } from '../../../../lib/godaddy/dns.js';
 import type { DNSRecordType } from '../../../../lib/godaddy/types.js';
-import { requireAdminAuth, unauthorizedResponse } from '../../../../lib/auth/middleware.js';
-import { apiOk, apiError, handleGoDaddyError } from '../../../../lib/api/response.js';
+import { requireAdmin } from '../../../../lib/auth/middleware.js';
 
 export const prerender = false;
+
+// Helper: return 401 Unauthorized
+function unauthorizedResponse(message: string) {
+  return new Response(JSON.stringify({ error: message }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// Helper: return error response
+function apiError(message: string, code: string, status = 400) {
+  return new Response(JSON.stringify({ error: message, code }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// Helper: return success response
+function apiOk(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// Helper: handle GoDaddy errors
+function handleGoDaddyError(error: any) {
+  console.error('GoDaddy API error:', error);
+  return apiError(
+    error?.message || 'GoDaddy API request failed',
+    'GODADDY_ERROR',
+    500
+  );
+}
 
 // ─── GET: Read DNS records ────────────────────────────────────────────────────
 
 export const GET: APIRoute = async (context) => {
-  const session = await requireAdminAuth(context);
-  if (!session) return unauthorizedResponse('Admin authentication required.');
+  const authResult = await requireAdmin(context.request);
+  if (authResult instanceof Response) return authResult;
+  const session = authResult;
 
   const domain = context.params.domain;
   if (!domain) return apiError('Domain name is required.', 'MISSING_PARAM', 400);
@@ -57,8 +91,9 @@ export const GET: APIRoute = async (context) => {
 // ─── PUT: Set/replace a DNS record ───────────────────────────────────────────
 
 export const PUT: APIRoute = async (context) => {
-  const session = await requireAdminAuth(context);
-  if (!session) return unauthorizedResponse('Admin authentication required.');
+  const authResult = await requireAdmin(context.request);
+  if (authResult instanceof Response) return authResult;
+  const session = authResult;
 
   const domain = context.params.domain;
   if (!domain) return apiError('Domain name is required.', 'MISSING_PARAM', 400);

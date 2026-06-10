@@ -17,13 +17,13 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/'
     {links.map(l => (
       <a href={l.href} class={`nav-link${currentPath === l.href ? ' nav-link--active' : ''}`}>{l.label}</a>
     ))}
-    <a href="mailto:hello@famtastichosting.com" class="nav-cta">Talk to a Human</a>
+    <a href="/contact" class="nav-cta">Talk to a Human</a>
   </div>
   <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
 </nav>
 <div class="mobile-nav" id="mobileNav">
   {links.map(l => <a href={l.href} class="nav-link">{l.label}</a>)}
-  <a href="mailto:hello@famtastichosting.com" class="nav-cta" style="margin-top:0.5rem;display:inline-block;">Talk to a Human</a>
+  <a href="/contact" class="nav-cta" style="margin-top:0.5rem;display:inline-block;">Talk to a Human</a>
 </div>
 <script>
   const btn = document.getElementById('mobileMenuBtn');

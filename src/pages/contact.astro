@@ -1,0 +1,306 @@
+---
+export const prerender = true;
+import WildLayout from '../layouts/WildLayout.astro';
+import ContactForm from '../components/ContactForm.svelte';
+import ContactPhone from '../components/dashboard/ContactPhone.svelte';
+import Footer from '../components/Footer.astro';
+---
+
+<WildLayout
+  title="Contact FAMtastic Hosting — 24/7 Support"
+  description="Get in touch with FAMtastic Hosting. We're here to help with your hosting questions. Call (480) 624-2500 or send us a message."
+  canonicalPath="/contact"
+>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────── -->
+  <section class="fam-hero-layered" aria-label="Contact Hero">
+    <div class="fam-hero-layer fam-hero-layer--bg"></div>
+
+    <!-- FX layer: perspective grid -->
+    <div class="fam-hero-layer fam-hero-layer--fx" aria-hidden="true">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g class="grid-lines-group" stroke="rgba(124,58,237,0.15)" stroke-width="0.5" fill="none">
+          <line x1="0" y1="500" x2="1440" y2="500" />
+          <line x1="0" y1="560" x2="1440" y2="560" />
+          <line x1="0" y1="620" x2="1440" y2="620" />
+          <line x1="0" y1="680" x2="1440" y2="680" />
+          <line x1="200" y1="400" x2="200" y2="900" />
+          <line x1="400" y1="400" x2="400" y2="900" />
+          <line x1="600" y1="400" x2="600" y2="900" />
+          <line x1="800" y1="400" x2="800" y2="900" />
+          <line x1="1000" y1="400" x2="1000" y2="900" />
+          <line x1="1200" y1="400" x2="1200" y2="900" />
+        </g>
+        <line class="grid-scan-line" x1="0" y1="560" x2="1440" y2="560" stroke="rgba(132,204,22,0.35)" stroke-width="1" />
+      </svg>
+      <div class="hero-orb hero-orb--a"></div>
+      <div class="hero-orb hero-orb--b"></div>
+    </div>
+
+    <!-- CHARACTER layer -->
+    <div class="fam-hero-layer fam-hero-layer--character" aria-hidden="true">
+      <svg width="480" height="480" viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.13;">
+        <circle cx="240" cy="240" r="220" stroke="rgba(124,58,237,0.6)" stroke-width="1" stroke-dasharray="8 6" />
+        <circle cx="240" cy="240" r="180" stroke="rgba(124,58,237,0.4)" stroke-width="0.75" />
+        <circle cx="240" cy="240" r="140" stroke="rgba(132,204,22,0.25)" stroke-width="0.5" stroke-dasharray="4 8" />
+      </svg>
+    </div>
+
+    <!-- CONTENT layer -->
+    <div class="fam-hero-layer fam-hero-layer--content">
+      <div class="hero-prompt">// get in touch<span class="cursor"></span></div>
+      <h1 class="hero-headline">
+        We're here<br/>to help.
+      </h1>
+      <p class="hero-sub">Questions about hosting? Need support? Reach out—we respond quickly.</p>
+    </div>
+  </section>
+
+  <!-- ─── CONTACT SECTION ─────────────────────────────────────── -->
+  <section class="contact-section" aria-label="Contact form and support">
+    <div class="contact-container">
+      <div class="contact-column contact-form-column">
+        <h2>Send us a message</h2>
+        <p>Fill out the form below and we'll be in touch within 24 hours.</p>
+        <ContactForm client:load />
+      </div>
+
+      <div class="contact-column contact-info-column">
+        <h3>Support options</h3>
+
+        <div class="support-option">
+          <div class="support-icon">📞</div>
+          <div>
+            <h4>Phone support</h4>
+            <p>24/7 white-label support</p>
+            <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+          </div>
+        </div>
+
+        <div class="support-option">
+          <div class="support-icon">📧</div>
+          <div>
+            <h4>Email</h4>
+            <p>Response within 24 hours</p>
+            <a href="mailto:hello@famtastichosting.com" class="support-link">hello@famtastichosting.com</a>
+          </div>
+        </div>
+
+        <div class="support-option">
+          <div class="support-icon">❓</div>
+          <div>
+            <h4>Knowledge base</h4>
+            <p>Self-service articles and guides</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: rgba(245, 245, 240, 0.5);">Coming soon</p>
+          </div>
+        </div>
+
+        <div class="support-option">
+          <div class="support-icon">🎯</div>
+          <div>
+            <h4>Sales questions</h4>
+            <p>Want to know more about our plans?</p>
+            <p style="margin-top: 0.5rem;"><a href="mailto:sales@famtastichosting.com" class="support-link">sales@famtastichosting.com</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQ SECTION (Optional) ─────────────────────────────── -->
+  <section class="faq-section" aria-label="Frequently asked questions">
+    <h2>Quick answers</h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>How long does setup take?</h4>
+        <p>Most hosting accounts are ready within minutes. You'll receive an email with access details and next steps immediately after purchase.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Can I migrate my existing site?</h4>
+        <p>Absolutely. Contact our support team at (480) 624-2500 and we'll help you migrate from your current host free of charge.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>What's your uptime guarantee?</h4>
+        <p>We guarantee 99.9% uptime on all plans. If we fall short, we provide service credits automatically.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Do you have a money-back guarantee?</h4>
+        <p>Yes. If you're not satisfied within the first 30 days, we'll refund your money—no questions asked.</p>
+      </div>
+    </div>
+  </section>
+
+</WildLayout>
+
+<style>
+  .contact-section {
+    padding: 4rem 1.5rem;
+    background: linear-gradient(135deg, rgba(124,58,237,0.05) 0%, rgba(132,204,22,0.03) 100%);
+  }
+
+  .contact-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+  }
+
+  .contact-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .contact-column h2 {
+    font-family: var(--font-display, 'Space Grotesk', sans-serif);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f5f5f0;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-column h3 {
+    font-family: var(--font-display, 'Space Grotesk', sans-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f5f5f0;
+    margin-bottom: 1rem;
+  }
+
+  .contact-column > p {
+    color: rgba(245, 245, 240, 0.7);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .support-option {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    background-color: rgba(22, 22, 32, 0.4);
+    transition: all 0.2s ease;
+  }
+
+  .support-option:hover {
+    background-color: rgba(22, 22, 32, 0.7);
+    border-color: rgba(124, 58, 237, 0.4);
+  }
+
+  .support-icon {
+    font-size: 1.75rem;
+    min-width: 2rem;
+    text-align: center;
+  }
+
+  .support-option h4 {
+    margin: 0 0 0.25rem 0;
+    font-family: var(--font-display, 'Space Grotesk', sans-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f5f5f0;
+  }
+
+  .support-option p {
+    margin: 0;
+    color: rgba(245, 245, 240, 0.65);
+    font-size: 0.95rem;
+  }
+
+  .support-link {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .support-link:hover {
+    color: #84cc16;
+  }
+
+  .faq-section {
+    padding: 4rem 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .faq-section h2 {
+    font-family: var(--font-display, 'Space Grotesk', sans-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f5f5f0;
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .faq-item {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    background-color: rgba(22, 22, 32, 0.4);
+    transition: all 0.2s ease;
+  }
+
+  .faq-item:hover {
+    background-color: rgba(22, 22, 32, 0.7);
+    border-color: rgba(124, 58, 237, 0.4);
+  }
+
+  .faq-item h4 {
+    margin: 0 0 0.75rem 0;
+    font-family: var(--font-display, 'Space Grotesk', sans-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f5f5f0;
+  }
+
+  .faq-item p {
+    margin: 0;
+    color: rgba(245, 245, 240, 0.7);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .contact-section {
+      padding: 2.5rem 1.5rem;
+    }
+
+    .contact-container {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .contact-column h2,
+    .contact-column h3 {
+      font-size: 1.5rem;
+    }
+
+    .faq-section {
+      padding: 2.5rem 1.5rem;
+    }
+
+    .faq-section h2 {
+      font-size: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

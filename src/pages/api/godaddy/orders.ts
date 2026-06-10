@@ -25,15 +25,40 @@ import {
   listOrders,
   getRevenueStats,
 } from '../../../lib/godaddy/orders.js';
-import { requireAdminAuth, unauthorizedResponse } from '../../../lib/auth/middleware.js';
-import { apiOk, handleGoDaddyError } from '../../../lib/api/response.js';
+import { requireAdmin } from '../../../lib/auth/middleware.js';
+
+// Helper: return 401 Unauthorized
+function unauthorizedResponse(message: string) {
+  return new Response(JSON.stringify({ error: message }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// Helper: return success response
+function apiOk(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// Helper: handle GoDaddy errors
+function handleGoDaddyError(error: any) {
+  console.error('GoDaddy API error:', error);
+  return new Response(JSON.stringify({ error: error?.message || 'GoDaddy API request failed', code: 'GODADDY_ERROR' }), {
+    status: 500,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
 export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
   // Strict admin-only auth check
-  const session = await requireAdminAuth(context);
-  if (!session) return unauthorizedResponse('Admin authentication required.');
+  const authResult = await requireAdmin(context.request);
+  if (authResult instanceof Response) return authResult;
+  const session = authResult;
 
   const url = new URL(context.request.url);
   const limit = parseInt(url.searchParams.get('limit') ?? '25', 10);

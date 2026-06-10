@@ -1,0 +1,10 @@
+---
+deployment:
+  steps:
+    - name: Deploy static site
+      command: |
+        # Copy built files from dist/ to docroot
+        # This runs on cPanel after git pull
+        cp -rf /home/nineoo/public_html/famtastichosting.com/site/dist/. /home/nineoo/public_html/famtastichosting.com/
+        # Clean up the cgi-bin deletion
+        mkdir -p /home/nineoo/public_html/famtastichosting.com/cgi-bin 2>/dev/null || true
