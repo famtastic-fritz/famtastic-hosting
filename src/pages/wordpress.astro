@@ -5,6 +5,7 @@ import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
 import BillingToggle from '../components/BillingToggle.astro'
 import PricingCard from '../components/PricingCard.astro'
+import { getStorefrontURL } from '../lib/storefront'
 ---
 
 <WildLayout
@@ -270,7 +271,7 @@ import PricingCard from '../components/PricingCard.astro'
           "24/7 white-label support"
         ]}
         ctaText="Start Basic"
-        ctaHref="mailto:hello@famtastichosting.com"
+        ctaHref={getStorefrontURL('wordpress-basic')}
       />
 
       <PricingCard
@@ -295,7 +296,7 @@ import PricingCard from '../components/PricingCard.astro'
           "Priority white-label support"
         ]}
         ctaText="Go Ultimate"
-        ctaHref="mailto:hello@famtastichosting.com"
+        ctaHref={getStorefrontURL('wordpress-ultimate')}
       />
 
       <div class="plan-card plan-card--right" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:1rem;">

@@ -3,6 +3,7 @@ export const prerender = true;
 import WildLayout from '../layouts/WildLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
+import { getStorefrontURL } from '../lib/storefront'
 ---
 
 <WildLayout
@@ -103,7 +104,7 @@ import FAMThoughts from '../components/FAMThoughts.astro'
         </ul>
         <div class="bundle-savings">Save $34 vs buying separately</div>
         <div class="bundle-cta">
-          <a href="mailto:hello@famtastichosting.com" class="plan-cta">Get Started</a>
+          <a href={getStorefrontURL('bundle-small-biz-starter')} class="plan-cta">Get Started</a>
         </div>
       </div>
 
@@ -124,7 +125,7 @@ import FAMThoughts from '../components/FAMThoughts.astro'
         </ul>
         <div class="bundle-savings">Save 15% vs buying separately</div>
         <div class="bundle-cta">
-          <a href="mailto:hello@famtastichosting.com" class="plan-cta">Launch WordPress</a>
+          <a href={getStorefrontURL('bundle-wordpress-launch')} class="plan-cta">Launch WordPress</a>
         </div>
       </div>
 
@@ -144,7 +145,7 @@ import FAMThoughts from '../components/FAMThoughts.astro'
         </ul>
         <div class="bundle-savings">Save $26/mo vs buying separately</div>
         <div class="bundle-cta">
-          <a href="mailto:hello@famtastichosting.com" class="plan-cta">Get Growth Hosting</a>
+          <a href={getStorefrontURL('bundle-growth-hosting')} class="plan-cta">Get Growth Hosting</a>
         </div>
       </div>
 

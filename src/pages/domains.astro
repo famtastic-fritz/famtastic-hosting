@@ -3,6 +3,7 @@ export const prerender = true;
 import WildLayout from '../layouts/WildLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
+import { getStorefrontURL } from '../lib/storefront'
 ---
 
 <WildLayout
@@ -58,7 +59,7 @@ import FAMThoughts from '../components/FAMThoughts.astro'
         .com from $20/yr. .net, .org, and more. Custom nameservers included. WHOIS stays clean.
       </p>
       <div class="hero-actions">
-        <a href="#pricing" class="btn-primary">See Domain Prices</a>
+        <a href={getStorefrontURL('domain-search')} class="btn-primary">Search Domains</a>
         <a href="mailto:hello@famtastichosting.com" class="btn-outline">Talk to a Human</a>
       </div>
     </div>
@@ -244,7 +245,7 @@ import FAMThoughts from '../components/FAMThoughts.astro'
       <p class="email-callout-body">
         Get yourname@yourdomain.com starting at $3/mo — includes webmail, spam filtering, and IMAP access.
       </p>
-      <a href="mailto:hello@famtastichosting.com" class="btn-primary">Add Email Hosting</a>
+      <a href={getStorefrontURL('email-pro')} class="btn-primary">Add Email Hosting</a>
       <div class="email-callout-pricing">
         Professional Email — $3/mo&nbsp;&nbsp;·&nbsp;&nbsp;Group Email — $4/mo&nbsp;&nbsp;·&nbsp;&nbsp;Microsoft 365 — $9/mo
       </div>
