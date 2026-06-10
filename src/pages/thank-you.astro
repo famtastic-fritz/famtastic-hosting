@@ -1,0 +1,104 @@
+---
+export const prerender = true;
+import WildLayout from '../layouts/WildLayout.astro'
+---
+
+<WildLayout
+  title="Order Received — FAMtastic Hosting"
+  description="Your FAMtastic Hosting order is being processed. Check your dashboard to track provisioning status."
+  canonicalPath="/thank-you"
+>
+
+  <section
+    style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:6rem 2rem;background:var(--bg);"
+    aria-label="Order confirmation"
+  >
+    <div style="max-width:600px;width:100%;text-align:center;">
+
+      <!-- Check mark icon -->
+      <div style="width:80px;height:80px;border-radius:50%;background:rgba(124,58,237,0.15);border:2px solid var(--violet);display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;box-shadow:0 0 40px rgba(124,58,237,0.2);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+
+      <!-- Headline -->
+      <div
+        style="font-family:var(--font-display);font-size:0.72rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--violet);margin-bottom:1rem;"
+        aria-hidden="true"
+      >// order received</div>
+
+      <h1 style="font-family:var(--font-display);font-size:clamp(2rem,5vw,3.25rem);font-weight:700;color:var(--text);line-height:1.1;margin:0 0 1.5rem;">
+        Your order is being processed.
+      </h1>
+
+      <p style="font-family:var(--font-body);font-size:1.05rem;color:var(--muted);line-height:1.8;margin:0 0 2rem;">
+        GoDaddy is provisioning your hosting account right now. Depending on the product,
+        this takes between a few minutes and a few hours. You&rsquo;ll receive a confirmation
+        email once everything is live.
+      </p>
+
+      <!-- Status callout -->
+      <div
+        style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem 2rem;margin:0 0 2.5rem;text-align:left;"
+        aria-label="What happens next"
+      >
+        <div style="font-family:var(--font-display);font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;">
+          // what happens next
+        </div>
+        <ol style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.875rem;">
+          <li style="display:flex;align-items:flex-start;gap:0.875rem;">
+            <span style="font-family:var(--font-display);font-size:0.75rem;color:var(--violet);font-weight:700;min-width:1.5rem;padding-top:0.15rem;">01</span>
+            <span style="font-family:var(--font-body);font-size:0.9rem;color:var(--text);line-height:1.6;">GoDaddy confirms payment and begins provisioning your account.</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.875rem;">
+            <span style="font-family:var(--font-display);font-size:0.75rem;color:var(--violet);font-weight:700;min-width:1.5rem;padding-top:0.15rem;">02</span>
+            <span style="font-family:var(--font-body);font-size:0.9rem;color:var(--text);line-height:1.6;">You receive a confirmation email from FAMtastic Hosting with your account details.</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.875rem;">
+            <span style="font-family:var(--font-display);font-size:0.75rem;color:var(--violet);font-weight:700;min-width:1.5rem;padding-top:0.15rem;">03</span>
+            <span style="font-family:var(--font-body);font-size:0.9rem;color:var(--text);line-height:1.6;">Your dashboard shows the active status once provisioning completes.</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- CTA buttons -->
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin-bottom:3rem;">
+        <a
+          href="/dashboard"
+          class="btn-primary"
+          style="display:inline-flex;align-items:center;gap:0.5rem;"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Go to Dashboard
+        </a>
+        <a href="/" class="btn-outline">Back to Home</a>
+      </div>
+
+      <!-- Support block -->
+      <div
+        style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:1.25rem 1.75rem;text-align:center;"
+        aria-label="Contact support"
+      >
+        <div style="font-family:var(--font-body);font-size:0.875rem;color:var(--muted);margin-bottom:0.5rem;">
+          Questions about your order?
+        </div>
+        <a
+          href="tel:+14806242500"
+          style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--violet);text-decoration:none;letter-spacing:0.01em;"
+          aria-label="Call FAMtastic Hosting support at (480) 624-2500"
+        >
+          (480) 624-2500
+        </a>
+        <div style="font-family:var(--font-body);font-size:0.75rem;color:var(--muted);margin-top:0.375rem;">
+          24/7 support · Answered as FAMtastic Hosting
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</WildLayout>
