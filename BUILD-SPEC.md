@@ -67,8 +67,8 @@ Build FAMtasticHosting.com as a full product: 7-page marketing site with real pr
    - Step 3: "You build." One sentence about the Designs Bridge and support.
 6. **Design Bridge** — Full section with its own bg color (#1a0d3a deep indigo). Accent CTA in #ff007a. Copy: "A lot of our clients came to us for hosting and left with a site they're proud of." Link to famtasticdesigns.com. This is NOT a banner — it's a full editorial section.
 7. **Founder Voice** — Short, first person. Three paragraphs max. No corporate bio. "×" marks for what others do wrong, checks for what we do right.
-8. **FAMtasticThoughts strip** — One strip: "Running a site? Learn how to grow it." Link to famtasticthoughts.com. Editorial framing, not self-promotion.
-9. **Footer** — Required ICANN disclosure, copyright, links to all pages, social links (placeholder URLs), **GoDaddy 24/7 support phone number** (required for reseller customers — white-labeled, presented as FAMtastic Hosting support), contact email.
+8. **FAMtasticThoughts strip** — One strip: "Running a site? Learn how to grow it." Link to famtasticthoughts.com. Editorial framing, not self-promotion. This is bidirectional cross-promo — FAMtastic Thoughts articles will host content that drives traffic to FAMtastic Hosting products, and this strip drives traffic back to those articles.
+9. **Footer** — Required ICANN disclosure, copyright, links to all pages, social links (placeholder URLs), **GoDaddy 24/7 support phone: (480) 624-2500** (white-labeled, presented as FAMtastic Hosting support), contact email, famtasticthoughts.com cross-promo link.
 
 ### 2. wordpress.html — Managed WordPress (WILD template)
 
@@ -185,7 +185,7 @@ Build FAMtasticHosting.com as a full product: 7-page marketing site with real pr
 4. **Hosting Management** — View plan details, resource usage (bandwidth, storage), cPanel access link (branded), SSL status.
 5. **Email Management** — List email accounts, add/remove addresses, change passwords, view quota usage.
 6. **Billing** — View invoices, payment history, upcoming renewals, payment method on file. GoDaddy processes payments — we display the data.
-7. **Support** — White-labeled GoDaddy support phone number prominently displayed. "Call us: [number]" visible from every page. Link to knowledge base / FAQ. Contact form that routes to support.
+7. **Support** — GoDaddy white-label support phone number prominently displayed: **(480) 624-2500**. "Call us: (480) 624-2500" visible from every page. Link to knowledge base / FAQ. Contact form that routes to support.
 8. **Upgrade Path** — Links to upgrade current plans, add services (more email, SSL, security). Cross-sell bundles. "Want a custom site?" → famtasticdesigns.com.
 
 ### Admin Dashboard
@@ -218,7 +218,7 @@ The dashboard backend talks to GoDaddy's reseller API for:
 - Product catalog endpoints for pricing
 - DNS management endpoints
 
-**Phone number:** GoDaddy provides 24/7 white-label phone support for reseller customers. The number must be prominently displayed on every page of the site and in the customer portal. Fritz needs to configure this in the GoDaddy reseller panel — the support team answers as "FAMtastic Hosting support."
+**Phone number:** (480) 624-2500. GoDaddy provides 24/7 white-label phone support for reseller customers. This number must be prominently displayed on every page of the site and in the customer portal. The support team answers as "FAMtastic Hosting support."
 
 ---
 
@@ -289,7 +289,7 @@ The dashboard is NOT a marketing page. It's a productivity tool. Function over f
 
 **Navigation:** Top nav with FAMtastic wordmark (text, no logo image), page links (WordPress, Hosting, Builder, Servers, Domains, Bundles), and "Talk to a Human" CTA button. Consistent across all pages.
 
-**Footer:** ICANN disclosure line, copyright, links to all pages, **GoDaddy 24/7 white-label support phone number** (required for reseller), email contact, social links (placeholders), famtasticdesigns.com and famtasticthoughts.com cross-promo links.
+**Footer:** ICANN disclosure line, copyright, links to all pages, **GoDaddy 24/7 support phone: (480) 624-2500** (white-labeled as FAMtastic Hosting support — required for reseller), email contact, social links (placeholders), famtasticdesigns.com and famtasticthoughts.com cross-promo links.
 
 **Mobile-first responsive:** Every page must look correct on mobile, tablet, desktop. The wild.html mockup already has mobile breakpoints — use those as the model.
 
@@ -363,7 +363,7 @@ famtastic-hosting/
 7. **Fast.** No render-blocking external resources. Images (if any) use lazy loading. Target <3s full page load on 4G.
 8. **SEO.** Proper `<title>`, `<meta description>`, Open Graph tags per page. Structured data (JSON-LD) for Organization and Product schemas. Canonical URLs.
 9. **Contact.** "Talk to a Human" links to `mailto:hello@famtastichosting.com` (placeholder email). When Netlify Forms or Formspree is wired, this becomes a real contact flow.
-10. **GoDaddy white-label support number.** Every page footer AND the contact/support section must display the GoDaddy 24/7 white-label support phone number. This is required by the reseller agreement and is a trust signal for customers. The number will be configured in the GoDaddy reseller panel — use a placeholder `1-XXX-XXX-XXXX` until Fritz provides the actual number. The wording: "24/7 Support: [number]" presented under the FAMtastic Hosting brand.
+10. **GoDaddy white-label support number.** Every page footer AND the contact/support section must display the GoDaddy 24/7 white-label support phone number: **(480) 624-2500**. This is required by the reseller agreement and is a trust signal for customers. The wording: "24/7 Support: (480) 624-2500" presented under the FAMtastic Hosting brand.
 
 ---
 
@@ -432,7 +432,7 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 6. Design Bridge section appears on all pages with correct copy and link to famtasticdesigns.com
 7. Website Builder page (builder.html) has the Crossroads section and FAMtastic Designs tie-in
 8. ICANN disclosure in every footer
-9. GoDaddy white-label support phone number (placeholder until Fritz provides actual number) in every footer and contact section
+9. GoDaddy support phone: (480) 624-2500 in every footer and contact section
 10. servers.html uses the EXTREME template aesthetic (dark terminal green, Share Tech Mono, CRT effects)
 11. All other pages use WILD template aesthetic (violet/lime, Space Grotesk, perspective grid)
 12. No placeholder content — every word is real, final copy
@@ -476,4 +476,42 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 - Swarm execution: Fritz directed multi-swarm, autonomous, cheap (no Opus)
 - Backend dashboard: Fritz required — customer portal + admin panel that mirrors GoDaddy reseller functions
 - Website Builder page: Fritz directed — tied to FAMtastic Designs. Builder page IS the Designs bridge. Future deep integration, current page has the crossroads + tie-in.
-- GoDaddy support phone: Fritz required — must be visible on every page and in the dashboard. White-labeled under FAMtastic Hosting brand. Needs actual number from GoDaddy reseller panel configuration.
+- GoDaddy support phone: (480) 624-2500 — must be visible on every page and in the dashboard. White-labeled under FAMtastic Hosting brand.
+- FAMtastic Thoughts cross-promo: Fritz required — FAMtasticThoughts.com will have hosting-related articles that link to FAMtastic Hosting products. The hosting site reciprocates with FAMtasticThoughts strip on every page. Bidirectional content marketing loop.
+
+---
+
+## FAMtastic Thoughts Cross-Promo Strategy
+
+This is a bidirectional content loop between FAMtasticHosting.com and FAMtasticThoughts.com. Both sites promote each other.
+
+### Hosting Site → Thoughts Site
+
+Every page on FAMtasticHosting.com has a **FAMtasticThoughts strip** (already spec'd above):
+- Homepage: "Running a site? Learn how to grow it." → links to famtasticthoughts.com
+- Product pages: Contextual article links ("Choosing between WordPress and cPanel hosting?", "What SSL actually does for your site")
+- Footer: famtasticthoughts.com link in the cross-promo section alongside famtasticdesigns.com
+
+### Thoughts Site → Hosting Site
+
+FAMtasticThoughts.com will have articles that drive traffic to FAMtastic Hosting products. These are NOT ads — they're educational content that naturally references hosting as a solution:
+
+- "How to pick a domain name that works as hard as you do" → domains.html
+- "Why managed WordPress hosting is worth it (and when it isn't)" → wordpress.html
+- "SSL certificates: what they actually do and why your site needs one" → domains.html (SSL section)
+- "Your first year online: a small business hosting guide" → bundles.html
+- "When shared hosting isn't enough anymore" → servers.html
+- "Building vs designing: how to choose" → builder.html
+
+Each article links to the relevant FAMtasticHosting.com page with editorial context — "If you're ready for managed WordPress, here's what that looks like" not "BUY NOW."
+
+### Thoughts Site Page Requirements
+
+FAMtasticThoughts.com needs hosting-related article pages (or at minimum, article stubs that link to Hosting product pages). These pages are part of the FAMtastic Thoughts studio (4th studio), not this build spec, but the URLs and topic mapping need to exist so the hosting site's FAMtasticThoughts strips can link to real content instead of a homepage.
+
+**Minimum viable cross-promo for launch:**
+- 3-5 article stubs on famtasticthoughts.com that match the product pages (WordPress, cPanel, SSL, Bundles, Servers)
+- Each stub has a real headline, a 2-3 sentence teaser, and a CTA linking to the corresponding hosting page
+- The hosting site's FAMtasticThoughts strips link to these specific articles, not just the homepage
+
+**These article pages should be planned as part of the FAMtastic Thoughts build, not this hosting build.** But the hosting build needs to know they exist so the link structure works at launch.
