@@ -1,0 +1,37 @@
+---
+interface Props { variant?: string }
+const { variant = 'default' } = Astro.props
+const copies: Record<string, { headline: string; body: string }> = {
+  default: {
+    headline: "A lot of our clients came to us for hosting and left with a site they're proud of.",
+    body: "FAMtasticDesigns.com builds the visual identity to fill the space your hosting just opened. Custom sites, brand systems, and launch-ready design — from the same team."
+  },
+  wordpress: {
+    headline: "WordPress runs your content. What runs your brand?",
+    body: "Your WP site is live. Now make it look like nothing else on the internet. Custom design from $300."
+  },
+  builder: {
+    headline: "You came here to build a site. What if someone could build it for you — and make it look like nothing else?",
+    body: "Custom site design starting at $300 for a logo package, $800 for a brand refresh, $1,500+ for a full site."
+  },
+  servers: {
+    headline: "Running serious infrastructure? Your site deserves serious design.",
+    body: "You've invested in dedicated resources. Invest in a visual identity that matches. Custom design from the same team."
+  },
+  domains: {
+    headline: "You claimed your name. Now claim your look.",
+    body: "Domain registered. Brand identity is next. FAMtasticDesigns.com builds logos, identities, and full sites."
+  },
+  bundles: {
+    headline: "The ultimate bundle: hosting + design.",
+    body: "The Designs Complete bundle includes everything — hosting, email, and a custom-built site. One team, one package."
+  },
+}
+const c = copies[variant] ?? copies.default
+---
+<section class="design-bridge" aria-labelledby="db-headline">
+  <div class="db-label">// next move</div>
+  <h2 class="db-headline" id="db-headline">{c.headline}</h2>
+  <p class="db-body">{c.body}</p>
+  <a href="https://famtasticdesigns.com" class="btn-hot" rel="noopener">Visit FAMtasticDesigns.com &rarr;</a>
+</section>

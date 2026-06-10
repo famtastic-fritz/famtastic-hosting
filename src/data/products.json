@@ -1,0 +1,32 @@
+{
+  "wordpress": {
+    "basic": { "name": "Managed WP Basic", "price": 12, "annualPrice": 9.60, "period": "mo", "features": ["1 WordPress site","30GB SSD storage","1-click WordPress install","Daily automated backups","Custom nameservers","Free SSL certificate","24/7 white-label support"] },
+    "ultimate": { "name": "Managed WP Ultimate", "price": 24, "annualPrice": 19.20, "period": "mo", "features": ["Unlimited WordPress sites","75GB SSD storage","Premium WP staging","Malware scan & removal","Custom nameservers","Free SSL certificate","Priority white-label support","WP-CLI access"] }
+  },
+  "hosting": {
+    "starter": { "name": "cPanel Starter", "price": 7, "annualPrice": 5.60, "period": "mo", "features": ["1 website","50GB SSD storage","cPanel control panel","1-click app installs","Custom nameservers","Free SSL certificate","White-label 24/7 support"] },
+    "ultimate": { "name": "cPanel Ultimate", "price": 31, "annualPrice": 24.80, "period": "mo", "features": ["Unlimited websites","Unlimited SSD storage","cPanel + Softaculous","1-click installs (400+ apps)","Custom nameservers","Free SSL + malware scan","Priority white-label support"] }
+  },
+  "builder": {
+    "essential": { "name": "Website Builder Essential", "price": 12, "annualPrice": 9.60, "period": "mo", "features": ["1 website","Free domain (year 1)","Mobile-optimized templates","SSL included","Basic marketing suite","Social media integration","24/7 support"] },
+    "commerce": { "name": "Website Builder Commerce", "price": 30, "annualPrice": 24, "period": "mo", "features": ["Online store","Unlimited products","Payment processing","Shipping labels","Marketing suite","Abandoned cart recovery","SSL included","Priority support"] }
+  },
+  "servers": {
+    "launch": { "name": "Web Hosting Plus Launch", "price": 37, "annualPrice": 29.60, "period": "mo", "features": ["1 website","30GB NVMe SSD","Dedicated CPU allocation","Dedicated RAM allocation","Custom nameservers","Free SSL certificate","24/7 white-label support"] },
+    "expand": { "name": "Web Hosting Plus Expand", "price": 127, "annualPrice": 101.60, "period": "mo", "features": ["Unlimited websites","120GB NVMe SSD","Dedicated CPU + RAM (enhanced)","Full cPanel root-like control","Custom nameservers","Free SSL + malware scan","Priority white-label support","Advanced WAF included"] }
+  },
+  "domains": {
+    "com": { "tld": ".com", "price": 20, "period": "yr" },
+    "net": { "tld": ".net", "price": 25, "period": "yr" },
+    "org": { "tld": ".org", "price": 22, "period": "yr" },
+    "co": { "tld": ".co", "price": 35, "period": "yr" }
+  },
+  "email": {
+    "pro": { "name": "Professional Email", "price": 3, "annualPrice": 2.40, "period": "mo", "features": ["Custom domain address","10GB storage per mailbox","Any email client","Webmail access","Spam & virus filtering"] },
+    "group": { "name": "Group Email", "price": 4, "annualPrice": 3.20, "period": "mo", "features": ["Team email inboxes","Shared calendars","Shared contacts","Custom domain addresses","10GB per mailbox","Admin controls"] },
+    "m365": { "name": "Microsoft 365", "price": 9, "period": "mo", "features": ["Word, Excel, PowerPoint","Teams, SharePoint, OneDrive","Custom domain email","1TB cloud storage/user","Advanced security","Desktop + mobile apps"] }
+  },
+  "ssl": {
+    "standard": { "name": "SSL Standard", "price": 79, "period": "yr", "features": ["Single domain DV certificate","Auto-renewal","Browser trust indicator","Encrypts all data in transit","Same-day provisioning"] }
+  }
+}

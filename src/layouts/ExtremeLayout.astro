@@ -1,0 +1,102 @@
+---
+import '../styles/global.css'
+import '../styles/extreme.css'
+import '../styles/components.css'
+
+interface Props {
+  title: string
+  description: string
+}
+const { title, description } = Astro.props
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href="https://famtastichosting.com/servers" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+</head>
+<body>
+  <div class="crt-scanlines" aria-hidden="true"></div>
+  <div class="blend-overlay" aria-hidden="true"></div>
+
+  <nav class="nav-bar" role="navigation" aria-label="Main navigation">
+    <div class="nav-logo" data-text="FAMtastic_Hosting">
+      <a href="/" style="color:var(--green);text-decoration:none;">FAMtastic</a><span style="opacity:0.5;color:var(--green);">_Hosting</span>
+    </div>
+    <ul class="nav-links" style="list-style:none;">
+      <li><a href="/wordpress" class="ext-nav-link">./wordpress</a></li>
+      <li><a href="/hosting" class="ext-nav-link">./hosting</a></li>
+      <li><a href="/builder" class="ext-nav-link">./builder</a></li>
+      <li><a href="/servers" class="ext-nav-link" style="color:var(--green);">./servers</a></li>
+      <li><a href="/domains" class="ext-nav-link">./domains</a></li>
+      <li><a href="/bundles" class="ext-nav-link">./bundles</a></li>
+    </ul>
+    <a href="mailto:hello@famtastichosting.com" class="btn-primary"><span>Talk to a Human</span></a>
+  </nav>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer class="ext-footer">
+    <div class="ext-footer-copy">FAMtastic Hosting &copy; {new Date().getFullYear()} &mdash; All systems operational.</div>
+    <nav style="display:flex;gap:1.5rem;flex-wrap:wrap;" aria-label="Footer navigation">
+      <a href="/" style="font-family:var(--font-term);font-size:0.72rem;color:rgba(0,255,65,0.35);">./home</a>
+      <a href="/wordpress" style="font-family:var(--font-term);font-size:0.72rem;color:rgba(0,255,65,0.35);">./wordpress</a>
+      <a href="/hosting" style="font-family:var(--font-term);font-size:0.72rem;color:rgba(0,255,65,0.35);">./hosting</a>
+      <a href="/bundles" style="font-family:var(--font-term);font-size:0.72rem;color:rgba(0,255,65,0.35);">./bundles</a>
+      <a href="https://famtasticdesigns.com" style="font-family:var(--font-term);font-size:0.72rem;color:rgba(0,255,65,0.35);">./designs</a>
+    </nav>
+    <div style="width:100%;font-family:var(--font-term);font-size:0.55rem;color:rgba(0,255,65,0.2);margin-top:0.5rem;">
+      24/7 Support: (480) 624-2500 &middot; Domain registration fulfilled through WildWestDomains.com, an ICANN-accredited registrar.
+    </div>
+  </footer>
+
+  <script>
+    // Matrix rain
+    (function() {
+      const container = document.getElementById('matrixRain');
+      if (!container) return;
+      const chars = '01アイウエオカキクケコサシスセソ▓▒░█▄▀FAMtastic'.split('');
+      const cols = Math.floor(window.innerWidth / 20);
+      for (let i = 0; i < cols; i++) {
+        const col = document.createElement('div');
+        col.className = 'matrix-col';
+        let txt = '';
+        for (let j = 0; j < 10 + Math.floor(Math.random() * 20); j++) {
+          txt += chars[Math.floor(Math.random() * chars.length)] + '\n';
+        }
+        col.textContent = txt;
+        col.style.left = (i * 20) + 'px';
+        col.style.animationDuration = (6 + Math.random() * 14) + 's';
+        col.style.animationDelay = (Math.random() * -20) + 's';
+        col.style.opacity = String(0.04 + Math.random() * 0.1);
+        container.appendChild(col);
+      }
+    })();
+
+    // Typewriter lines
+    document.querySelectorAll<HTMLElement>('.prompt-line').forEach(line => {
+      const delay = parseFloat(line.style.getPropertyValue('--tw-delay') || '0') * 1000;
+      setTimeout(() => {
+        line.style.width = '100%';
+        line.style.opacity = '1';
+      }, delay);
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-q').forEach(q => {
+      q.addEventListener('click', () => {
+        q.classList.toggle('open');
+        const a = q.nextElementSibling as HTMLElement | null;
+        if (a) a.classList.toggle('open');
+      });
+    });
+  </script>
+</body>
+</html>

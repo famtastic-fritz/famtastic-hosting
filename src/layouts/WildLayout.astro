@@ -1,0 +1,83 @@
+---
+import Nav from '../components/Nav.astro'
+import Footer from '../components/Footer.astro'
+import '../styles/global.css'
+import '../styles/wild.css'
+import '../styles/components.css'
+
+interface Props {
+  title: string
+  description: string
+  canonicalPath?: string
+}
+const { title, description, canonicalPath = '' } = Astro.props
+const canonical = `https://famtastichosting.com${canonicalPath}`
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:type" content="website" />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "FAMtastic Hosting",
+    "url": "https://famtastichosting.com",
+    "telephone": "+14806242500",
+    "address": { "@type": "PostalAddress", "addressLocality": "Miami", "addressRegion": "FL" }
+  })} />
+</head>
+<body style="background:var(--pitch);color:var(--text);font-family:var(--font-body);">
+  <Nav />
+  <main>
+    <slot />
+  </main>
+  <Footer />
+  <script>
+    // FAQ accordion
+    document.querySelectorAll('.faq-q').forEach(q => {
+      q.addEventListener('click', () => {
+        q.classList.toggle('open');
+        const a = q.nextElementSibling as HTMLElement | null;
+        if (a) a.classList.toggle('open');
+      });
+    });
+    // Stat row fade-in
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).style.opacity = '1';
+          (e.target as HTMLElement).style.transform = 'translateX(0)';
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    document.querySelectorAll<HTMLElement>('.stat-row').forEach((row, i) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-30px)';
+      row.style.transition = `opacity 0.6s ease ${i * 0.12}s, transform 0.6s ease ${i * 0.12}s`;
+      obs.observe(row);
+    });
+    // Card deck hover
+    const cards = document.querySelectorAll<HTMLElement>('.plan-card');
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => cards.forEach(c => { if (c !== card) c.style.opacity = '0.6'; }));
+      card.addEventListener('mouseleave', () => cards.forEach(c => c.style.opacity = ''));
+    });
+    // Smooth scroll
+    document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const t = document.querySelector(a.getAttribute('href') || '');
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+  </script>
+</body>
+</html>

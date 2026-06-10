@@ -1,0 +1,48 @@
+<div class="billing-toggle-wrap" id="billingToggle">
+  <span class="billing-option active" id="billingMonthly">Monthly</span>
+  <div
+    class="billing-switch"
+    id="billingSwitch"
+    role="switch"
+    aria-checked="false"
+    tabindex="0"
+    aria-label="Toggle annual billing"
+  ></div>
+  <span class="billing-option" id="billingAnnual">Annual</span>
+  <span class="billing-save-badge">Save 20%</span>
+</div>
+<script>
+  (function() {
+    const sw = document.getElementById('billingSwitch') as HTMLElement | null;
+    const mo = document.getElementById('billingMonthly');
+    const yr = document.getElementById('billingAnnual');
+    let annual = false;
+
+    function updateCards() {
+      document.querySelectorAll<HTMLElement>('.plan-card').forEach(card => {
+        const mp = card.dataset.monthlyPrice;
+        const ap = card.dataset.annualPrice;
+        const mper = card.dataset.monthlyPeriod;
+        const aper = card.dataset.annualPeriod;
+        const pv = card.querySelector<HTMLElement>('.price-val');
+        const pp = card.querySelector<HTMLElement>('.per-mo');
+        if (pv && mp && ap) pv.textContent = annual ? ap : mp;
+        if (pp && mper && aper) pp.textContent = annual ? aper : mper;
+      });
+    }
+
+    function toggle() {
+      annual = !annual;
+      sw?.classList.toggle('annual', annual);
+      sw?.setAttribute('aria-checked', annual ? 'true' : 'false');
+      mo?.classList.toggle('active', !annual);
+      yr?.classList.toggle('active', annual);
+      updateCards();
+    }
+
+    sw?.addEventListener('click', toggle);
+    sw?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+    });
+  })();
+</script>

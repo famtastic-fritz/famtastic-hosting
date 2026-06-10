@@ -1,0 +1,111 @@
+/* ─── BILLING TOGGLE ─────────────────────────────────────────── */
+.billing-toggle-wrap { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-bottom: 3rem; flex-wrap: wrap; }
+.billing-option { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: color 0.2s; }
+.billing-option.active { color: var(--text); }
+.billing-switch { width: 48px; height: 26px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 13px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+.billing-switch.annual { background: var(--violet); border-color: var(--violet); }
+.billing-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: var(--text); border-radius: 50%; transition: transform 0.2s; }
+.billing-switch.annual::after { transform: translateX(22px); }
+.billing-save-badge { font-family: var(--font-mono); font-size: 0.65rem; background: rgba(132,204,22,0.12); color: var(--lime); padding: 0.2rem 0.5rem; letter-spacing: 0.06em; }
+
+/* ─── FAQ ACCORDION ─────────────────────────────────────────── */
+.faq-section { padding: 5rem 3rem; background: var(--pitch); }
+.faq-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--violet); margin-bottom: 1rem; }
+.faq-headline { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 700; color: var(--text); letter-spacing: -0.02em; margin-bottom: 3rem; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q { font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: var(--text); padding: 1.2rem 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.faq-q::after { content: '+'; font-family: var(--font-mono); color: var(--violet); font-size: 1.4rem; flex-shrink: 0; transition: transform 0.2s; }
+.faq-q.open::after { content: '\2212'; }
+.faq-a { font-family: var(--font-body); font-size: 0.95rem; color: var(--muted); line-height: 1.75; padding-bottom: 1.2rem; display: none; }
+.faq-a.open { display: block; }
+
+/* ─── HOW IT WORKS ──────────────────────────────────────────── */
+.how-it-works-section { padding: 6rem 3rem; background: var(--surface); }
+.section-label-sm { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--violet); margin-bottom: 1rem; }
+.section-headline { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; color: var(--text); letter-spacing: -0.02em; margin-bottom: 3rem; }
+.how-step { display: flex; gap: 2rem; align-items: baseline; padding: 2.5rem 0; border-bottom: 1px solid var(--border); max-width: 700px; }
+.how-step:first-of-type { border-top: 1px solid var(--border); }
+.how-num { font-family: var(--font-mono); font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 700; color: var(--violet); opacity: 0.25; min-width: 70px; line-height: 1; }
+.how-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+.how-desc { font-family: var(--font-body); font-size: 0.95rem; color: var(--muted); line-height: 1.75; }
+
+/* ─── PRODUCT PREVIEW GRID ──────────────────────────────────── */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+.product-grid-wrap { padding: 5rem 3rem; background: var(--pitch); }
+.product-card { background: var(--surface); border: 1px solid var(--border); padding: 2rem; transition: border-color 0.2s, transform 0.3s; display: block; }
+.product-card:hover { border-color: var(--violet); transform: translateY(-4px); }
+.product-card-icon { width: 36px; height: 36px; margin-bottom: 1.2rem; stroke: var(--violet); fill: none; }
+.product-card-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+.product-card-tagline { font-family: var(--font-mono); font-size: 0.72rem; color: var(--lime); letter-spacing: 0.06em; margin-bottom: 0.75rem; }
+.product-card-desc { font-family: var(--font-body); font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.2rem; }
+.product-card-link { font-family: var(--font-mono); font-size: 0.72rem; color: var(--violet); letter-spacing: 0.06em; }
+
+/* ─── BUNDLE CARDS ──────────────────────────────────────────── */
+.bundle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.bundle-card { background: var(--surface); border: 1px solid var(--border); padding: 2.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+.bundle-card--featured { border-color: var(--lime); background: #131a0a; }
+.bundle-card--designs { border-color: var(--hot); background: #1a0d3a; }
+.bundle-badge { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; background: rgba(124,58,237,0.15); color: var(--violet); padding: 0.25rem 0.75rem; display: inline-block; margin-bottom: 0.5rem; width: fit-content; }
+.bundle-card--featured .bundle-badge { background: rgba(132,204,22,0.15); color: var(--lime); }
+.bundle-card--designs .bundle-badge { background: rgba(255,0,122,0.15); color: var(--hot); }
+.bundle-name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.bundle-price { font-family: var(--font-mono); font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1; }
+.bundle-price-sub { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+.bundle-for { font-family: var(--font-body); font-style: italic; font-size: 0.95rem; color: var(--muted); }
+.bundle-includes { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; }
+.bundle-includes li { font-family: var(--font-mono); font-size: 0.75rem; color: rgba(245,245,240,0.6); display: flex; gap: 0.5rem; }
+.bundle-includes li::before { content: '\2192'; color: var(--violet); }
+.bundle-card--featured .bundle-includes li::before { color: var(--lime); }
+.bundle-card--designs .bundle-includes li::before { color: var(--hot); }
+.bundle-savings { font-family: var(--font-mono); font-size: 0.72rem; color: var(--lime); }
+.bundle-cta { margin-top: auto; }
+
+/* ─── DOMAIN PRICING ────────────────────────────────────────── */
+.tld-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 2rem; }
+.tld-card { background: var(--pitch); border: 1px solid var(--border); padding: 1.5rem; text-align: center; transition: border-color 0.2s; }
+.tld-card:hover { border-color: var(--violet); }
+.tld-ext { font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700; color: var(--lime); margin-bottom: 0.5rem; }
+.tld-price { font-family: var(--font-mono); font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; }
+.tld-desc { font-family: var(--font-body); font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+/* ─── CROSSROADS (builder page) ─────────────────────────────── */
+.crossroads-section { padding: 7rem 3rem; background: var(--surface); }
+.crossroads-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+.crossroads-card { padding: 2.5rem; border: 1px solid var(--border); }
+.crossroads-card--design { background: #1a0d3a; border-color: var(--hot); }
+.crossroads-eyebrow { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.crossroads-card--design .crossroads-eyebrow { color: var(--hot); }
+.crossroads-card-title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
+.crossroads-body { font-family: var(--font-body); font-size: 0.95rem; color: var(--muted); line-height: 1.75; margin-bottom: 1.5rem; }
+.crossroads-pricing { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.8; }
+.crossroads-card--design .crossroads-pricing { color: rgba(255,0,122,0.7); }
+.crossroads-bullets { list-style: none; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.crossroads-bullets li { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); display: flex; gap: 0.5rem; }
+.crossroads-bullets li::before { content: '\2713'; color: var(--lime); }
+.crossroads-card--design .crossroads-bullets li::before { color: var(--hot); }
+.crossroads-bottom { text-align: center; padding: 2.5rem; background: var(--pitch); border: 1px solid var(--border); margin-top: 2rem; }
+.crossroads-bottom p { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); letter-spacing: 0.04em; }
+
+/* ─── DESIGNS SHOWCASE ──────────────────────────────────────── */
+.designs-showcase { padding: 6rem 3rem; background: var(--pitch); }
+.designs-tiers { display: flex; gap: 1px; background: var(--border); margin: 2rem 0; }
+.designs-tier { flex: 1; background: var(--surface); padding: 1.5rem; text-align: center; }
+.designs-tier-name { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+.designs-tier-price { font-family: var(--font-mono); font-size: 1.3rem; color: var(--text); }
+
+/* ─── RESPONSIVE ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .faq-section { padding: 3rem 1.5rem; }
+  .how-it-works-section { padding: 4rem 1.5rem; }
+  .product-grid-wrap { padding: 3rem 1.5rem; }
+  .crossroads-grid { grid-template-columns: 1fr; }
+  .designs-tiers { flex-direction: column; gap: 0; }
+  .bundle-grid { grid-template-columns: 1fr; }
+  .tld-grid { grid-template-columns: repeat(2, 1fr); }
+  .designs-showcase { padding: 4rem 1.5rem; }
+  .crossroads-section { padding: 4rem 1.5rem; }
+}
+@media (max-width: 600px) {
+  .product-grid { grid-template-columns: 1fr; }
+  .tld-grid { grid-template-columns: 1fr 1fr; }
+}

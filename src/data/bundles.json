@@ -1,0 +1,34 @@
+{
+  "smallBizStarter": {
+    "name": "Small Biz Starter",
+    "price": "$299/yr",
+    "badge": "Best for starting",
+    "for": "You just need to exist online. This gets you there.",
+    "includes": [".com domain registration", "3 professional email addresses", "SSL standard certificate"],
+    "savings": "Save $34 vs buying separately"
+  },
+  "wordpressLaunch": {
+    "name": "WordPress Launch",
+    "price": "$35/mo",
+    "badge": "Most Popular",
+    "for": "You want a WordPress site, live, with email. This is it.",
+    "includes": ["Managed WordPress Basic plan", "1 Professional email address", "SSL standard certificate", "Domain registration (year 1)"],
+    "savings": "Save 15% vs buying separately"
+  },
+  "growthHosting": {
+    "name": "Growth Hosting",
+    "price": "$50/mo",
+    "badge": "For traffic-heavy sites",
+    "for": "Traffic is growing. You need more than shared hosting.",
+    "includes": ["Web Hosting Plus Launch plan", "Website Security Standard", "SSL standard certificate"],
+    "savings": "Save $26/mo vs buying separately"
+  },
+  "designsComplete": {
+    "name": "Designs Complete",
+    "price": "$1,500 + $40/mo",
+    "badge": "Full service",
+    "for": "You want us to build it and host it. Done.",
+    "includes": ["Custom site design by FAMtastic Designs", "WordPress Launch bundle ($40/mo)", "Full brand delivery (files, fonts, colors)", "2-3 week turnaround"],
+    "savings": null
+  }
+}

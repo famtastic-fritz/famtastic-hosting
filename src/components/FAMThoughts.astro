@@ -1,0 +1,19 @@
+---
+interface Props {
+  headline?: string
+  cta?: string
+  href?: string
+}
+const {
+  headline = 'Running a site? Learn how to grow it.',
+  cta = 'Visit FAMtastic Thoughts',
+  href = 'https://famtasticthoughts.com'
+} = Astro.props
+---
+<div class="fam-thoughts-strip">
+  <div>
+    <div class="fts-label">// famtastic thoughts</div>
+    <div class="fts-headline">{headline}</div>
+  </div>
+  <a href={href} class="fts-link" rel="noopener">{cta} &rarr;</a>
+</div>

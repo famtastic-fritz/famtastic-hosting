@@ -1,0 +1,43 @@
+---
+interface Props {
+  name: string
+  price: string
+  period?: string
+  annualPrice?: string
+  annualPeriod?: string
+  badge?: string
+  tagline?: string
+  features: string[]
+  ctaText: string
+  ctaHref?: string
+  featured?: boolean
+  position?: 'left' | 'center' | 'right'
+}
+const {
+  name, price, period = '/mo',
+  annualPrice, annualPeriod,
+  badge, tagline, features,
+  ctaText, ctaHref = 'mailto:hello@famtastichosting.com',
+  featured = false,
+  position = 'center'
+} = Astro.props
+const posClass = { left: 'plan-card--left', center: 'plan-card--center', right: 'plan-card--right' }[position]
+---
+<div
+  class={`plan-card ${posClass}${featured ? ' plan-card--featured' : ''}`}
+  data-monthly-price={price}
+  data-annual-price={annualPrice ?? price}
+  data-monthly-period={period}
+  data-annual-period={annualPeriod ?? period}
+>
+  {badge && <div class="plan-badge">{badge}</div>}
+  <div class="plan-name">{name}</div>
+  <div class="plan-price">
+    <span class="price-val">{price}</span><span class="per-mo">{period}</span>
+  </div>
+  {tagline && <div class="plan-tagline">{tagline}</div>}
+  <ul class="plan-features">
+    {features.map(f => <li><span class="feat-dot"></span>{f}</li>)}
+  </ul>
+  <a href={ctaHref} class="plan-cta">{ctaText}</a>
+</div>
