@@ -1,0 +1,372 @@
+---
+import WildLayout from '../layouts/WildLayout.astro'
+import DesignBridge from '../components/DesignBridge.astro'
+import FAMThoughts from '../components/FAMThoughts.astro'
+import BillingToggle from '../components/BillingToggle.astro'
+import PricingCard from '../components/PricingCard.astro'
+---
+
+<WildLayout
+  title="Managed WordPress Hosting — FAMtastic Hosting"
+  description="Managed WordPress from $12/mo. Daily backups, malware scanning, staging, and custom nameservers. No GoDaddy branding. 24/7 white-label support."
+  canonicalPath="/wordpress"
+>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────── -->
+  <section class="fam-hero-layered" aria-label="Hero">
+    <!-- BG -->
+    <div class="fam-hero-layer--bg"></div>
+
+    <!-- FX: animated perspective grid -->
+    <div class="fam-hero-layer--fx" aria-hidden="true">
+      <div class="hero-orb hero-orb--a"></div>
+      <div class="hero-orb hero-orb--b"></div>
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g class="grid-lines-group" stroke="rgba(124,58,237,0.18)" stroke-width="1" fill="none">
+          <!-- Horizontal lines -->
+          <line x1="0" y1="300" x2="1440" y2="300"/>
+          <line x1="0" y1="400" x2="1440" y2="400"/>
+          <line x1="0" y1="500" x2="1440" y2="500"/>
+          <line x1="0" y1="600" x2="1440" y2="600"/>
+          <line x1="0" y1="700" x2="1440" y2="700"/>
+          <!-- Vertical lines -->
+          <line x1="180" y1="0" x2="180" y2="900"/>
+          <line x1="360" y1="0" x2="360" y2="900"/>
+          <line x1="540" y1="0" x2="540" y2="900"/>
+          <line x1="720" y1="0" x2="720" y2="900"/>
+          <line x1="900" y1="0" x2="900" y2="900"/>
+          <line x1="1080" y1="0" x2="1080" y2="900"/>
+          <line x1="1260" y1="0" x2="1260" y2="900"/>
+        </g>
+        <line class="grid-scan-line" x1="0" y1="0" x2="1440" y2="0" stroke="rgba(132,204,22,0.4)" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+
+    <!-- CHARACTER: big background word -->
+    <div class="fam-hero-layer--character" aria-hidden="true">WP</div>
+
+    <!-- CONTENT -->
+    <div class="fam-hero-layer--content">
+      <div class="hero-prompt">
+        // managed wordpress hosting<span class="cursor" aria-hidden="true"></span>
+      </div>
+      <h1 class="hero-headline">
+        WordPress that actually<br/><span class="hl-invisible">works.</span>
+      </h1>
+      <p class="hero-sub">
+        Managed installs, daily backups, and malware scanning from $12/mo. Your nameservers, your brand.
+      </p>
+      <div class="hero-actions">
+        <a href="#plans" class="btn-primary">See WordPress Plans</a>
+        <a href="mailto:hello@famtastichosting.com" class="btn-outline">Talk to a Human</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TICKER ────────────────────────────────────────────────── -->
+  <div class="ticker-strip" aria-hidden="true">
+    <div class="ticker-inner">
+      <!-- First set -->
+      <span class="ticker-item">1-click WordPress install<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Daily automated backups<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Malware scanning &amp; removal<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Free SSL certificate<span class="ticker-dot"></span></span>
+      <span class="ticker-item">WordPress CLI access (Ultimate)<span class="ticker-dot"></span></span>
+      <span class="ticker-item">White-label support 24/7<span class="ticker-dot"></span></span>
+      <!-- Repeat for seamless loop -->
+      <span class="ticker-item">1-click WordPress install<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Daily automated backups<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Malware scanning &amp; removal<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Free SSL certificate<span class="ticker-dot"></span></span>
+      <span class="ticker-item">WordPress CLI access (Ultimate)<span class="ticker-dot"></span></span>
+      <span class="ticker-item">White-label support 24/7<span class="ticker-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- ─── STATS ─────────────────────────────────────────────────── -->
+  <section class="stats-section" aria-label="Key stats">
+    <div class="stats-grid">
+      <div class="stat-row">
+        <div class="stat-number accent-violet">1-click</div>
+        <div class="stat-label">WordPress install — zero config</div>
+        <div class="stat-detail">instant setup</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-number accent-lime">Daily</div>
+        <div class="stat-label">Automated backups on every plan</div>
+        <div class="stat-detail">30-day history</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-number">$12</div>
+        <div class="stat-label">Starting price — first site, managed</div>
+        <div class="stat-detail">per month</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES ─────────────────────────────────────────────── -->
+  <section class="features-section" aria-labelledby="features-headline">
+    <div class="features-label">// what's included</div>
+    <h2 class="features-headline" id="features-headline">Everything managed. Nothing left to guess.</h2>
+    <div class="features-layout">
+
+      <!-- LEFT column -->
+      <div class="features-left">
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <div class="feature-title">One-Click WordPress Install</div>
+          </div>
+          <div class="feature-desc">Your WordPress site is live in under 60 seconds. No manual database setup, no FTP required.</div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <div class="feature-title">Daily Automated Backups</div>
+          </div>
+          <div class="feature-desc">Every site is backed up every 24 hours. Restore from any point in the last 30 days with one click.</div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div class="feature-title">Malware Scanning &amp; Removal</div>
+          </div>
+          <div class="feature-desc">Active malware scanning included. If something gets in, we find it and remove it before it damages your site.</div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+            <div class="feature-title">Custom Nameservers</div>
+          </div>
+          <div class="feature-desc">Every plan ships with ns1.famtastichosting.com and ns2.famtastichosting.com. No GoDaddy in your WHOIS.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT column -->
+      <div class="features-right">
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <div class="feature-title">Staging Environments (Ultimate)</div>
+          </div>
+          <div class="feature-desc">Test changes before they go live. The Ultimate plan includes a one-click staging environment — push to live when you're ready.</div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 17 10 11 4 5"/>
+                <line x1="12" y1="19" x2="20" y2="19"/>
+              </svg>
+            </div>
+            <div class="feature-title">WP-CLI Access (Ultimate)</div>
+          </div>
+          <div class="feature-desc">Command-line WordPress management for developers. Run updates, manage plugins, and query the database from the terminal.</div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div class="feature-title">Free SSL Certificate</div>
+          </div>
+          <div class="feature-desc">SSL provisioned automatically. HTTPS on day one, auto-renewed so you never think about it.</div>
+        </div>
+
+        <!-- Spec block -->
+        <div class="spec-block" style="margin-top:2rem;padding:1.5rem;background:var(--surface);border:1px solid var(--border);">
+          <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--violet);margin-bottom:1rem;">// stack specs</div>
+          <div style="display:flex;flex-direction:column;gap:0.55rem;">
+            <div style="display:flex;gap:1rem;align-items:baseline;">
+              <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);min-width:140px;">WordPress version</span>
+              <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text);">Latest stable (auto-updated)</span>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:baseline;">
+              <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);min-width:140px;">PHP version</span>
+              <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text);">8.1+</span>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:baseline;">
+              <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);min-width:140px;">Database</span>
+              <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text);">MySQL 8.0</span>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:baseline;">
+              <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);min-width:140px;">Storage</span>
+              <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text);">30GB (Basic) / 75GB (Ultimate)</span>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:baseline;">
+              <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);min-width:140px;">Sites</span>
+              <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text);">1 (Basic) / Unlimited (Ultimate)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── PRICING ───────────────────────────────────────────────── -->
+  <section class="pricing-section" id="plans" aria-labelledby="pricing-headline">
+    <div class="pricing-label">// wordpress plans</div>
+    <h2 class="pricing-headline" id="pricing-headline">Two plans. Both managed.</h2>
+    <p style="font-family:var(--font-body);font-style:italic;font-size:1rem;color:var(--muted);margin-bottom:3rem;line-height:1.7;">
+      Both plans include custom nameservers, free SSL, and 24/7 white-label support.
+    </p>
+
+    <BillingToggle />
+
+    <div class="card-deck">
+
+      <PricingCard
+        name="Managed WP Basic"
+        price="$12"
+        period="/mo"
+        annualPrice="$9.60"
+        annualPeriod="/mo (billed annually)"
+        position="left"
+        features={[
+          "1 WordPress site",
+          "30GB SSD storage",
+          "1-click WordPress install",
+          "Daily automated backups",
+          "Malware scanning",
+          "Custom nameservers ns1/ns2",
+          "Free SSL certificate",
+          "24/7 white-label support"
+        ]}
+        ctaText="Start Basic"
+        ctaHref="mailto:hello@famtastichosting.com"
+      />
+
+      <PricingCard
+        name="Managed WP Ultimate"
+        price="$24"
+        period="/mo"
+        annualPrice="$19.20"
+        annualPeriod="/mo (billed annually)"
+        badge="More Power"
+        position="center"
+        featured={true}
+        features={[
+          "Unlimited WordPress sites",
+          "75GB SSD storage",
+          "1-click WordPress install",
+          "Daily automated backups",
+          "Malware scan & removal",
+          "Staging environment",
+          "WP-CLI access",
+          "Custom nameservers ns1/ns2",
+          "Free SSL certificate",
+          "Priority white-label support"
+        ]}
+        ctaText="Go Ultimate"
+        ctaHref="mailto:hello@famtastichosting.com"
+      />
+
+      <div class="plan-card plan-card--right" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:1rem;">
+        <div class="plan-badge" style="display:inline-block;">Need More?</div>
+        <div class="plan-name">Enterprise WordPress</div>
+        <p style="font-family:var(--font-body);font-size:0.9rem;color:var(--muted);line-height:1.7;">Multiple sites at scale, SLA guarantees, or a managed migration from your current host — we'll build the right plan.</p>
+        <a href="mailto:hello@famtastichosting.com" class="plan-cta">Let's Talk</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── FAQ ───────────────────────────────────────────────────── -->
+  <section class="faq-section" aria-labelledby="faq-headline">
+    <div class="faq-label">// questions</div>
+    <h2 class="faq-headline" id="faq-headline">Answers to the questions everyone has.</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        Do I need to know how to manage WordPress?
+      </div>
+      <div class="faq-a">
+        No. Managed WordPress means we handle the infrastructure — server updates, PHP version management, SSL renewal. You manage your content. We manage everything else.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What happens if my site gets hacked?
+      </div>
+      <div class="faq-a">
+        Malware scanning is active on both plans. If we detect malicious code, we quarantine and remove it. The Ultimate plan includes priority malware removal with same-day response.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        Can I migrate my existing WordPress site?
+      </div>
+      <div class="faq-a">
+        Yes. We'll migrate your existing WordPress site to FAMtastic Hosting — files, database, plugins, and theme. Call (480) 624-2500 or email us to get started.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What does "custom nameservers" mean?
+      </div>
+      <div class="faq-a">
+        Instead of pointing your domain to GoDaddy's nameservers (which puts GoDaddy's branding in your domain lookup), your DNS points to ns1.famtastichosting.com and ns2.famtastichosting.com. Your clients see your brand, not ours.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What's included in the "white-label support"?
+      </div>
+      <div class="faq-a">
+        24/7 phone support at (480) 624-2500 and email. The support team answers under the FAMtastic Hosting name — not GoDaddy, not any other provider name. It's your brand on the line, not ours.
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── DESIGN BRIDGE ─────────────────────────────────────────── -->
+  <DesignBridge variant="wordpress" />
+
+  <!-- ─── FAM THOUGHTS ─────────────────────────────────────────── -->
+  <FAMThoughts
+    headline="WordPress tips, SEO guides, and growth strategies — all free."
+    cta="Read FAMtastic Thoughts"
+    href="https://famtasticthoughts.com"
+  />
+
+</WildLayout>
