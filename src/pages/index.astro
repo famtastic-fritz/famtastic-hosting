@@ -1,0 +1,344 @@
+---
+import WildLayout from '../layouts/WildLayout.astro'
+import DesignBridge from '../components/DesignBridge.astro'
+import FAMThoughts from '../components/FAMThoughts.astro'
+import BillingToggle from '../components/BillingToggle.astro'
+import PricingCard from '../components/PricingCard.astro'
+---
+
+<WildLayout
+  title="FAMtastic Hosting — Premium WordPress & Web Hosting"
+  description="Custom nameservers, no GoDaddy branding, and white-label support from $7/mo. WordPress hosting, cPanel, VPS, domains, and more."
+  canonicalPath="/"
+>
+
+  <!-- ── 1. HERO ─────────────────────────────────────────────── -->
+  <section class="fam-hero-layered">
+    <div class="fam-hero-layer fam-hero-layer--bg"></div>
+
+    <!-- FX layer: perspective grid + floating orbs -->
+    <div class="fam-hero-layer fam-hero-layer--fx">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="grid-fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(124,58,237,0)" />
+            <stop offset="60%" stop-color="rgba(124,58,237,0.18)" />
+            <stop offset="100%" stop-color="rgba(124,58,237,0.06)" />
+          </linearGradient>
+        </defs>
+        <g class="grid-lines-group">
+          <!-- horizontal lines -->
+          <line x1="0" y1="500" x2="1440" y2="500" stroke="rgba(124,58,237,0.15)" stroke-width="0.5" />
+          <line x1="0" y1="560" x2="1440" y2="560" stroke="rgba(124,58,237,0.10)" stroke-width="0.5" />
+          <line x1="0" y1="620" x2="1440" y2="620" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="0" y1="680" x2="1440" y2="680" stroke="rgba(124,58,237,0.06)" stroke-width="0.5" />
+          <line x1="0" y1="740" x2="1440" y2="740" stroke="rgba(124,58,237,0.04)" stroke-width="0.5" />
+          <line x1="0" y1="800" x2="1440" y2="800" stroke="rgba(124,58,237,0.03)" stroke-width="0.5" />
+          <!-- vertical lines -->
+          <line x1="200"  y1="400" x2="200"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="400"  y1="400" x2="400"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="600"  y1="400" x2="600"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="800"  y1="400" x2="800"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1000" y1="400" x2="1000" y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1200" y1="400" x2="1200" y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1400" y1="400" x2="1400" y2="900" stroke="rgba(124,58,237,0.06)" stroke-width="0.5" />
+          <!-- scan line -->
+          <line class="grid-scan-line" x1="0" y1="560" x2="1440" y2="560" stroke="rgba(132,204,22,0.35)" stroke-width="1" />
+        </g>
+      </svg>
+      <div class="hero-orb hero-orb--a"></div>
+      <div class="hero-orb hero-orb--b"></div>
+    </div>
+
+    <!-- CHARACTER layer: orbital ring SVG -->
+    <div class="fam-hero-layer fam-hero-layer--character" aria-hidden="true">
+      <svg width="480" height="480" viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.13;">
+        <circle cx="240" cy="240" r="220" stroke="rgba(124,58,237,0.6)" stroke-width="1" stroke-dasharray="8 6" />
+        <circle cx="240" cy="240" r="180" stroke="rgba(124,58,237,0.4)" stroke-width="0.75" />
+        <circle cx="240" cy="240" r="140" stroke="rgba(132,204,22,0.25)" stroke-width="0.5" stroke-dasharray="4 8" />
+        <circle cx="240" cy="14" r="6" fill="rgba(132,204,22,0.7)" />
+        <circle cx="460" cy="280" r="4" fill="rgba(124,58,237,0.6)" />
+        <circle cx="60" cy="340" r="3" fill="rgba(124,58,237,0.4)" />
+      </svg>
+    </div>
+
+    <!-- CONTENT layer -->
+    <div class="fam-hero-layer fam-hero-layer--content">
+      <div class="hero-prompt">// famtastichosting.com<span class="cursor"></span></div>
+      <h1 class="hero-headline">
+        Your domain.<br/>Your brand.<br/><span class="hl-invisible">Handled.</span>
+      </h1>
+      <p class="hero-sub">Premium hosting from $7/mo. Custom nameservers. Your brand on everything.</p>
+      <div class="hero-actions">
+        <a href="#products" class="btn-primary">Explore Plans</a>
+        <a href="mailto:hello@famtastichosting.com" class="btn-outline">Talk to a Human</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. TICKER STRIP ─────────────────────────────────────── -->
+  <div class="ticker-strip" aria-hidden="true">
+    <div class="ticker-inner">
+      <!-- Set A -->
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 white-label support<span class="ticker-dot"></span></span>
+      <span class="ticker-item">From $7/mo<span class="ticker-dot"></span></span>
+      <span class="ticker-item">SSL included<span class="ticker-dot"></span></span>
+      <span class="ticker-item">WordPress one-click<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Miami-based team<span class="ticker-dot"></span></span>
+      <span class="ticker-item">No GoDaddy branding<span class="ticker-dot"></span></span>
+      <!-- Set B (duplicate for seamless loop) -->
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 white-label support<span class="ticker-dot"></span></span>
+      <span class="ticker-item">From $7/mo<span class="ticker-dot"></span></span>
+      <span class="ticker-item">SSL included<span class="ticker-dot"></span></span>
+      <span class="ticker-item">WordPress one-click<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Miami-based team<span class="ticker-dot"></span></span>
+      <span class="ticker-item">No GoDaddy branding<span class="ticker-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- ── 3. STATS SECTION ────────────────────────────────────── -->
+  <section class="stats-section" aria-label="Key statistics">
+    <div class="stats-grid">
+      <div class="stat-row">
+        <div class="stat-number accent-lime">99.9%</div>
+        <div>
+          <div class="stat-label">Uptime SLA</div>
+          <div class="stat-detail">Industry-leading reliability guarantee</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-number accent-violet">500+</div>
+        <div>
+          <div class="stat-label">Active sites hosted</div>
+          <div class="stat-detail">Growing every month</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-number">$7</div>
+        <div>
+          <div class="stat-label">Starting price</div>
+          <div class="stat-detail">For shared hosting, billed monthly</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 4. PRODUCT GRID ────────────────────────────────────── -->
+  <section class="product-grid-wrap" id="products" aria-labelledby="products-headline">
+    <div class="pricing-label">// the products</div>
+    <h2 class="pricing-headline" id="products-headline">Everything your site needs. Under one roof.</h2>
+
+    <div class="product-grid">
+
+      <!-- WordPress Hosting -->
+      <a href="/wordpress" class="product-card">
+        <svg class="product-card-icon" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="15" cy="15" r="13" />
+          <text x="15" y="20" text-anchor="middle" font-size="14" font-weight="700" font-family="sans-serif" fill="currentColor" stroke="none">W</text>
+        </svg>
+        <div class="product-card-title">WordPress Hosting</div>
+        <div class="product-card-tagline">Managed WordPress</div>
+        <p class="product-card-desc">One-click install, daily backups, malware scanning</p>
+        <span class="product-card-link">Explore WordPress &rarr;</span>
+      </a>
+
+      <!-- Web Hosting -->
+      <a href="/hosting" class="product-card">
+        <svg class="product-card-icon" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="24" height="8" rx="1.5" />
+          <rect x="3" y="14" width="24" height="8" rx="1.5" />
+          <circle cx="7" cy="8" r="1" fill="currentColor" stroke="none" />
+          <circle cx="7" cy="18" r="1" fill="currentColor" stroke="none" />
+        </svg>
+        <div class="product-card-title">Web Hosting</div>
+        <div class="product-card-tagline">cPanel &amp; SSD Storage</div>
+        <p class="product-card-desc">Full cPanel access, unlimited sites, 400+ apps</p>
+        <span class="product-card-link">Explore Hosting &rarr;</span>
+      </a>
+
+      <!-- Website Builder -->
+      <a href="/builder" class="product-card">
+        <svg class="product-card-icon" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="11" height="11" rx="1" />
+          <rect x="16" y="3" width="11" height="11" rx="1" />
+          <rect x="3" y="16" width="11" height="11" rx="1" />
+          <rect x="16" y="16" width="11" height="11" rx="1" />
+        </svg>
+        <div class="product-card-title">Website Builder</div>
+        <div class="product-card-tagline">Drag-and-drop + Designs</div>
+        <p class="product-card-desc">Build it yourself or let us build it for you</p>
+        <span class="product-card-link">Explore Builder &rarr;</span>
+      </a>
+
+      <!-- VPS & Servers -->
+      <a href="/servers" class="product-card">
+        <svg class="product-card-icon" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="7" y="7" width="16" height="16" rx="2" />
+          <rect x="11" y="11" width="8" height="8" rx="1" />
+          <line x1="15" y1="2" x2="15" y2="7" />
+          <line x1="15" y1="23" x2="15" y2="28" />
+          <line x1="2" y1="15" x2="7" y2="15" />
+          <line x1="23" y1="15" x2="28" y2="15" />
+        </svg>
+        <div class="product-card-title">VPS &amp; Servers</div>
+        <div class="product-card-tagline">Dedicated resources</div>
+        <p class="product-card-desc">NVMe SSD, no shared CPU, real performance</p>
+        <span class="product-card-link">Explore Servers &rarr;</span>
+      </a>
+
+      <!-- Domains -->
+      <a href="/domains" class="product-card">
+        <svg class="product-card-icon" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="15" cy="15" r="12" />
+          <ellipse cx="15" cy="15" rx="5" ry="12" />
+          <line x1="3" y1="11" x2="27" y2="11" />
+          <line x1="3" y1="19" x2="27" y2="19" />
+        </svg>
+        <div class="product-card-title">Domains</div>
+        <div class="product-card-tagline">Your name. Locked.</div>
+        <p class="product-card-desc">Register .com, .net, .org and more from $20/yr</p>
+        <span class="product-card-link">Explore Domains &rarr;</span>
+      </a>
+
+      <!-- Bundles -->
+      <a href="/bundles" class="product-card">
+        <svg class="product-card-icon" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 10 L15 4 L26 10 L26 22 L15 28 L4 22 Z" />
+          <line x1="4" y1="10" x2="26" y2="10" />
+          <line x1="15" y1="4" x2="15" y2="28" />
+        </svg>
+        <div class="product-card-title">Bundles</div>
+        <div class="product-card-tagline">Everything together.</div>
+        <p class="product-card-desc">Hosting + domain + email + design in one package</p>
+        <span class="product-card-link">Explore Bundles &rarr;</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── 5. FEATURED PRICING ────────────────────────────────── -->
+  <section class="pricing-section" aria-labelledby="pricing-headline">
+    <div class="pricing-label">// starter pricing</div>
+    <h2 class="pricing-headline" id="pricing-headline">Prices that make sense. No gotchas.</h2>
+    <p style="font-family:var(--font-body);font-style:italic;font-size:1rem;color:rgba(245,245,240,0.45);max-width:560px;margin-bottom:2.5rem;line-height:1.7;">
+      All plans include custom nameservers and white-label support. No GoDaddy branding anywhere.
+    </p>
+
+    <BillingToggle />
+
+    <div class="card-deck">
+      <PricingCard
+        name="cPanel Starter"
+        price="$7"
+        period="/mo"
+        annualPrice="$5.60"
+        annualPeriod="/mo (billed annually)"
+        position="left"
+        features={[
+          "1 website",
+          "50GB SSD storage",
+          "cPanel control panel",
+          "1-click app installs",
+          "Custom nameservers",
+          "Free SSL",
+          "White-label 24/7 support"
+        ]}
+        ctaText="Start with Starter"
+        ctaHref="/hosting"
+      />
+
+      <PricingCard
+        name="Managed WordPress"
+        price="$12"
+        period="/mo"
+        annualPrice="$9.60"
+        annualPeriod="/mo (billed annually)"
+        badge="Most Popular"
+        position="center"
+        featured={true}
+        features={[
+          "1 WordPress site",
+          "30GB SSD storage",
+          "1-click WordPress install",
+          "Daily automated backups",
+          "Custom nameservers",
+          "Free SSL",
+          "24/7 white-label support"
+        ]}
+        ctaText="Get WordPress Hosting"
+        ctaHref="/wordpress"
+      />
+
+      <PricingCard
+        name="Web Hosting Plus"
+        price="$37"
+        period="/mo"
+        annualPrice="$29.60"
+        annualPeriod="/mo (billed annually)"
+        position="right"
+        features={[
+          "1 website",
+          "30GB NVMe SSD",
+          "Dedicated CPU allocation",
+          "Dedicated RAM",
+          "Custom nameservers",
+          "Free SSL",
+          "24/7 white-label support"
+        ]}
+        ctaText="Launch on VPS"
+        ctaHref="/servers"
+      />
+    </div>
+  </section>
+
+  <!-- ── 6. HOW IT WORKS ────────────────────────────────────── -->
+  <section class="how-it-works-section" aria-labelledby="how-headline">
+    <div class="section-label-sm">// how it works</div>
+    <h2 class="section-headline" id="how-headline">Up and running in 10 minutes.</h2>
+
+    <div class="how-step">
+      <div class="how-num">01</div>
+      <div>
+        <div class="how-title">Choose your plan</div>
+        <p class="how-desc">Pick from WordPress, cPanel, website builder, or dedicated server hosting. Every plan starts the same way.</p>
+      </div>
+    </div>
+
+    <div class="how-step">
+      <div class="how-num">02</div>
+      <div>
+        <div class="how-title">Register your domain</div>
+        <p class="how-desc">We handle the DNS. Custom nameservers point everything to ns1.famtastichosting.com and ns2.famtastichosting.com — your brand, not ours.</p>
+      </div>
+    </div>
+
+    <div class="how-step">
+      <div class="how-num">03</div>
+      <div>
+        <div class="how-title">We handle the setup</div>
+        <p class="how-desc">One-click installs, SSL provisioning, and server-side configuration are done for you. Call (480) 624-2500 if you need a hand.</p>
+      </div>
+    </div>
+
+    <div class="how-step">
+      <div class="how-num">04</div>
+      <div>
+        <div class="how-title">Go live, stay live</div>
+        <p class="how-desc">99.9% uptime SLA, daily backups on eligible plans, and 24/7 white-label support every step of the way.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 7. DESIGN BRIDGE ───────────────────────────────────── -->
+  <DesignBridge variant="default" />
+
+  <!-- ── 8. FAM THOUGHTS ────────────────────────────────────── -->
+  <FAMThoughts
+    headline="Learn how to grow your site — not just host it."
+    cta="Read FAMtastic Thoughts"
+    href="https://famtasticthoughts.com"
+  />
+
+</WildLayout>
