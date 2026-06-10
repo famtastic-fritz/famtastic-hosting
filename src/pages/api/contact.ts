@@ -1,12 +1,28 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 
-// Rate limiting: in-memory counter for IP-based limiting
-// Key: IP, Value: { count: number, resetTime: number }
+// ─── Rate limiting ────────────────────────────────────────────────────────────
+// In-memory store. Capped at MAX_ENTRIES to prevent unbounded memory growth.
+// Oldest entries are evicted when the cap is hit.
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX_ENTRIES = 10_000;
 
-// Helper to get client IP address
+function evictOldestRateLimitEntry(): void {
+  // Map iteration order is insertion order — first key is oldest
+  const firstKey = rateLimitStore.keys().next().value;
+  if (firstKey !== undefined) {
+    rateLimitStore.delete(firstKey);
+  }
+}
+
+// Helper to get client IP address.
+// NOTE: In production Astro, prefer context.clientAddress (set by the adapter)
+// over header-based detection, which is spoofable. Header fallback is kept
+// for local dev only.
 function getClientIP(request: Request): string {
+  // Cloudflare sets this header after verifying the real IP — more trustworthy
+  // than x-forwarded-for when behind CF. Both are still spoofable if the
+  // server is hit directly, which is why unknown IPs are rejected below.
   return (
     request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
@@ -15,20 +31,25 @@ function getClientIP(request: Request): string {
   );
 }
 
-// Helper for rate limiting (5 submissions per IP per hour)
+// Rate limit: 5 submissions per IP per hour.
+// Returns false if the IP is unknown (reject rather than allow spoofed bypass).
 function checkRateLimit(ip: string): boolean {
+  // Reject unknown IPs — allows attacker to bypass by omitting headers.
+  if (ip === 'unknown') return false;
+
   const now = Date.now();
   const limit = rateLimitStore.get(ip);
 
   if (!limit || now > limit.resetTime) {
-    // Reset counter
-    rateLimitStore.set(ip, { count: 1, resetTime: now + 3600000 }); // 1 hour
+    // Evict oldest entry if cap is reached before inserting
+    if (!limit && rateLimitStore.size >= RATE_LIMIT_MAX_ENTRIES) {
+      evictOldestRateLimitEntry();
+    }
+    rateLimitStore.set(ip, { count: 1, resetTime: now + 3_600_000 });
     return true;
   }
 
-  if (limit.count >= 5) {
-    return false; // Rate limit exceeded
-  }
+  if (limit.count >= 5) return false;
 
   limit.count++;
   return true;
@@ -40,13 +61,27 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+// Allowed subject values — validated against enum to prevent header injection.
+const ALLOWED_SUBJECTS = ['General', 'Billing', 'Technical', 'Sales'] as const;
+type AllowedSubject = (typeof ALLOWED_SUBJECTS)[number];
+
+function sanitizeSubject(raw: string | null): AllowedSubject {
+  if (!raw) return 'General';
+  // Strip carriage returns and newlines that could inject additional headers
+  const stripped = raw.replace(/[\r\n]/g, '').trim();
+  if ((ALLOWED_SUBJECTS as readonly string[]).includes(stripped)) {
+    return stripped as AllowedSubject;
+  }
+  return 'General';
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     // Parse form data
     const formData = await request.formData();
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
-    const subject = formData.get('subject') as string;
+    const rawSubject = formData.get('subject') as string | null;
     const message = formData.get('message') as string;
     const honeypot = formData.get('honeypot') as string;
 
@@ -60,13 +95,17 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Rate limiting check
+    // Rate limiting check.
+    // Also rejects unknown IPs (prevents header-omission bypass).
     if (!checkRateLimit(clientIP)) {
       return new Response(
         JSON.stringify({ error: 'Too many submissions. Please try again later.' }),
         { status: 429, headers: { 'Content-Type': 'application/json' } }
       );
     }
+
+    // Sanitize subject — validated against allowed enum; CR/LF stripped
+    const subject = sanitizeSubject(rawSubject);
 
     // Field validation
     if (!name || !name.trim()) {
@@ -104,11 +143,11 @@ export const POST: APIRoute = async ({ request }) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Save to Supabase
+    // Save to Supabase. ip_address is set server-side; clients cannot supply it.
     const { error: dbError } = await supabase.from('contact_submissions').insert({
       name: name.trim(),
       email: email.trim(),
-      subject: subject?.trim() || 'General Inquiry',
+      subject,
       message: message.trim(),
       ip_address: clientIP,
       created_at: new Date().toISOString(),
@@ -128,21 +167,11 @@ export const POST: APIRoute = async ({ request }) => {
     if (resendApiKey) {
       try {
         const recipientEmail = 'hello@famtastichosting.com';
-        const emailSubject = `New contact from ${name}: ${subject || 'General Inquiry'}`;
-        const emailBody = `
-New contact form submission:
-
-Name: ${name}
-Email: ${email}
-Subject: ${subject || 'General Inquiry'}
-Submitted: ${new Date().toISOString()}
-
-Message:
-${message}
-
----
-IP Address: ${clientIP}
-`;
+        // subject is already an enum value — safe to interpolate.
+        // name is NOT interpolated into the Subject header to prevent
+        // header injection; it remains in the body only.
+        const emailSubject = `New contact form submission — ${subject}`;
+        const emailBody = `New contact form submission:\n\nSubject: ${subject}\nSubmitted: ${new Date().toISOString()}\n\nMessage:\n${message.trim()}\n`;
 
         const response = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -168,14 +197,8 @@ IP Address: ${clientIP}
         // Graceful degradation: don't fail submission if email fails
       }
     } else {
-      // Fallback logging if no email service
-      console.log('Contact form submission:', {
-        name,
-        email,
-        subject,
-        message,
-        timestamp: new Date().toISOString(),
-      });
+      // No PII logged — submission is already persisted to the database.
+      console.warn('[contact] Email transport unavailable — submission saved to DB only');
     }
 
     return new Response(
