@@ -1,0 +1,345 @@
+---
+/**
+ * /admin/orders — Order management
+ *
+ * Full order history from GoDaddy /v1/orders with:
+ * - Date range filter
+ * - Product keyword search
+ * - Order detail: product, price, provisioning context
+ * - Export to CSV button (calls /api/admin/reports/revenue)
+ *
+ * Auth: requireAdmin()
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../lib/auth/middleware.js';
+
+const auth = await requireAdmin(Astro.request);
+if (auth instanceof Response) return auth;
+
+const url = new URL(Astro.request.url);
+const initialSearch = url.searchParams.get('search') ?? '';
+
+interface OrderItem {
+  label: string;
+  quantity: number;
+  unitPriceUSD: number;
+  period?: number;
+  periodUnit?: string;
+}
+
+interface OrderRow {
+  orderId: number;
+  createdAt: string;
+  totalUSD: number;
+  subtotalUSD: number;
+  taxesUSD: number;
+  itemCount: number;
+  items: OrderItem[];
+}
+
+let orders: OrderRow[] = [];
+let total = 0;
+let loadError = '';
+
+try {
+  const origin = new URL(Astro.request.url).origin;
+  const qs = initialSearch ? `?search=${encodeURIComponent(initialSearch)}` : '';
+  const res = await fetch(`${origin}/api/admin/orders${qs}&limit=50`, {
+    headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+  });
+  if (res.ok) {
+    const json = await res.json();
+    orders = json.data.orders;
+    total = json.data.total;
+  } else {
+    loadError = 'Unable to load orders — GoDaddy API credentials may not be configured.';
+  }
+} catch {
+  loadError = 'Unable to connect to GoDaddy orders service.';
+}
+---
+
+<DashboardLayout
+  title="Orders"
+  variant="admin"
+  currentPath="/admin/orders"
+  userName={auth.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h2 class="db-page-title">Orders</h2>
+        <p class="db-page-subtitle">
+          {total > 0 ? `${total.toLocaleString()} order${total === 1 ? '' : 's'} from GoDaddy` : 'GoDaddy order history'}
+        </p>
+      </div>
+      <div class="header-actions">
+        <a href="/api/admin/reports/revenue" class="db-btn db-btn--secondary db-btn--sm" download>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Export CSV
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {loadError && (
+    <div class="db-alert db-alert--warning" role="alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/>
+      </svg>
+      <span>{loadError}</span>
+    </div>
+  )}
+
+  <!-- Filters + Table -->
+  <div class="db-card db-card--flush">
+    <!-- Filter bar -->
+    <div class="db-table-controls">
+      <div class="db-table-controls__search">
+        <svg class="db-table-controls__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="search"
+          id="order-search"
+          placeholder="Search by order ID or product…"
+          value={initialSearch}
+          aria-label="Search orders"
+          autocomplete="off"
+        />
+      </div>
+      <div class="date-filters">
+        <label class="db-sr-only" for="date-start">From date</label>
+        <input
+          class="db-input date-input"
+          type="date"
+          id="date-start"
+          aria-label="Filter from date"
+        />
+        <span class="db-text-muted db-text-xs">to</span>
+        <label class="db-sr-only" for="date-end">To date</label>
+        <input
+          class="db-input date-input"
+          type="date"
+          id="date-end"
+          aria-label="Filter to date"
+        />
+      </div>
+      <span class="db-text-muted db-text-xs db-text-mono" id="order-count">
+        {orders.length} shown
+      </span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-scroll">
+      <table class="db-table" aria-label="Order list" id="orders-table">
+        <thead>
+          <tr>
+            <th scope="col">Order ID</th>
+            <th scope="col">Date</th>
+            <th scope="col">Products</th>
+            <th scope="col">Items</th>
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody">
+          {orders.length > 0 ? orders.map(order => (
+            <tr class="order-row" data-order-id={order.orderId}>
+              <td>
+                <span class="db-text-mono db-text-sm">#{order.orderId}</span>
+              </td>
+              <td>
+                <span class="db-text-secondary db-text-sm">
+                  {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </td>
+              <td>
+                <div class="product-labels">
+                  {order.items.slice(0, 2).map(item => (
+                    <span class="product-tag">{item.label}</span>
+                  ))}
+                  {order.items.length > 2 && (
+                    <span class="product-more">+{order.items.length - 2} more</span>
+                  )}
+                </div>
+              </td>
+              <td>
+                <span class="db-text-mono db-text-sm">{order.itemCount}</span>
+              </td>
+              <td>
+                <span class="db-text-heading order-total">${order.totalUSD.toFixed(2)}</span>
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colspan="5" class="db-table__empty">
+                {loadError ? 'Orders unavailable.' : (initialSearch ? `No orders matching "${initialSearch}"` : 'No orders found.')}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Support footer -->
+  <div class="support-footer db-mt-6">
+    <span class="db-text-muted db-text-xs">
+      Questions about an order? Call support:
+      <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+    </span>
+  </div>
+</DashboardLayout>
+
+<script>
+  const searchInput = document.getElementById('order-search') as HTMLInputElement;
+  const dateStart = document.getElementById('date-start') as HTMLInputElement;
+  const dateEnd = document.getElementById('date-end') as HTMLInputElement;
+  const tbody = document.getElementById('orders-tbody') as HTMLTableSectionElement;
+  const countEl = document.getElementById('order-count') as HTMLSpanElement;
+
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function renderOrders(orders: Array<{
+    orderId: number;
+    createdAt: string;
+    totalUSD: number;
+    itemCount: number;
+    items: Array<{ label: string; quantity: number }>;
+  }>) {
+    if (orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="db-table__empty">No orders found.</td></tr>';
+      countEl.textContent = '0 shown';
+      return;
+    }
+
+    tbody.innerHTML = orders.map(o => `
+      <tr class="order-row" data-order-id="${o.orderId}">
+        <td><span class="db-text-mono db-text-sm">#${o.orderId}</span></td>
+        <td><span class="db-text-secondary db-text-sm">${new Date(o.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></td>
+        <td>
+          <div class="product-labels">
+            ${o.items.slice(0, 2).map(i => `<span class="product-tag">${escHtml(i.label)}</span>`).join('')}
+            ${o.items.length > 2 ? `<span class="product-more">+${o.items.length - 2} more</span>` : ''}
+          </div>
+        </td>
+        <td><span class="db-text-mono db-text-sm">${o.itemCount}</span></td>
+        <td><span class="db-text-heading order-total">$${o.totalUSD.toFixed(2)}</span></td>
+      </tr>
+    `).join('');
+
+    countEl.textContent = `${orders.length} shown`;
+  }
+
+  function escHtml(s: string): string {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function fetchOrders() {
+    const params = new URLSearchParams({ limit: '50' });
+    const search = searchInput?.value.trim();
+    if (search) params.set('search', search);
+    if (dateStart?.value) params.set('dateStart', new Date(dateStart.value).toISOString());
+    if (dateEnd?.value) {
+      const end = new Date(dateEnd.value);
+      end.setHours(23, 59, 59, 999);
+      params.set('dateEnd', end.toISOString());
+    }
+
+    try {
+      const res = await fetch(`/api/admin/orders?${params.toString()}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      renderOrders(json.data.orders);
+    } catch {
+      // Keep existing rows
+    }
+  }
+
+  function triggerDebounced() {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(fetchOrders, 350);
+  }
+
+  searchInput?.addEventListener('input', triggerDebounced);
+  dateStart?.addEventListener('change', fetchOrders);
+  dateEnd?.addEventListener('change', fetchOrders);
+</script>
+
+<style>
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .table-scroll { overflow-x: auto; }
+
+  .date-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .date-input {
+    width: 140px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .product-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    max-width: 280px;
+  }
+
+  .product-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--db-bg-input);
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius-sm);
+    font-size: 0.72rem;
+    color: var(--db-text-secondary);
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .product-more {
+    font-size: 0.72rem;
+    color: var(--db-text-muted);
+    font-family: var(--db-font-mono);
+    padding: 2px 0;
+  }
+
+  .order-total {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  .support-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .support-link {
+    color: var(--db-violet-light);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .support-link:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .date-filters { flex-wrap: wrap; }
+    .date-input { width: 120px; }
+  }
+</style>

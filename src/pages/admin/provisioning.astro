@@ -1,0 +1,295 @@
+---
+/**
+ * /admin/provisioning — Provisioning status
+ *
+ * Shows recent GoDaddy orders with age-based "stale" flagging.
+ * Orders older than 24 hours are highlighted for review.
+ * Manual refresh button re-fetches from GoDaddy with skipCache=1.
+ *
+ * Auth: requireAdmin()
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../lib/auth/middleware.js';
+
+const auth = await requireAdmin(Astro.request);
+if (auth instanceof Response) return auth;
+
+interface ProvisioningOrder {
+  orderId: number;
+  createdAt: string;
+  totalUSD: number;
+  ageHours: number;
+  isStale: boolean;
+  status: 'ok' | 'review';
+  items: Array<{ label: string; quantity: number; unitPriceUSD: number; period?: number; periodUnit?: string }>;
+}
+
+let orders: ProvisioningOrder[] = [];
+let staleCount = 0;
+let total = 0;
+let loadError = '';
+
+try {
+  const origin = new URL(Astro.request.url).origin;
+  const res = await fetch(`${origin}/api/admin/provisioning?limit=50`, {
+    headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+  });
+  if (res.ok) {
+    const json = await res.json();
+    orders = json.data.orders;
+    staleCount = json.data.staleCount;
+    total = json.data.total;
+  } else {
+    loadError = 'Unable to load provisioning status — GoDaddy API may not be configured.';
+  }
+} catch {
+  loadError = 'Unable to connect to provisioning service.';
+}
+---
+
+<DashboardLayout
+  title="Provisioning"
+  variant="admin"
+  currentPath="/admin/provisioning"
+  userName={auth.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h2 class="db-page-title">Provisioning Status</h2>
+        <p class="db-page-subtitle">
+          {staleCount > 0
+            ? `${staleCount} order${staleCount !== 1 ? 's' : ''} need review (older than 24h)`
+            : 'All recent orders are within normal provisioning time'}
+        </p>
+      </div>
+      <button class="db-btn db-btn--secondary db-btn--sm" id="refresh-btn" aria-label="Refresh provisioning status from GoDaddy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+        Refresh from GoDaddy
+      </button>
+    </div>
+  </div>
+
+  {loadError && (
+    <div class="db-alert db-alert--warning" role="alert">
+      <span>{loadError}</span>
+    </div>
+  )}
+
+  {staleCount > 0 && !loadError && (
+    <div class="db-alert db-alert--warning" role="alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/>
+      </svg>
+      <span>
+        <strong>{staleCount} order{staleCount !== 1 ? 's' : ''}</strong> are older than 24 hours and may need manual review in the GoDaddy reseller panel. Call (480) 624-2500 if a customer reports a provisioning issue.
+      </span>
+    </div>
+  )}
+
+  <!-- Provisioning table -->
+  <div class="db-card db-card--flush" id="provisioning-table-wrap">
+    <div style="overflow-x:auto;">
+      <table class="db-table" aria-label="Provisioning status" id="prov-table">
+        <thead>
+          <tr>
+            <th scope="col">Order ID</th>
+            <th scope="col">Created</th>
+            <th scope="col">Age</th>
+            <th scope="col">Products</th>
+            <th scope="col">Total</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="prov-tbody">
+          {orders.length > 0 ? orders.map(order => (
+            <tr class={order.isStale ? 'stale-row' : ''}>
+              <td>
+                <span class="db-text-mono db-text-sm">#{order.orderId}</span>
+              </td>
+              <td>
+                <span class="db-text-secondary db-text-sm">
+                  {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </td>
+              <td>
+                <span class={`db-text-mono db-text-sm ${order.isStale ? 'stale-age' : ''}`}>
+                  {order.ageHours < 1
+                    ? `${Math.round(order.ageHours * 60)}m`
+                    : order.ageHours < 24
+                    ? `${Math.round(order.ageHours)}h`
+                    : `${Math.round(order.ageHours / 24)}d`}
+                </span>
+              </td>
+              <td>
+                <div class="product-labels">
+                  {order.items.slice(0, 2).map(item => (
+                    <span class="product-tag">{item.label}</span>
+                  ))}
+                  {order.items.length > 2 && (
+                    <span class="product-more">+{order.items.length - 2}</span>
+                  )}
+                </div>
+              </td>
+              <td>
+                <span class="db-text-heading" style="font-weight:600;">${order.totalUSD.toFixed(2)}</span>
+              </td>
+              <td>
+                {order.isStale ? (
+                  <span class="db-badge db-badge--expiring">Review</span>
+                ) : (
+                  <span class="db-badge db-badge--active">OK</span>
+                )}
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colspan="6" class="db-table__empty">
+                {loadError ? 'Data unavailable.' : 'No recent orders.'}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Support footer -->
+  <div class="support-footer db-mt-6">
+    <a href="tel:+14806242500" class="support-phone">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/>
+      </svg>
+      GoDaddy white-label support: (480) 624-2500
+    </a>
+  </div>
+</DashboardLayout>
+
+<script>
+  // Refresh button — re-fetches with skipCache=1
+  const refreshBtn = document.getElementById('refresh-btn') as HTMLButtonElement;
+  const tbody = document.getElementById('prov-tbody') as HTMLTableSectionElement;
+
+  function escHtml(s: string): string {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatAge(hours: number): string {
+    if (hours < 1) return `${Math.round(hours * 60)}m`;
+    if (hours < 24) return `${Math.round(hours)}h`;
+    return `${Math.round(hours / 24)}d`;
+  }
+
+  refreshBtn?.addEventListener('click', async () => {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = 'Refreshing…';
+
+    try {
+      const res = await fetch('/api/admin/provisioning?limit=50&skipCache=1');
+      if (!res.ok) throw new Error('API error');
+      const json = await res.json();
+      const { orders } = json.data;
+
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="db-table__empty">No recent orders.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map((o: {
+        orderId: number;
+        createdAt: string;
+        totalUSD: number;
+        ageHours: number;
+        isStale: boolean;
+        items: Array<{ label: string }>;
+      }) => `
+        <tr class="${o.isStale ? 'stale-row' : ''}">
+          <td><span class="db-text-mono db-text-sm">#${o.orderId}</span></td>
+          <td><span class="db-text-secondary db-text-sm">${new Date(o.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></td>
+          <td><span class="db-text-mono db-text-sm ${o.isStale ? 'stale-age' : ''}">${formatAge(o.ageHours)}</span></td>
+          <td>
+            <div class="product-labels">
+              ${o.items.slice(0,2).map(i => `<span class="product-tag">${escHtml(i.label)}</span>`).join('')}
+              ${o.items.length > 2 ? `<span class="product-more">+${o.items.length - 2}</span>` : ''}
+            </div>
+          </td>
+          <td><span class="db-text-heading" style="font-weight:600;">$${o.totalUSD.toFixed(2)}</span></td>
+          <td>${o.isStale ? '<span class="db-badge db-badge--expiring">Review</span>' : '<span class="db-badge db-badge--active">OK</span>'}</td>
+        </tr>
+      `).join('');
+    } catch {
+      tbody.innerHTML = '<tr><td colspan="6" class="db-table__empty">Refresh failed — try again.</td></tr>';
+    } finally {
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+        Refresh from GoDaddy`;
+    }
+  });
+</script>
+
+<style>
+  .stale-row {
+    background: rgba(245, 158, 11, 0.04);
+  }
+
+  .stale-row:hover {
+    background: rgba(245, 158, 11, 0.07) !important;
+  }
+
+  .stale-age {
+    color: var(--db-status-warning);
+  }
+
+  .product-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .product-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--db-bg-input);
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius-sm);
+    font-size: 0.72rem;
+    color: var(--db-text-secondary);
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .product-more {
+    font-size: 0.72rem;
+    color: var(--db-text-muted);
+    font-family: var(--db-font-mono);
+    padding: 2px 0;
+  }
+
+  .support-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .support-phone {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--db-status-active);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .support-phone:hover {
+    text-decoration: underline;
+  }
+</style>

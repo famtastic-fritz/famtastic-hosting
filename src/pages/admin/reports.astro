@@ -1,0 +1,248 @@
+---
+/**
+ * /admin/reports — Reports and CSV exports
+ *
+ * Download buttons that call:
+ *   /api/admin/reports/revenue   → monthly revenue CSV
+ *   /api/admin/reports/customers → customer list CSV
+ *
+ * Auth: requireAdmin()
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../lib/auth/middleware.js';
+
+const auth = await requireAdmin(Astro.request);
+if (auth instanceof Response) return auth;
+
+const now = new Date();
+const currentMonth = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+---
+
+<DashboardLayout
+  title="Reports"
+  variant="admin"
+  currentPath="/admin/reports"
+  userName={auth.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h2 class="db-page-title">Reports</h2>
+        <p class="db-page-subtitle">Export revenue and customer data to CSV for accounting, analysis, or records.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Reports -->
+  <div class="db-section">
+    <h3 class="db-section-title">Revenue Reports</h3>
+    <div class="db-grid db-grid--2">
+
+      <!-- MTD Revenue -->
+      <div class="db-card report-card">
+        <div class="db-card__header">
+          <div class="db-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+          </div>
+          <h4 class="db-card__title">Monthly Revenue Export</h4>
+        </div>
+        <p class="db-card__subtitle">
+          GoDaddy order history for the last 12 months. Includes order ID, date, product labels, and USD totals.
+        </p>
+        <div class="db-card__actions">
+          <a
+            href="/api/admin/reports/revenue"
+            class="db-btn db-btn--primary"
+            download
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Download Revenue CSV
+          </a>
+          <a
+            href="/api/admin/reports/revenue?months=3"
+            class="db-btn db-btn--secondary"
+            download
+          >
+            Last 3 months
+          </a>
+        </div>
+      </div>
+
+      <!-- Revenue by Period placeholder -->
+      <div class="db-card report-card">
+        <div class="db-card__header">
+          <div class="db-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+          </div>
+          <h4 class="db-card__title">Revenue This Month</h4>
+        </div>
+        <p class="db-card__subtitle">
+          Orders from {currentMonth} only. Useful for monthly bookkeeping and tax tracking.
+        </p>
+        <div class="db-card__actions">
+          <a
+            href="/api/admin/reports/revenue?months=1"
+            class="db-btn db-btn--primary"
+            download
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Download {currentMonth}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Reports -->
+  <div class="db-section">
+    <h3 class="db-section-title">Customer Reports</h3>
+    <div class="db-grid db-grid--2">
+
+      <!-- Full customer list -->
+      <div class="db-card report-card">
+        <div class="db-card__header">
+          <div class="db-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </div>
+          <h4 class="db-card__title">Customer List Export</h4>
+        </div>
+        <p class="db-card__subtitle">
+          All registered customers with email, join date, active subscriptions, order count, and total spend.
+        </p>
+        <div class="db-card__actions">
+          <a
+            href="/api/admin/reports/customers"
+            class="db-btn db-btn--primary"
+            download
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Download Customer CSV
+          </a>
+        </div>
+      </div>
+
+      <!-- Placeholder for future reports -->
+      <div class="db-card report-card report-card--coming-soon">
+        <div class="db-card__header">
+          <div class="db-card__icon icon--muted">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <h4 class="db-card__title">Churn & Renewal Report</h4>
+        </div>
+        <p class="db-card__subtitle">
+          Upcoming renewals, expired subscriptions, and churn rate analysis. Coming in Phase 2.1.
+        </p>
+        <div class="db-card__actions">
+          <span class="db-badge db-badge--neutral">Coming soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes on data sources -->
+  <div class="db-card notes-card db-mt-4">
+    <h4 class="db-card__title db-mb-4" style="font-size:0.875rem;">About Report Data</h4>
+    <ul class="notes-list">
+      <li>Revenue data comes directly from GoDaddy <code>/v1/orders</code> API — prices are converted from microdollars to USD.</li>
+      <li>Customer data comes from the FAMtastic Hosting Supabase database. Customers are added via GoDaddy postback after purchase.</li>
+      <li>All exports are generated in real-time. Download the same report twice to get the latest data.</li>
+      <li>GoDaddy processes all payments — FAMtastic Hosting never stores PCI data.</li>
+    </ul>
+  </div>
+
+  <!-- Support footer -->
+  <div class="support-footer db-mt-6">
+    <span class="db-text-muted db-text-xs">
+      Billing questions? GoDaddy white-label support:
+      <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+    </span>
+  </div>
+</DashboardLayout>
+
+<style>
+  .report-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .report-card .db-card__subtitle {
+    flex: 1;
+    margin-bottom: var(--db-sp-2);
+  }
+
+  .report-card--coming-soon {
+    opacity: 0.65;
+  }
+
+  .icon--muted .db-card__icon {
+    background: var(--db-bg-input);
+    color: var(--db-text-muted);
+  }
+
+  .notes-card {
+    background: rgba(124, 58, 237, 0.04);
+    border-color: rgba(124, 58, 237, 0.15);
+  }
+
+  .notes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .notes-list li {
+    font-size: 0.8125rem;
+    color: var(--db-text-secondary);
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .notes-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--db-text-muted);
+  }
+
+  .notes-list code {
+    font-family: var(--db-font-mono);
+    font-size: 0.78rem;
+    background: var(--db-bg-input);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--db-violet-light);
+  }
+
+  .support-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .support-link {
+    color: var(--db-violet-light);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .support-link:hover { text-decoration: underline; }
+</style>

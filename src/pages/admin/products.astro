@@ -1,0 +1,368 @@
+---
+/**
+ * /admin/products — Product catalog management
+ *
+ * Lists all products with wholesale price, retail price, markup %.
+ * Inline editing: click the retail price to update via
+ *   PATCH /api/admin/products/:id
+ * Toggle active/inactive per product.
+ *
+ * Data source: Supabase products table (seeded by Track 7).
+ *
+ * Auth: requireAdmin()
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../lib/auth/middleware.js';
+
+const auth = await requireAdmin(Astro.request);
+if (auth instanceof Response) return auth;
+
+interface ProductRow {
+  id: string;
+  name: string;
+  category: string;
+  godaddy_product_id: string | null;
+  wholesalePriceUSD: string;
+  retailPriceUSD: string;
+  markupPct: number;
+  active: boolean;
+  updated_at: string;
+}
+
+let products: ProductRow[] = [];
+let loadError = '';
+
+try {
+  const origin = new URL(Astro.request.url).origin;
+  const res = await fetch(`${origin}/api/admin/products`, {
+    headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+  });
+  if (res.ok) {
+    const json = await res.json();
+    products = json.data.products;
+  } else {
+    loadError = 'Failed to load product catalog.';
+  }
+} catch {
+  loadError = 'Unable to connect to data service.';
+}
+
+// Group products by category
+const byCategory = products.reduce<Record<string, ProductRow[]>>((acc, p) => {
+  if (!acc[p.category]) acc[p.category] = [];
+  acc[p.category].push(p);
+  return acc;
+}, {});
+
+const categoryOrder = ['hosting', 'wordpress', 'builder', 'server', 'domain', 'email', 'ssl', 'security', 'bundle'];
+const sortedCategories = [
+  ...categoryOrder.filter(c => byCategory[c]),
+  ...Object.keys(byCategory).filter(c => !categoryOrder.includes(c)),
+];
+---
+
+<DashboardLayout
+  title="Products"
+  variant="admin"
+  currentPath="/admin/products"
+  userName={auth.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h2 class="db-page-title">Product Catalog</h2>
+        <p class="db-page-subtitle">
+          {products.length} product{products.length !== 1 ? 's' : ''} — click a retail price to edit markup inline
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {loadError && (
+    <div class="db-alert db-alert--danger" role="alert">
+      <span>{loadError}</span>
+    </div>
+  )}
+
+  <!-- Save feedback toast -->
+  <div class="save-toast" id="save-toast" role="status" aria-live="polite" hidden></div>
+
+  {sortedCategories.map(category => (
+    <div class="db-section">
+      <h3 class="db-section-title">{category}</h3>
+      <div class="db-card db-card--flush">
+        <table class="db-table" aria-label={`${category} products`}>
+          <thead>
+            <tr>
+              <th scope="col">Product</th>
+              <th scope="col">Wholesale</th>
+              <th scope="col">Retail Price</th>
+              <th scope="col">Markup</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {byCategory[category].map(product => (
+              <tr class="product-row" data-id={product.id} data-active={product.active}>
+                <td>
+                  <div class="product-name-cell">
+                    <span class="product-name">{product.name}</span>
+                    {product.godaddy_product_id && (
+                      <span class="db-text-mono db-text-xs db-text-muted">GD#{product.godaddy_product_id}</span>
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <span class="db-text-mono db-text-sm db-text-muted">${product.wholesalePriceUSD}</span>
+                </td>
+                <td>
+                  <div class="retail-cell">
+                    <span
+                      class="retail-price"
+                      contenteditable="true"
+                      role="textbox"
+                      aria-label={`Retail price for ${product.name}`}
+                      data-original={product.retailPriceUSD}
+                      title="Click to edit"
+                    >${product.retailPriceUSD}</span>
+                    <button class="save-price-btn db-btn db-btn--sm db-btn--primary" hidden>Save</button>
+                    <button class="cancel-price-btn db-btn db-btn--sm db-btn--ghost" hidden>✕</button>
+                  </div>
+                </td>
+                <td>
+                  <span class={`db-badge ${product.markupPct >= 150 ? 'db-badge--active' : product.markupPct >= 100 ? 'db-badge--pending' : 'db-badge--expiring'} markup-badge`}>
+                    {product.markupPct}%
+                  </span>
+                </td>
+                <td>
+                  <button
+                    class={`db-btn db-btn--sm ${product.active ? 'db-btn--danger' : 'db-btn--secondary'} toggle-btn`}
+                    aria-label={product.active ? `Deactivate ${product.name}` : `Activate ${product.name}`}
+                    title={product.active ? 'Click to deactivate' : 'Click to activate'}
+                  >
+                    {product.active ? 'Active' : 'Inactive'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ))}
+
+  {products.length === 0 && !loadError && (
+    <div class="db-card">
+      <p class="db-text-muted db-text-sm">
+        No products in the catalog yet. Run the Supabase seed migration to populate products from BUILD-SPEC.md pricing.
+      </p>
+    </div>
+  )}
+
+  <!-- Support footer -->
+  <div class="support-footer db-mt-6">
+    <span class="db-text-muted db-text-xs">
+      Need help with pricing? Call:
+      <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+    </span>
+  </div>
+</DashboardLayout>
+
+<script>
+  // Inline retail price editing
+  // Save = PATCH /api/admin/products/:id { retail_price: cents }
+  // Toggle = PATCH /api/admin/products/:id { active: bool }
+
+  const toast = document.getElementById('save-toast') as HTMLDivElement;
+
+  function showToast(msg: string, type: 'success' | 'error' = 'success') {
+    toast.textContent = msg;
+    toast.className = `save-toast save-toast--${type}`;
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, 3000);
+  }
+
+  async function patchProduct(id: string, payload: Record<string, unknown>) {
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const json = await res.json();
+      throw new Error(json.error ?? 'Update failed');
+    }
+    return res.json();
+  }
+
+  document.querySelectorAll<HTMLTableRowElement>('.product-row').forEach(row => {
+    const id = row.dataset.id!;
+    const retailSpan = row.querySelector<HTMLSpanElement>('.retail-price')!;
+    const saveBtn = row.querySelector<HTMLButtonElement>('.save-price-btn')!;
+    const cancelBtn = row.querySelector<HTMLButtonElement>('.cancel-price-btn')!;
+    const toggleBtn = row.querySelector<HTMLButtonElement>('.toggle-btn')!;
+    const markupBadge = row.querySelector<HTMLSpanElement>('.markup-badge')!;
+
+    // Show save/cancel when editing price
+    retailSpan.addEventListener('focus', () => {
+      saveBtn.hidden = false;
+      cancelBtn.hidden = false;
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      retailSpan.textContent = `$${retailSpan.dataset.original}`;
+      saveBtn.hidden = true;
+      cancelBtn.hidden = true;
+      retailSpan.blur();
+    });
+
+    saveBtn.addEventListener('click', async () => {
+      const raw = retailSpan.textContent?.replace(/[$,]/g, '').trim() ?? '';
+      const dollars = parseFloat(raw);
+      if (isNaN(dollars) || dollars < 0) {
+        showToast('Invalid price — enter a number like 12.99', 'error');
+        return;
+      }
+
+      const cents = Math.round(dollars * 100);
+      saveBtn.disabled = true;
+      saveBtn.textContent = '…';
+
+      try {
+        const json = await patchProduct(id, { retail_price: cents });
+        const updated = json.data.product;
+
+        retailSpan.dataset.original = updated.retailPriceUSD;
+        retailSpan.textContent = `$${updated.retailPriceUSD}`;
+        markupBadge.textContent = `${updated.markupPct}%`;
+        showToast(`Price updated to $${updated.retailPriceUSD}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Update failed';
+        showToast(msg, 'error');
+        retailSpan.textContent = `$${retailSpan.dataset.original}`;
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+        saveBtn.hidden = true;
+        cancelBtn.hidden = true;
+      }
+    });
+
+    // Handle Enter/Escape in editable span
+    retailSpan.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); saveBtn.click(); }
+      if (e.key === 'Escape') { cancelBtn.click(); }
+    });
+
+    // Toggle active/inactive
+    let isActive = row.dataset.active === 'true';
+
+    toggleBtn.addEventListener('click', async () => {
+      toggleBtn.disabled = true;
+      const next = !isActive;
+
+      try {
+        const json = await patchProduct(id, { active: next });
+        const updated = json.data.product;
+
+        isActive = updated.active;
+        row.dataset.active = String(isActive);
+        toggleBtn.textContent = isActive ? 'Active' : 'Inactive';
+        toggleBtn.className = `db-btn db-btn--sm ${isActive ? 'db-btn--danger' : 'db-btn--secondary'} toggle-btn`;
+        showToast(`Product ${isActive ? 'activated' : 'deactivated'}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Toggle failed';
+        showToast(msg, 'error');
+      } finally {
+        toggleBtn.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .product-name-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .product-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--db-text-primary);
+  }
+
+  /* Inline retail price editing */
+  .retail-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .retail-price {
+    font-family: var(--db-font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--db-text-primary);
+    border-radius: var(--db-radius-sm);
+    padding: 2px 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    outline: none;
+    min-width: 60px;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+
+  .retail-price:hover {
+    border-color: var(--db-border-input);
+    background: var(--db-bg-input);
+  }
+
+  .retail-price:focus {
+    border-color: var(--db-violet);
+    background: var(--db-bg-input);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  }
+
+  /* Toast notification */
+  .save-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.625rem 1.125rem;
+    border-radius: var(--db-radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: var(--db-shadow-lg);
+  }
+
+  .save-toast--success {
+    background: var(--db-status-active-bg);
+    border: 1px solid var(--db-status-active);
+    color: var(--db-status-active);
+  }
+
+  .save-toast--error {
+    background: var(--db-status-danger-bg);
+    border: 1px solid var(--db-status-danger);
+    color: var(--db-status-danger);
+  }
+
+  .support-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .support-link {
+    color: var(--db-violet-light);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .support-link:hover { text-decoration: underline; }
+</style>

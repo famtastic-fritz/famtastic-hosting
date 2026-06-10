@@ -1,0 +1,260 @@
+---
+/**
+ * /admin/customers — Customer management
+ *
+ * Searchable customer list with: email, domains/subscription count,
+ * active plans, total spend, created date.
+ * Data from Supabase users table via /api/admin/customers.
+ *
+ * Auth: requireAdmin()
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../lib/auth/middleware.js';
+
+const auth = await requireAdmin(Astro.request);
+if (auth instanceof Response) return auth;
+
+// Read initial search from query string (for server-rendered first load)
+const url = new URL(Astro.request.url);
+const initialSearch = url.searchParams.get('search') ?? '';
+
+interface CustomerRow {
+  id: string;
+  email: string;
+  godaddy_shopper_id: string | null;
+  created_at: string;
+  activeSubscriptions: number;
+  orderCount: number;
+  totalSpendUSD: string;
+}
+
+let customers: CustomerRow[] = [];
+let total = 0;
+let loadError = '';
+
+try {
+  const origin = new URL(Astro.request.url).origin;
+  const qs = initialSearch ? `?search=${encodeURIComponent(initialSearch)}` : '';
+  const res = await fetch(`${origin}/api/admin/customers${qs}&limit=50`, {
+    headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+  });
+  if (res.ok) {
+    const json = await res.json();
+    customers = json.data.customers;
+    total = json.data.total;
+  } else {
+    loadError = 'Failed to load customer list.';
+  }
+} catch {
+  loadError = 'Unable to connect to data service.';
+}
+---
+
+<DashboardLayout
+  title="Customers"
+  variant="admin"
+  currentPath="/admin/customers"
+  userName={auth.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h2 class="db-page-title">Customers</h2>
+        <p class="db-page-subtitle">
+          {total > 0 ? `${total.toLocaleString()} customer${total === 1 ? '' : 's'} registered` : 'Manage your customer accounts'}
+        </p>
+      </div>
+      <a href="/admin/reports" class="db-btn db-btn--secondary db-btn--sm">
+        Export CSV
+      </a>
+    </div>
+  </div>
+
+  {loadError && (
+    <div class="db-alert db-alert--danger" role="alert">
+      <span>{loadError}</span>
+    </div>
+  )}
+
+  <!-- Search + Table -->
+  <div class="db-card db-card--flush">
+    <!-- Search bar -->
+    <div class="db-table-controls">
+      <div class="db-table-controls__search">
+        <svg class="db-table-controls__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="search"
+          id="customer-search"
+          placeholder="Search by email…"
+          value={initialSearch}
+          aria-label="Search customers by email"
+          autocomplete="off"
+        />
+      </div>
+      <span class="db-text-muted db-text-xs db-text-mono" id="result-count">
+        {customers.length} result{customers.length === 1 ? '' : 's'}
+      </span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-scroll">
+      <table class="db-table" aria-label="Customer list" id="customers-table">
+        <thead>
+          <tr>
+            <th scope="col">Email</th>
+            <th scope="col">Active Plans</th>
+            <th scope="col">Orders</th>
+            <th scope="col">Total Spend</th>
+            <th scope="col">Member Since</th>
+            <th scope="col">Shopper ID</th>
+          </tr>
+        </thead>
+        <tbody id="customers-tbody">
+          {customers.length > 0 ? customers.map(customer => (
+            <tr>
+              <td>
+                <span class="customer-email db-truncate">{customer.email}</span>
+              </td>
+              <td>
+                {customer.activeSubscriptions > 0 ? (
+                  <span class="db-badge db-badge--active">{customer.activeSubscriptions} active</span>
+                ) : (
+                  <span class="db-badge db-badge--neutral">none</span>
+                )}
+              </td>
+              <td>
+                <span class="db-text-mono db-text-sm">{customer.orderCount}</span>
+              </td>
+              <td>
+                <span class="db-text-heading" style="font-weight:600;">${customer.totalSpendUSD}</span>
+              </td>
+              <td>
+                <span class="db-text-secondary db-text-sm">
+                  {new Date(customer.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </td>
+              <td>
+                {customer.godaddy_shopper_id ? (
+                  <span class="db-text-mono db-text-xs db-text-muted">{customer.godaddy_shopper_id}</span>
+                ) : (
+                  <span class="db-text-muted db-text-xs">—</span>
+                )}
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colspan="6" class="db-table__empty">
+                {loadError ? 'Error loading customers.' : (initialSearch ? `No customers matching "${initialSearch}"` : 'No customers registered yet.')}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Support footer -->
+  <div class="support-footer db-mt-6">
+    <span class="db-text-muted db-text-xs">
+      Need to reach a customer? Call FAMtastic Hosting support:
+      <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+    </span>
+  </div>
+</DashboardLayout>
+
+<script>
+  // Client-side search — debounced fetch to /api/admin/customers
+  const searchInput = document.getElementById('customer-search') as HTMLInputElement;
+  const tbody = document.getElementById('customers-tbody') as HTMLTableSectionElement;
+  const countEl = document.getElementById('result-count') as HTMLSpanElement;
+
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function renderRows(customers: Array<{
+    id: string;
+    email: string;
+    godaddy_shopper_id: string | null;
+    created_at: string;
+    activeSubscriptions: number;
+    orderCount: number;
+    totalSpendUSD: string;
+  }>) {
+    if (customers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="db-table__empty">No customers found.</td></tr>';
+      countEl.textContent = '0 results';
+      return;
+    }
+
+    tbody.innerHTML = customers.map(c => `
+      <tr>
+        <td><span class="customer-email db-truncate">${escHtml(c.email)}</span></td>
+        <td>
+          ${c.activeSubscriptions > 0
+            ? `<span class="db-badge db-badge--active">${c.activeSubscriptions} active</span>`
+            : `<span class="db-badge db-badge--neutral">none</span>`}
+        </td>
+        <td><span class="db-text-mono db-text-sm">${c.orderCount}</span></td>
+        <td><span class="db-text-heading" style="font-weight:600;">$${c.totalSpendUSD}</span></td>
+        <td><span class="db-text-secondary db-text-sm">${new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></td>
+        <td>${c.godaddy_shopper_id
+          ? `<span class="db-text-mono db-text-xs db-text-muted">${escHtml(c.godaddy_shopper_id)}</span>`
+          : `<span class="db-text-muted db-text-xs">—</span>`}</td>
+      </tr>
+    `).join('');
+
+    countEl.textContent = `${customers.length} result${customers.length === 1 ? '' : 's'}`;
+  }
+
+  function escHtml(s: string): string {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function fetchCustomers(search: string) {
+    try {
+      const qs = search ? `?search=${encodeURIComponent(search)}&limit=50` : '?limit=50';
+      const res = await fetch(`/api/admin/customers${qs}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      renderRows(json.data.customers);
+    } catch {
+      // Silent — keep showing existing rows
+    }
+  }
+
+  searchInput?.addEventListener('input', () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      fetchCustomers(searchInput.value.trim());
+    }, 350);
+  });
+</script>
+
+<style>
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .customer-email {
+    font-size: 0.875rem;
+    max-width: 220px;
+    display: block;
+  }
+
+  .support-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .support-link {
+    color: var(--db-violet-light);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .support-link:hover { text-decoration: underline; }
+</style>
