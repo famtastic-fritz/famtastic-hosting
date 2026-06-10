@@ -31,10 +31,14 @@ create policy "Admins can update submissions"
     (select role from public.users where id = auth.uid()) = 'admin'
   );
 
--- Anyone can insert (public form)
+-- Anyone can insert (public form).
+-- WITH CHECK prevents callers from pre-setting admin-only columns.
 create policy "Public can submit contact form"
   on public.contact_submissions for insert
-  with check (true);
+  with check (resolved is not true and resolved_at is null and ip_address is null);
+
+-- Prevent anon/authenticated callers from supplying admin-managed columns at all.
+revoke insert (resolved, resolved_at, ip_address, created_at) on public.contact_submissions from anon, authenticated;
 
 -- Create indexes for fast lookups
 create index idx_contact_submissions_email on public.contact_submissions(email);

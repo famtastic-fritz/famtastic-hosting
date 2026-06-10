@@ -17,27 +17,26 @@ create table if not exists public.subscriptions (
 -- Enable RLS
 alter table public.subscriptions enable row level security;
 
--- Customers can only see their own subscriptions
+-- Customers can only see their own subscriptions; admins see all.
 create policy "Customers see only their own subscriptions"
   on public.subscriptions for select
   using (
     auth.uid() = user_id
-    or (
-      select role from public.users where id = auth.uid()
-    ) = 'admin'
+    or public.is_admin()
   );
 
--- Admins can see all subscriptions
-create policy "Admins can see all subscriptions"
-  on public.subscriptions for select
-  using (
-    (select role from public.users where id = auth.uid()) = 'admin'
-  );
-
--- Customers can update their own subscription (e.g., toggle auto_renew)
+-- Customers can update their own subscription rows.
+-- WITH CHECK prevents moving the row to another user.
+-- Column-level grant below restricts WHICH columns customers may touch.
 create policy "Customers can update their own subscriptions"
   on public.subscriptions for update
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- Strip all UPDATE access from authenticated role, then grant only safe columns.
+-- This prevents customers from changing status, product_id, or any billing field.
+revoke update on public.subscriptions from authenticated;
+grant update (auto_renew, updated_at) on public.subscriptions to authenticated;
 
 -- Create indexes for fast lookups
 create index idx_subscriptions_user_id on public.subscriptions(user_id);

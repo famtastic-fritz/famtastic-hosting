@@ -14,32 +14,40 @@ create table if not exists public.users (
 -- Enable RLS
 alter table public.users enable row level security;
 
--- Customers can only see their own row
-create policy "Customers see only their own user record"
+-- SECURITY DEFINER helper to check admin status without triggering RLS recursion.
+-- Runs as the definer (postgres superuser) so it bypasses RLS on the users table.
+create or replace function public.is_admin()
+  returns boolean language sql stable security definer
+  set search_path = public as $$
+    select exists (select 1 from public.users where id = auth.uid() and role = 'admin');
+  $$;
+
+-- Customers can only see their own row; admins see all rows via is_admin().
+-- Single policy replaces the previous two to avoid duplicate-policy conflicts.
+create policy "Users see their own record, admins see all"
   on public.users for select
   using (
     auth.uid() = id
-    or (
-      select role from public.users where id = auth.uid()
-    ) = 'admin'
+    or public.is_admin()
   );
 
--- Admins can see all users
-create policy "Admins can see all users"
-  on public.users for select
-  using (
-    (select role from public.users where id = auth.uid()) = 'admin'
-  );
-
--- Users can update their own row
+-- Users can update their own row — role column is locked separately below.
+-- WITH CHECK pins role to its current value so it cannot be self-escalated.
 create policy "Users can update their own record"
   on public.users for update
-  using (auth.uid() = id);
+  using (auth.uid() = id)
+  with check (
+    auth.uid() = id
+    and role = (select role from public.users where id = auth.uid())
+  );
 
--- Users can insert their own record (during signup)
+-- Revoke column-level UPDATE on role entirely — admins use service-role key.
+revoke update (role) on public.users from authenticated;
+
+-- Users can insert their own record (during signup) — must be role='customer'.
 create policy "Users can insert their own record"
   on public.users for insert
-  with check (auth.uid() = id);
+  with check (auth.uid() = id and role = 'customer');
 
 -- Create index on email for fast lookups
 create index idx_users_email on public.users(email);
