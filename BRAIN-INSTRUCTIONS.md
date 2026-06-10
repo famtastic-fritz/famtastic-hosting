@@ -5,7 +5,7 @@
 1. **7 pages, not 6** — added `builder.html` (Website Builder with FAMtastic Designs tie-in)
 2. **Framework is OPEN** — the build team can use Astro, Next.js, or whatever produces the best result. Not locked to vanilla HTML. Recommended: Astro for Phase 1 + easy Phase 2 dashboard expansion.
 3. **Dashboard is designed into the architecture** — Phase 1 ships the marketing site. Phase 2 adds customer portal + admin dashboard. File structure accounts for both.
-4. **GoDaddy white-label support phone** must appear on every page footer and in the dashboard. Use placeholder `1-XXX-XXX-XXXX` until Fritz provides the actual number.
+4. **GoDaddy white-label support phone** — (480) 624-2500 must appear on every page footer and in the dashboard.
 5. **Website Builder page has a dual purpose** — sells the builder AND tees up FAMtastic Designs as the upgrade path. The Crossroads section is the key differentiator.
 
 ## Execution Command
@@ -13,7 +13,7 @@
 Run this from terminal:
 
 ```bash
-cd ~/famtastic/famtastic-hosting && claude --model sonnet -p "Read BUILD-SPEC.md, wild-reference.html, extreme-reference.html, and DESIGN-DECISIONS.md in this directory. Build all 7 pages of FAMtasticHosting.com as specified. This is a MULTI-PAGE site with a framework-open approach — use Astro or whatever produces the best result. index.html (WILD) is a product preview hub linking to category pages. wordpress.html (WILD), hosting.html (WILD), builder.html (WILD + FAMtastic Designs tie-in), servers.html (EXTREME only), domains.html (WILD lighter), bundles.html (WILD). Every page gets real copy, real pricing, Design Bridge, shared nav/footer, GoDaddy support phone in footer. No single-page collapse. No logo images. No AI references. No CDN dependencies. Self-host fonts. Extract Tailwind into proper CSS or use Astro scoped styles. Mobile responsive. Dashboard architecture is designed into the file structure (Phase 2) but NOT built yet. Commit each page separately. Use component reuse — shared nav, footer, DesignBridge, PricingCard, billing toggle should be defined once, used everywhere."
+cd ~/famtastic-sites/famtastic-hosting && claude --model sonnet -p "Read BUILD-SPEC.md, wild-reference.html, extreme-reference.html, and DESIGN-DECISIONS.md in this directory. Build all 7 pages of FAMtasticHosting.com as specified. This is a MULTI-PAGE site with a framework-open approach — use Astro or whatever produces the best result. index.html (WILD) is a product preview hub linking to category pages. wordpress.html (WILD), hosting.html (WILD), builder.html (WILD + FAMtastic Designs tie-in), servers.html (EXTREME only), domains.html (WILD lighter), bundles.html (WILD). Every page gets real copy, real pricing, Design Bridge, shared nav/footer, GoDaddy support phone (480) 624-2500 in footer. No single-page collapse. No logo images. No AI references. No CDN dependencies. Self-host fonts. Extract Tailwind into proper CSS or use Astro scoped styles. Mobile responsive. Dashboard architecture is designed into the file structure (Phase 2) but NOT built yet. Commit each page separately. Use component reuse — shared nav, footer, DesignBridge, PricingCard, billing toggle should be defined once, used everywhere."
 ```
 
 ## What Gets Built (Phase 1)
@@ -48,6 +48,6 @@ cd ~/famtastic/famtastic-hosting && claude --model sonnet -p "Read BUILD-SPEC.md
 8. Self-hosted fonts load correctly
 9. Design Bridge section present on all pages
 10. ICANN disclosure in every footer
-11. GoDaddy support phone (placeholder) in every footer
+11. GoDaddy support phone (480) 624-2500 in every footer
 12. Product data centralized, not copy-pasted
 13. "Talk to a Human" links work
