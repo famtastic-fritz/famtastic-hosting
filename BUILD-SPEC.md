@@ -481,9 +481,11 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 
 ---
 
-## FAMtastic Thoughts Cross-Promo Strategy
+## Cross-Promo Strategy: The Three-Site Content Loop
 
-This is a bidirectional content loop between FAMtasticHosting.com and FAMtasticThoughts.com. Both sites promote each other.
+This is a **three-way bidirectional content loop** between FAMtasticHosting.com, FAMtasticDesigns.com, and FAMtasticThoughts.com. Thoughts is the content engine — it publishes full articles that naturally reference and link to products and services on the other two sites. The revenue sites reciprocate by driving traffic to those articles.
+
+The articles are NOT ads. They're real editorial content — guides, explainers, comparisons — that include natural links back to the relevant product or service. "Here's what managed WordPress hosting gives you that shared hosting can't" with a link to the WordPress hosting page, not "BUY NOW." "The best place to get a custom site designed" with a link to FAMtastic Designs, not a banner.
 
 ### Hosting Site → Thoughts Site
 
@@ -492,9 +494,13 @@ Every page on FAMtasticHosting.com has a **FAMtasticThoughts strip** (already sp
 - Product pages: Contextual article links ("Choosing between WordPress and cPanel hosting?", "What SSL actually does for your site")
 - Footer: famtasticthoughts.com link in the cross-promo section alongside famtasticdesigns.com
 
+### Designs Site → Thoughts Site
+
+FAMtasticDesigns.com will have the same pattern — article strips and links that point to FAMtastic Thoughts content about design, branding, and building a web presence. (Specifics come with the Designs build spec.)
+
 ### Thoughts Site → Hosting Site
 
-FAMtasticThoughts.com will have articles that drive traffic to FAMtastic Hosting products. These are NOT ads — they're educational content that naturally references hosting as a solution:
+FAMtasticThoughts.com will have full articles that drive traffic to FAMtastic Hosting products:
 
 - "How to pick a domain name that works as hard as you do" → domains.html
 - "Why managed WordPress hosting is worth it (and when it isn't)" → wordpress.html
@@ -503,15 +509,35 @@ FAMtasticThoughts.com will have articles that drive traffic to FAMtastic Hosting
 - "When shared hosting isn't enough anymore" → servers.html
 - "Building vs designing: how to choose" → builder.html
 
-Each article links to the relevant FAMtasticHosting.com page with editorial context — "If you're ready for managed WordPress, here's what that looks like" not "BUY NOW."
+Each article links to the relevant FAMtasticHosting.com page with editorial framing — "If you're ready for managed WordPress, here's what that looks like" not "BUY NOW."
 
-### Thoughts Site Page Requirements
+### Thoughts Site → Designs Site
 
-FAMtasticThoughts.com needs hosting-related article pages (or at minimum, article stubs that link to Hosting product pages). These pages are part of the FAMtastic Thoughts studio (4th studio), not this build spec, but the URLs and topic mapping need to exist so the hosting site's FAMtasticThoughts strips can link to real content instead of a homepage.
+Same pattern for FAMtastic Designs. Articles on Thoughts that reference design services:
 
-**Minimum viable cross-promo for launch:**
-- 3-5 article stubs on famtasticthoughts.com that match the product pages (WordPress, cPanel, SSL, Bundles, Servers)
-- Each stub has a real headline, a 2-3 sentence teaser, and a CTA linking to the corresponding hosting page
+- "When your website is holding your business back" → FAMtastic Designs portfolio/hire page
+- "DIY website vs hiring a designer: the real cost comparison" → FAMtastic Designs pricing/packages
+- "What a custom design gets you that a template can't" → FAMtastic Designs process page
+- "The best place to get a custom site designed" → FAMtastic Designs
+
+These are full articles with real content, real opinions, and natural CTAs pointing back to Designs.
+
+### How the Loop Works
+
+1. **Thoughts publishes** a real article about a topic (hosting, design, domains, SSL, etc.)
+2. **The article links** to the relevant product/service page on Hosting or Designs
+3. **Hosting and Designs link back** to the article from their own page strips and footers
+4. **Organic traffic** hits the article from search, reads it, follows the link to the product page
+5. **Product page traffic** hits the article strip, clicks through to read more, comes back educated and ready to buy
+
+This is content marketing as a studio product. FAMtastic Thoughts is the teach/preserve studio — it produces the educational content that makes the revenue studios credible and discoverable.
+
+### Minimum Viable Cross-Promo for Launch
+
+- **3-5 article stubs on famtasticthoughts.com** matching Hosting product pages (WordPress, cPanel, SSL, Bundles, Servers)
+- **2-3 article stubs on famtasticthoughts.com** matching Designs services
+- Each stub has a real headline, a 2-3 sentence teaser, and a CTA linking to the corresponding product page
 - The hosting site's FAMtasticThoughts strips link to these specific articles, not just the homepage
+- The designs site (when built) does the same
 
 **These article pages should be planned as part of the FAMtastic Thoughts build, not this hosting build.** But the hosting build needs to know they exist so the link structure works at launch.
