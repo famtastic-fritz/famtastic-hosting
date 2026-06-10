@@ -1,0 +1,455 @@
+---
+import WildLayout from '../layouts/WildLayout.astro'
+import DesignBridge from '../components/DesignBridge.astro'
+import FAMThoughts from '../components/FAMThoughts.astro'
+---
+
+<WildLayout
+  title="Hosting Bundles & Packages — FAMtastic Hosting"
+  description="Domain, WordPress hosting, email, SSL, and custom design bundled from $299/yr. One decision. One team. One bill."
+  canonicalPath="/bundles"
+>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────── -->
+  <section class="fam-hero-layered" aria-label="Hero">
+    <!-- BG -->
+    <div class="fam-hero-layer--bg"></div>
+
+    <!-- FX: animated perspective grid -->
+    <div class="fam-hero-layer--fx" aria-hidden="true">
+      <div class="hero-orb hero-orb--a"></div>
+      <div class="hero-orb hero-orb--b"></div>
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g class="grid-lines-group" stroke="rgba(124,58,237,0.18)" stroke-width="1" fill="none">
+          <line x1="0" y1="300" x2="1440" y2="300"/>
+          <line x1="0" y1="400" x2="1440" y2="400"/>
+          <line x1="0" y1="500" x2="1440" y2="500"/>
+          <line x1="0" y1="600" x2="1440" y2="600"/>
+          <line x1="0" y1="700" x2="1440" y2="700"/>
+          <line x1="180" y1="0" x2="180" y2="900"/>
+          <line x1="360" y1="0" x2="360" y2="900"/>
+          <line x1="540" y1="0" x2="540" y2="900"/>
+          <line x1="720" y1="0" x2="720" y2="900"/>
+          <line x1="900" y1="0" x2="900" y2="900"/>
+          <line x1="1080" y1="0" x2="1080" y2="900"/>
+          <line x1="1260" y1="0" x2="1260" y2="900"/>
+        </g>
+        <line class="grid-scan-line" x1="0" y1="0" x2="1440" y2="0" stroke="rgba(132,204,22,0.4)" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+
+    <!-- CHARACTER: big background word -->
+    <div class="fam-hero-layer--character" aria-hidden="true">PKG</div>
+
+    <!-- CONTENT -->
+    <div class="fam-hero-layer--content">
+      <div class="hero-prompt">
+        // bundles &amp; packages<span class="cursor" aria-hidden="true"></span>
+      </div>
+      <h1 class="hero-headline">
+        Everything you need.<br/><span class="hl-invisible">One decision.</span>
+      </h1>
+      <p class="hero-sub">
+        Hosting, domain, email, and design — bundled, priced fairly, and ready to go.
+      </p>
+      <div class="hero-actions">
+        <a href="#bundles" class="btn-primary">See Bundles</a>
+        <a href="mailto:hello@famtastichosting.com" class="btn-outline">Talk to a Human</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TICKER ────────────────────────────────────────────────── -->
+  <div class="ticker-strip" aria-hidden="true">
+    <div class="ticker-inner">
+      <span class="ticker-item">Domain + hosting + email<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Save vs. buying separately<span class="ticker-dot"></span></span>
+      <span class="ticker-item">One bill. One team.<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">SSL included<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 white-label support<span class="ticker-dot"></span></span>
+      <span class="ticker-item">From $299/yr<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Domain + hosting + email<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Save vs. buying separately<span class="ticker-dot"></span></span>
+      <span class="ticker-item">One bill. One team.<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">SSL included<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 white-label support<span class="ticker-dot"></span></span>
+      <span class="ticker-item">From $299/yr<span class="ticker-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- ─── BUNDLE GRID ─────────────────────────────────────────── -->
+  <section class="bundles-section" id="bundles" aria-labelledby="bundles-headline">
+    <div class="section-label-sm">// bundle packages</div>
+    <h2 class="section-headline" id="bundles-headline">Pick your starting point.</h2>
+
+    <div class="bundle-grid">
+
+      <!-- BUNDLE 1: Small Biz Starter -->
+      <div class="bundle-card">
+        <span class="bundle-badge">Best for starting</span>
+        <div class="bundle-name">Small Biz Starter</div>
+        <div>
+          <div class="bundle-price">$299/yr</div>
+          <div class="bundle-price-sub">billed annually</div>
+        </div>
+        <p class="bundle-for">You just need to exist online. This gets you there.</p>
+        <ul class="bundle-includes">
+          <li>.com domain registration</li>
+          <li>3 professional email addresses</li>
+          <li>SSL standard certificate</li>
+        </ul>
+        <div class="bundle-savings">Save $34 vs buying separately</div>
+        <div class="bundle-cta">
+          <a href="mailto:hello@famtastichosting.com" class="plan-cta">Get Started</a>
+        </div>
+      </div>
+
+      <!-- BUNDLE 2: WordPress Launch (featured) -->
+      <div class="bundle-card bundle-card--featured">
+        <span class="bundle-badge">Most Popular</span>
+        <div class="bundle-name">WordPress Launch</div>
+        <div>
+          <div class="bundle-price">$35/mo</div>
+          <div class="bundle-price-sub">or $28/mo billed annually</div>
+        </div>
+        <p class="bundle-for">You want a WordPress site, live, with email. This is it.</p>
+        <ul class="bundle-includes">
+          <li>Managed WordPress Basic plan</li>
+          <li>1 Professional email address</li>
+          <li>SSL standard certificate</li>
+          <li>Domain registration (year 1)</li>
+        </ul>
+        <div class="bundle-savings">Save 15% vs buying separately</div>
+        <div class="bundle-cta">
+          <a href="mailto:hello@famtastichosting.com" class="plan-cta">Launch WordPress</a>
+        </div>
+      </div>
+
+      <!-- BUNDLE 3: Growth Hosting -->
+      <div class="bundle-card">
+        <span class="bundle-badge">For traffic-heavy sites</span>
+        <div class="bundle-name">Growth Hosting</div>
+        <div>
+          <div class="bundle-price">$50/mo</div>
+          <div class="bundle-price-sub">or $40/mo billed annually</div>
+        </div>
+        <p class="bundle-for">Traffic is growing. You need more than shared hosting.</p>
+        <ul class="bundle-includes">
+          <li>Web Hosting Plus Launch plan</li>
+          <li>Website Security Standard</li>
+          <li>SSL standard certificate</li>
+        </ul>
+        <div class="bundle-savings">Save $26/mo vs buying separately</div>
+        <div class="bundle-cta">
+          <a href="mailto:hello@famtastichosting.com" class="plan-cta">Get Growth Hosting</a>
+        </div>
+      </div>
+
+      <!-- BUNDLE 4: Designs Complete (hot pink) -->
+      <div class="bundle-card bundle-card--designs">
+        <span class="bundle-badge">Full service</span>
+        <div class="bundle-name">Designs Complete</div>
+        <div>
+          <div class="bundle-price">$1,500 + $40/mo</div>
+          <div class="bundle-price-sub">project fee + monthly hosting</div>
+        </div>
+        <p class="bundle-for">You want us to build it and host it. Done.</p>
+        <ul class="bundle-includes">
+          <li>Custom site design by FAMtastic Designs</li>
+          <li>WordPress Launch bundle ($40/mo)</li>
+          <li>Full brand delivery (files, fonts, colors)</li>
+          <li>2–3 week turnaround</li>
+        </ul>
+        <div class="bundle-cta">
+          <a href="https://famtasticdesigns.com" class="plan-cta" rel="noopener">Talk to Our Design Team</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── COMPONENT BREAKDOWN TABLE ──────────────────────────── -->
+  <section class="breakdown-section" aria-labelledby="breakdown-headline">
+    <div class="section-label-sm">// bundle breakdown</div>
+    <h2 class="section-headline" id="breakdown-headline">What each bundle actually contains.</h2>
+
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:0.75rem;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);">
+            <th style="text-align:left;padding:1rem;color:var(--muted);font-weight:400;">COMPONENT</th>
+            <th style="text-align:center;padding:1rem;color:var(--muted);font-weight:400;">SMALL BIZ</th>
+            <th style="text-align:center;padding:1rem;color:var(--lime);font-weight:400;">WP LAUNCH</th>
+            <th style="text-align:center;padding:1rem;color:var(--muted);font-weight:400;">GROWTH</th>
+            <th style="text-align:center;padding:1rem;color:var(--hot);font-weight:400;">DESIGNS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:1rem;color:var(--muted);">Domain registration</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:1rem;color:var(--muted);">WordPress hosting</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:1rem;color:var(--muted);">cPanel/VPS hosting</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:1rem;color:var(--muted);">Professional email</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:1rem;color:var(--muted);">SSL certificate</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:1rem;color:var(--muted);">Website Security</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:1rem;color:var(--muted);">Custom site design</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+          </tr>
+          <tr>
+            <td style="padding:1rem;color:var(--muted);">Brand identity delivery</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--border);">&#8212;</td>
+            <td style="text-align:center;padding:1rem;color:var(--lime);">&#10003;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── HOW TO CHOOSE ──────────────────────────────────────── -->
+  <section class="choose-section" aria-labelledby="choose-headline">
+    <div class="section-label-sm" style="color:var(--violet);">// which bundle is right?</div>
+    <h2 class="section-headline" id="choose-headline">Three situations. Three answers.</h2>
+
+    <div class="choose-grid">
+
+      <div class="choose-block">
+        <div class="choose-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" width="32" height="32">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <div class="choose-title">Just getting started</div>
+        <p class="choose-desc">You have a business idea and need to exist online. Register a domain, get email, get an SSL. <strong>Small Biz Starter.</strong></p>
+      </div>
+
+      <div class="choose-block">
+        <div class="choose-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" width="32" height="32">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="choose-title">Launching a WordPress site</div>
+        <p class="choose-desc">You need a WordPress site with email and hosting. Everything bundled. <strong>WordPress Launch.</strong></p>
+      </div>
+
+      <div class="choose-block">
+        <div class="choose-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" width="32" height="32">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="choose-title">Want it built for you</div>
+        <p class="choose-desc">You don't want to think about it. You want a team to handle design, hosting, and launch. <strong>Designs Complete.</strong></p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── FAQ ───────────────────────────────────────────────────── -->
+  <section class="faq-section" aria-labelledby="faq-headline">
+    <div class="faq-label">// questions</div>
+    <h2 class="faq-headline" id="faq-headline">Answers to the questions everyone has.</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        Can I add to a bundle after purchase?
+      </div>
+      <div class="faq-a">
+        Yes. Start with any bundle and add hosting plans, more email accounts, or additional domains at any time. Call (480) 624-2500 or email us and we'll scope it.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What happens at renewal?
+      </div>
+      <div class="faq-a">
+        Bundles renew at the same rate — we don't bait-and-switch with a low intro price followed by a jump. Annual billing locks in 20% savings. Email renewal reminders go out 30 days before each cycle.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        Is the Designs Complete bundle a project + ongoing, or just project?
+      </div>
+      <div class="faq-a">
+        Both. The $1,500 is the project fee for design and build (one-time). The $40/mo is the WordPress Launch bundle for ongoing hosting, email, and SSL. They're separate billing lines.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What does "white-label support" mean in the bundles?
+      </div>
+      <div class="faq-a">
+        Every bundle includes 24/7 support via (480) 624-2500. The team answers under the FAMtastic Hosting brand — not any infrastructure provider's name. Your clients call your hosting line.
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── DESIGN BRIDGE ─────────────────────────────────────────── -->
+  <DesignBridge variant="bundles" />
+
+  <!-- ─── FAM THOUGHTS ──────────────────────────────────────────── -->
+  <FAMThoughts
+    headline="What to include in your first-year tech stack — and what to skip."
+    cta="Read FAMtastic Thoughts"
+    href="https://famtasticthoughts.com"
+  />
+
+</WildLayout>
+
+<style>
+  /* ─── BUNDLES SECTION ───────────────────────────────────── */
+  .bundles-section {
+    padding: 7rem 3rem;
+    background: var(--pitch);
+  }
+
+  /* ─── BREAKDOWN TABLE SECTION ───────────────────────────── */
+  .breakdown-section {
+    padding: 6rem 3rem;
+    background: var(--surface);
+  }
+
+  /* ─── CHOOSE SECTION ─────────────────────────────────────── */
+  .choose-section {
+    padding: 7rem 3rem;
+    background: var(--pitch);
+  }
+
+  .choose-grid {
+    display: flex;
+    gap: 2rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .choose-block {
+    flex: 1;
+    min-width: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .choose-block:hover {
+    border-color: var(--violet);
+  }
+
+  .choose-icon {
+    color: var(--violet);
+    display: flex;
+    align-items: center;
+  }
+
+  .choose-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .choose-desc {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .choose-desc strong {
+    color: var(--lime);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ─── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .bundles-section { padding: 4rem 1.5rem; }
+    .breakdown-section { padding: 4rem 1.5rem; }
+    .choose-section { padding: 4rem 1.5rem; }
+    .choose-grid { flex-direction: column; }
+  }
+</style>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const isOpen = q.classList.contains('open')
+      // close all
+      document.querySelectorAll('.faq-q').forEach(el => {
+        el.classList.remove('open')
+        el.setAttribute('aria-expanded', 'false')
+        const a = el.nextElementSibling
+        if (a) a.classList.remove('open')
+      })
+      // open this one if it was closed
+      if (!isOpen) {
+        q.classList.add('open')
+        q.setAttribute('aria-expanded', 'true')
+        const a = q.nextElementSibling
+        if (a) a.classList.add('open')
+      }
+    })
+    q.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        ;(q as HTMLElement).click()
+      }
+    })
+  })
+</script>
