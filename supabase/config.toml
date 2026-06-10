@@ -1,0 +1,22 @@
+# Supabase Configuration
+# FAMtastic Hosting Backend
+
+[api]
+enabled = true
+max_body_size = "20MB"
+
+[auth]
+enable_signup = true
+enable_confirmations = false
+jwt_expiry_seconds = 86400
+jwt_secret = "${JWT_SECRET}"
+
+[db]
+major_version = 15
+
+[realtime]
+enabled = true
+max_bytes_per_second = 1000000
+
+[vector]
+enabled = false
