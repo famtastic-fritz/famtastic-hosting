@@ -1,0 +1,531 @@
+---
+import WildLayout from '../layouts/WildLayout.astro'
+import DesignBridge from '../components/DesignBridge.astro'
+import FAMThoughts from '../components/FAMThoughts.astro'
+---
+
+<WildLayout
+  title="Domain Registration — FAMtastic Hosting"
+  description=".com from $20/yr. .net, .org, and more. Custom nameservers, WHOIS privacy, and auto-renewal. ICANN-accredited registrar."
+  canonicalPath="/domains"
+>
+
+  <!-- ─── 1. HERO ────────────────────────────────────────────────── -->
+  <section class="fam-hero-layered" style="min-height:70vh;" aria-label="Hero">
+    <!-- BG -->
+    <div class="fam-hero-layer--bg"></div>
+
+    <!-- FX: grid + orbs -->
+    <div class="fam-hero-layer--fx" aria-hidden="true">
+      <div class="hero-orb hero-orb--a"></div>
+      <div class="hero-orb hero-orb--b"></div>
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="dom-grid-fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(124,58,237,0)" />
+            <stop offset="60%" stop-color="rgba(124,58,237,0.14)" />
+            <stop offset="100%" stop-color="rgba(124,58,237,0.04)" />
+          </linearGradient>
+        </defs>
+        <g class="grid-lines-group">
+          <line x1="0" y1="480" x2="1440" y2="480" stroke="rgba(124,58,237,0.12)" stroke-width="0.5" />
+          <line x1="0" y1="540" x2="1440" y2="540" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="0" y1="600" x2="1440" y2="600" stroke="rgba(124,58,237,0.06)" stroke-width="0.5" />
+          <line x1="0" y1="660" x2="1440" y2="660" stroke="rgba(124,58,237,0.04)" stroke-width="0.5" />
+          <line x1="240"  y1="380" x2="240"  y2="900" stroke="rgba(124,58,237,0.07)" stroke-width="0.5" />
+          <line x1="480"  y1="380" x2="480"  y2="900" stroke="rgba(124,58,237,0.07)" stroke-width="0.5" />
+          <line x1="720"  y1="380" x2="720"  y2="900" stroke="rgba(124,58,237,0.07)" stroke-width="0.5" />
+          <line x1="960"  y1="380" x2="960"  y2="900" stroke="rgba(124,58,237,0.07)" stroke-width="0.5" />
+          <line x1="1200" y1="380" x2="1200" y2="900" stroke="rgba(124,58,237,0.05)" stroke-width="0.5" />
+          <line class="grid-scan-line" x1="0" y1="540" x2="1440" y2="540" stroke="rgba(132,204,22,0.32)" stroke-width="1" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- CHARACTER -->
+    <div class="fam-hero-layer--character" aria-hidden="true">.com</div>
+
+    <!-- CONTENT -->
+    <div class="fam-hero-layer--content">
+      <div class="hero-prompt">
+        // domain registration<span class="cursor" aria-hidden="true"></span>
+      </div>
+      <h1 class="hero-headline">
+        Your name.<br/><span class="hl-invisible">Own it.</span>
+      </h1>
+      <p class="hero-sub">
+        .com from $20/yr. .net, .org, and more. Custom nameservers included. WHOIS stays clean.
+      </p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn-primary">See Domain Prices</a>
+        <a href="mailto:hello@famtastichosting.com" class="btn-outline">Talk to a Human</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 2. TICKER ─────────────────────────────────────────────── -->
+  <div class="ticker-strip" aria-hidden="true">
+    <div class="ticker-inner">
+      <span class="ticker-item">.com from $20/yr<span class="ticker-dot"></span></span>
+      <span class="ticker-item">.net from $25/yr<span class="ticker-dot"></span></span>
+      <span class="ticker-item">.org from $22/yr<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">ICANN-accredited registrar<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Private registration<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Auto-renewal<span class="ticker-dot"></span></span>
+      <span class="ticker-item">.com from $20/yr<span class="ticker-dot"></span></span>
+      <span class="ticker-item">.net from $25/yr<span class="ticker-dot"></span></span>
+      <span class="ticker-item">.org from $22/yr<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">ICANN-accredited registrar<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Private registration<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Auto-renewal<span class="ticker-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- ─── 3. TLD PRICING GRID ───────────────────────────────────── -->
+  <section class="domains-pricing-section" id="pricing" aria-labelledby="tld-headline">
+    <div class="domains-label">// tld pricing</div>
+    <h2 class="domains-headline" id="tld-headline">What your name costs.</h2>
+    <p class="domains-subhead">
+      All registrations include custom nameservers and auto-renewal reminders. Prices shown are per year.
+    </p>
+
+    <div class="tld-grid">
+      <div class="tld-card">
+        <div class="tld-ext">.com</div>
+        <div class="tld-price">$20/yr</div>
+        <div class="tld-desc">The standard. Most recognized domain extension.</div>
+      </div>
+      <div class="tld-card">
+        <div class="tld-ext">.net</div>
+        <div class="tld-price">$25/yr</div>
+        <div class="tld-desc">For networks, tech projects, and infrastructure.</div>
+      </div>
+      <div class="tld-card">
+        <div class="tld-ext">.org</div>
+        <div class="tld-price">$22/yr</div>
+        <div class="tld-desc">Non-profits, communities, and purpose-driven brands.</div>
+      </div>
+      <div class="tld-card">
+        <div class="tld-ext">.co</div>
+        <div class="tld-price">$35/yr</div>
+        <div class="tld-desc">Short, brandable. Popular startup alternative to .com.</div>
+      </div>
+      <div class="tld-card">
+        <div class="tld-ext">.info</div>
+        <div class="tld-price">$30/yr</div>
+        <div class="tld-desc">Information sites, directories, and resource hubs.</div>
+      </div>
+      <div class="tld-card">
+        <div class="tld-ext">.biz</div>
+        <div class="tld-price">$28/yr</div>
+        <div class="tld-desc">Business-first TLD with clear brand intent.</div>
+      </div>
+      <div class="tld-card">
+        <div class="tld-ext">.us</div>
+        <div class="tld-price">$20/yr</div>
+        <div class="tld-desc">USA-based businesses and local brands.</div>
+      </div>
+      <div class="tld-card">
+        <div class="tld-ext">.io</div>
+        <div class="tld-price">$55/yr</div>
+        <div class="tld-desc">Tech and developer-adjacent projects. High brandability.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 4. WHY BUNDLE ─────────────────────────────────────────── -->
+  <section class="bundle-together-section" aria-labelledby="bundle-headline">
+    <div class="bundle-together-inner">
+
+      <!-- Left: body copy -->
+      <div class="bundle-together-left">
+        <div class="domains-label" style="color:var(--lime);">// why bundle?</div>
+        <h2 class="domains-headline" id="bundle-headline" style="color:var(--text);">Register here. Host here. One less thing to configure.</h2>
+        <p class="bundle-body-text">
+          When you register a domain and host with FAMtastic, your DNS points to ns1.famtastichosting.com and ns2.famtastichosting.com automatically. No manual record editing. No logging into two dashboards.
+        </p>
+        <p class="bundle-body-text">
+          Every domain registered through FAMtastic is fulfilled through WildWestDomains.com, an ICANN-accredited registrar. Your registration is handled by the same infrastructure that powers millions of domain registrations.
+        </p>
+        <p class="bundle-body-text">
+          Private registration keeps your personal information out of the public WHOIS database — your name, address, and email stay protected.
+        </p>
+      </div>
+
+      <!-- Right: spec block -->
+      <div class="bundle-together-right">
+        <div class="spec-block">
+          <div class="spec-block-label">// registration details</div>
+          <div class="spec-rows">
+            <div class="spec-row">
+              <span class="spec-key">Registrar</span>
+              <span class="spec-val">WildWestDomains.com (ICANN-accredited)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">DNS management</span>
+              <span class="spec-val">cPanel DNS Zone Editor</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Nameservers</span>
+              <span class="spec-val">ns1/ns2.famtastichosting.com</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">WHOIS privacy</span>
+              <span class="spec-val">Available on eligible TLDs</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Auto-renewal</span>
+              <span class="spec-val">Yes — 30-day advance notice</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Transfer lock</span>
+              <span class="spec-val">60 days post-registration (ICANN policy)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── 5. FEATURES ──────────────────────────────────────────── -->
+  <section class="features-section domains-features" aria-labelledby="dom-features-headline">
+    <div class="features-label">// what's included</div>
+    <h2 class="features-headline" id="dom-features-headline">Domain registration, simplified.</h2>
+
+    <div class="dom-features-row">
+
+      <div class="dom-feature-block">
+        <div class="dom-feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </div>
+        <div class="dom-feature-title">Custom Nameservers</div>
+        <p class="dom-feature-desc">Every domain points to ns1.famtastichosting.com and ns2.famtastichosting.com. No third-party branding in your DNS lookup.</p>
+      </div>
+
+      <div class="dom-feature-block">
+        <div class="dom-feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="dom-feature-title">WHOIS Privacy</div>
+        <p class="dom-feature-desc">Available on eligible TLDs. Keeps your personal details out of the public WHOIS database — prevents spam and unwanted contact.</p>
+      </div>
+
+      <div class="dom-feature-block">
+        <div class="dom-feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            <path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <div class="dom-feature-title">Auto-Renewal Protection</div>
+        <p class="dom-feature-desc">We remind you 30 days before your domain expires and auto-renew if you choose. Never lose a domain by accident.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── 6. EMAIL ADD-ON CALLOUT ───────────────────────────────── -->
+  <section class="email-callout-section" aria-labelledby="email-callout-headline">
+    <div class="email-callout-inner">
+      <div class="domains-label" style="color:var(--violet);">// add professional email</div>
+      <h2 class="email-callout-headline" id="email-callout-headline">
+        Your domain needs a professional email address.
+      </h2>
+      <p class="email-callout-body">
+        Get yourname@yourdomain.com starting at $3/mo — includes webmail, spam filtering, and IMAP access.
+      </p>
+      <a href="mailto:hello@famtastichosting.com" class="btn-primary">Add Email Hosting</a>
+      <div class="email-callout-pricing">
+        Professional Email — $3/mo&nbsp;&nbsp;·&nbsp;&nbsp;Group Email — $4/mo&nbsp;&nbsp;·&nbsp;&nbsp;Microsoft 365 — $9/mo
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 7. FAQ ────────────────────────────────────────────────── -->
+  <section class="faq-section" aria-labelledby="faq-headline">
+    <div class="faq-label">// questions</div>
+    <h2 class="faq-headline" id="faq-headline">Answers to the questions everyone has.</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        Can I transfer a domain I already own?
+      </div>
+      <div class="faq-a">
+        Yes. Transfer your existing domain to FAMtastic — we handle the process and your registration continues uninterrupted. Allow 5-7 business days for the transfer to complete. Contact us at (480) 624-2500 to start.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What's the difference between registering a domain and hosting?
+      </div>
+      <div class="faq-a">
+        Domain registration claims your name (the address people type in). Hosting stores your files (the website people see). You need both. Registering through FAMtastic with a hosting plan means they're connected automatically — one less configuration step.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What is WHOIS privacy and do I need it?
+      </div>
+      <div class="faq-a">
+        WHOIS is a public database showing who owns a domain. Without privacy protection, your name, email, address, and phone number are publicly searchable. WHOIS privacy replaces your details with a proxy address — strongly recommended unless you need your business address in WHOIS for trust signals.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        How does the ICANN disclosure affect me?
+      </div>
+      <div class="faq-a">
+        Domain registration is regulated by ICANN. As part of that framework, your registration is fulfilled through WildWestDomains.com, an ICANN-accredited registrar. This has no impact on your day-to-day experience — your domain is managed through your FAMtastic Hosting dashboard.
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── 8. DESIGN BRIDGE ─────────────────────────────────────── -->
+  <DesignBridge variant="domains" />
+
+  <!-- ─── 9. FAM THOUGHTS ──────────────────────────────────────── -->
+  <FAMThoughts
+    headline="Choosing a domain name — a practical guide for small businesses."
+    cta="Read FAMtastic Thoughts"
+    href="https://famtasticthoughts.com"
+  />
+
+</WildLayout>
+
+<style>
+  /* ── Domain Pricing Section ─────────────────────────────────── */
+  .domains-pricing-section {
+    padding: 7rem 3rem;
+    background: var(--surface);
+  }
+
+  .domains-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet);
+    margin-bottom: 1.2rem;
+  }
+
+  .domains-headline {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .domains-subhead {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 560px;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ── Bundle Together Section ─────────────────────────────────── */
+  .bundle-together-section {
+    padding: 7rem 3rem;
+    background: var(--pitch);
+  }
+
+  .bundle-together-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .bundle-body-text {
+    font-family: var(--font-body);
+    font-size: 0.975rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 1.4rem;
+  }
+
+  .bundle-body-text:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Spec block (scoped) */
+  .spec-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+  }
+
+  .spec-block-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lime);
+    margin-bottom: 1.4rem;
+  }
+
+  .spec-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .spec-row {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(245,245,240,0.05);
+  }
+
+  .spec-row:last-child {
+    border-bottom: none;
+  }
+
+  .spec-key {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    min-width: 130px;
+    flex-shrink: 0;
+  }
+
+  .spec-val {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* ── Features Section (3-column) ─────────────────────────────── */
+  .domains-features {
+    background: var(--surface);
+  }
+
+  .dom-features-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    margin-top: 3rem;
+  }
+
+  .dom-feature-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .dom-feature-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    color: var(--violet);
+    flex-shrink: 0;
+  }
+
+  .dom-feature-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .dom-feature-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .dom-feature-desc {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.75;
+    margin: 0;
+  }
+
+  /* ── Email Add-on Callout ─────────────────────────────────────── */
+  .email-callout-section {
+    padding: 5rem 3rem;
+    background: var(--pitch);
+    border-top: 3px solid var(--violet);
+  }
+
+  .email-callout-inner {
+    max-width: 760px;
+  }
+
+  .email-callout-headline {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .email-callout-body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.75;
+    margin-bottom: 2rem;
+  }
+
+  .email-callout-pricing {
+    margin-top: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Responsive ─────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .domains-pricing-section,
+    .bundle-together-section,
+    .email-callout-section {
+      padding: 4rem 1.5rem;
+    }
+
+    .bundle-together-inner {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .dom-features-row {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .domains-pricing-section,
+    .bundle-together-section,
+    .email-callout-section {
+      padding: 3rem 1.25rem;
+    }
+  }
+</style>
