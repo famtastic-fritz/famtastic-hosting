@@ -15,6 +15,19 @@ import { requireAdmin } from '../../../../lib/auth/middleware.js';
 import { apiError, handleGoDaddyError } from '../../../../lib/api/response.js';
 import { listOrdersNormalized } from '../../../../lib/godaddy/orders.js';
 
+/**
+ * Escapes a value for safe inclusion in a CSV cell.
+ *
+ * Prefixes cells starting with =, +, -, @, tab, or carriage return with a
+ * single quote so spreadsheet applications (Excel, Google Sheets) do not
+ * interpret them as formula or DDE injection.
+ */
+function csvSafe(v: unknown): string {
+  const s = String(v ?? '');
+  const escaped = (/^[=+\-@\t\r]/.test(s) ? "'" + s : s).replace(/"/g, '""');
+  return `"${escaped}"`;
+}
+
 export const GET: APIRoute = async ({ request }) => {
   const auth = await requireAdmin(request);
   if (auth instanceof Response) return auth;
@@ -64,8 +77,8 @@ export const GET: APIRoute = async ({ request }) => {
     ]);
 
     const csvLines = [
-      headers.map(h => `"${h}"`).join(','),
-      ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')),
+      headers.map(csvSafe).join(','),
+      ...rows.map(row => row.map(csvSafe).join(',')),
     ];
 
     const csvContent = csvLines.join('\r\n');
