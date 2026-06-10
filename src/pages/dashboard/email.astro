@@ -11,10 +11,9 @@ export const prerender = false;
 
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
-import { requireAuth } from '../../lib/auth/middleware.js';
 
-const user = await requireAuth(Astro.request);
-if (user instanceof Response) return user;
+// Auth handled by Astro middleware — user available via Astro.locals.user
+const user = Astro.locals.user as { id: string; email: string; role: string };
 
 const origin = new URL(Astro.request.url).origin;
 

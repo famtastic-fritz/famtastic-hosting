@@ -107,6 +107,9 @@ export async function requireAuth(request: Request): Promise<AuthUser | Response
   return user;
 }
 
+// Extract session without redirect — used by Astro middleware
+export { extractSession };
+
 // ─── requireAdmin ─────────────────────────────────────────────────────────────
 
 /**

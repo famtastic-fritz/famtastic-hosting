@@ -1,0 +1,27 @@
+# FAMtastic Hosting — Apache .htaccess
+# mod_proxy is NOT available on this cPanel host.
+# Dynamic routes (API, dashboard, admin) go through proxy.php to Node.js on port 3001.
+# Static pages are served directly by Apache from the docroot.
+
+RewriteEngine On
+
+# ─── API Routes → proxy.php ──────────────────────────────────────────────────
+RewriteRule ^api/(.*)$ proxy.php [L,QSA]
+
+# ─── Dashboard Routes → proxy.php ───────────────────────────────────────────
+RewriteRule ^dashboard(/.*)?$ proxy.php [L,QSA]
+
+# ─── Admin Routes → proxy.php ───────────────────────────────────────────────
+RewriteRule ^admin(/.*)?$ proxy.php [L,QSA]
+
+# ─── Login / Register / Logout → proxy.php ──────────────────────────────────
+RewriteRule ^login$ proxy.php [L,QSA]
+RewriteRule ^register$ proxy.php [L,QSA]
+RewriteRule ^logout$ proxy.php [L,QSA]
+
+# ─── Thank-you page → proxy.php ─────────────────────────────────────────────
+RewriteRule ^thank-you$ proxy.php [L,QSA]
+
+# ─── Static pages served by Apache ───────────────────────────────────────────
+# / (index.html), /wordpress, /hosting, /builder, /servers,
+# /domains, /bundles, /contact all have pre-rendered HTML in docroot.

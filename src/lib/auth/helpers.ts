@@ -157,8 +157,15 @@ export function setSessionCookie(
   token: string,
   secure = import.meta.env.PROD as boolean
 ): Response {
-  const headers = new Headers(response.headers);
-  headers.set('Set-Cookie', buildSetCookieHeader(token, secure));
+  // Clone headers manually to avoid "immutable" error from frozen Response headers
+  const entries = [...response.headers.entries()];
+  const headers = new Headers();
+  for (const [key, value] of entries) {
+    // Skip set-cookie — we're replacing it
+    if (key.toLowerCase() === 'set-cookie') continue;
+    headers.set(key, value);
+  }
+  headers.append('Set-Cookie', buildSetCookieHeader(token, secure));
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -171,8 +178,14 @@ export function setSessionCookie(
  * cleared (Max-Age=0).
  */
 export function clearSessionCookie(response: Response): Response {
-  const headers = new Headers(response.headers);
-  headers.set('Set-Cookie', buildClearCookieHeader());
+  // Clone headers manually to avoid "immutable" error from frozen Response headers
+  const entries = [...response.headers.entries()];
+  const headers = new Headers();
+  for (const [key, value] of entries) {
+    if (key.toLowerCase() === 'set-cookie') continue;
+    headers.set(key, value);
+  }
+  headers.append('Set-Cookie', buildClearCookieHeader());
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

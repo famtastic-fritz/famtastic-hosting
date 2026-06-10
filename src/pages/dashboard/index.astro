@@ -14,11 +14,9 @@ export const prerender = false;
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import ServiceCard from '../../components/dashboard/ServiceCard.svelte';
 import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
-import { requireAuth } from '../../lib/auth/middleware.js';
 
-// Auth gate — unauthenticated users redirect to /dashboard/login
-const user = await requireAuth(Astro.request);
-if (user instanceof Response) return user;
+// Auth handled by Astro middleware — user is available via Astro.locals.user
+const user = Astro.locals.user as { id: string; email: string; role: string };
 
 // ── Fetch customer data server-side ─────────────────────────────────────────
 // Build absolute URLs from the incoming request's origin

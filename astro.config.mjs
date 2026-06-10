@@ -10,4 +10,11 @@ export default defineConfig({
   output: 'hybrid',
   adapter: node({ mode: 'standalone' }),
   integrations: [svelte()],
+  vite: {
+    build: {
+      rollupOptions: {
+        external: ['bcryptjs'],
+      },
+    },
+  },
 });

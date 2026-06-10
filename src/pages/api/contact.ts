@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { pool } from '../../../lib/db/pool.js';
+import { pool } from '../../lib/db/pool.js';
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
 // In-memory store. Capped at MAX_ENTRIES to prevent unbounded memory growth.

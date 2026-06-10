@@ -8,7 +8,7 @@
  *   getConnection() — acquire a PoolConnection for manual transaction control
  *   withTransaction(fn) — BEGIN/COMMIT/ROLLBACK wrapper
  *
- * Environment variables:
+ * Environment variables (read lazily on first pool access, not at import time):
  *   MYSQL_HOST
  *   MYSQL_PORT       (defaults to 3306)
  *   MYSQL_DATABASE
@@ -18,28 +18,43 @@
 
 import mysql from 'mysql2/promise';
 
-// ─── Environment ──────────────────────────────────────────────────────────────
+// ─── Lazy pool initialization ─────────────────────────────────────────────────
+// Astro's static-prerender phase imports this module but doesn't need MySQL.
+// Eagerly calling mysql.createPool() with missing env vars would crash the build.
+// So we defer pool creation until first actual use.
 
-function getEnv(key: string): string {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Missing environment variable: ${key}`);
+let _pool: mysql.Pool | null = null;
+
+function getPool(): mysql.Pool {
+  if (!_pool) {
+    const env = (key: string): string => {
+      const value = process.env[key];
+      if (!value) {
+        throw new Error(`Missing environment variable: ${key}`);
+      }
+      return value;
+    };
+
+    _pool = mysql.createPool({
+      host: env('MYSQL_HOST'),
+      port: Number(process.env.MYSQL_PORT) || 3306,
+      database: env('MYSQL_DATABASE'),
+      user: env('MYSQL_USER'),
+      password: env('MYSQL_PASSWORD'),
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+      timezone: '+00:00', // store all timestamps in UTC
+    });
   }
-  return value;
+  return _pool;
 }
 
-// ─── Pool creation ────────────────────────────────────────────────────────────
-
-export const pool = mysql.createPool({
-  host: getEnv('MYSQL_HOST'),
-  port: Number(process.env.MYSQL_PORT) || 3306,
-  database: getEnv('MYSQL_DATABASE'),
-  user: getEnv('MYSQL_USER'),
-  password: getEnv('MYSQL_PASSWORD'),
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  timezone: '+00:00', // store all timestamps in UTC
+/** The raw mysql2 Pool. Lazily created on first access. */
+export const pool = new Proxy({} as mysql.Pool, {
+  get(_target, prop, _receiver) {
+    return Reflect.get(getPool(), prop);
+  },
 });
 
 // ─── Query helper ─────────────────────────────────────────────────────────────
@@ -55,7 +70,7 @@ export async function query<T = mysql.RowDataPacket[]>(
   sql: string,
   params?: mysql.QueryParams,
 ): Promise<[T, mysql.FieldPacket[]]> {
-  return pool.execute<T>(sql, params);
+  return getPool().execute<T>(sql, params);
 }
 
 // ─── Transaction helper ──────────────────────────────────────────────────────
@@ -65,7 +80,7 @@ export async function query<T = mysql.RowDataPacket[]>(
  * calling connection.release() when done.
  */
 export async function getConnection(): Promise<mysql.PoolConnection> {
-  return pool.getConnection();
+  return getPool().getConnection();
 }
 
 /**
@@ -82,7 +97,7 @@ export async function getConnection(): Promise<mysql.PoolConnection> {
 export async function withTransaction<T>(
   fn: (conn: mysql.PoolConnection) => Promise<T>,
 ): Promise<T> {
-  const conn = await pool.getConnection();
+  const conn = await getPool().getConnection();
   try {
     await conn.beginTransaction();
     const result = await fn(conn);
