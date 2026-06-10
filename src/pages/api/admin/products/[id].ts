@@ -16,7 +16,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/middleware.js';
 import { apiOk, apiError } from '../../../../lib/api/response.js';
-import { supabaseAdmin } from '../../../../lib/supabase/client.js';
+import { pool } from '../../../../lib/db/pool.js';
 
 export const PATCH: APIRoute = async ({ request, params }) => {
   const auth = await requireAdmin(request);
@@ -34,7 +34,7 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 
   // Validate inputs
   const updates: Record<string, unknown> = {
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
   };
 
   if ('active' in body) {
@@ -52,20 +52,16 @@ export const PATCH: APIRoute = async ({ request, params }) => {
     updates.retail_price = rp;
 
     // Recalculate markup_pct from current wholesale price
-    const { data: current, error: fetchErr } = await supabaseAdmin
-      .from('products')
-      .select('wholesale_price')
-      .eq('id', id)
-      .single();
+    const [currentRows] = await pool.execute<
+      Array<{ wholesale_price: number }>
+    >('SELECT wholesale_price FROM products WHERE id = ?', [id]);
 
-    if (fetchErr || !current) {
+    if (currentRows.length === 0) {
       return apiError('Product not found.', 'NOT_FOUND', 404);
     }
 
-    const wholesale = current.wholesale_price;
-    updates.markup_pct = wholesale > 0
-      ? Math.round((rp / wholesale) * 100)
-      : 0;
+    const wholesale = currentRows[0].wholesale_price;
+    updates.markup_pct = wholesale > 0 ? Math.round((rp / wholesale) * 100) : 0;
   }
 
   if (Object.keys(updates).length === 1) {
@@ -74,21 +70,29 @@ export const PATCH: APIRoute = async ({ request, params }) => {
   }
 
   try {
-    const { data: updated, error } = await supabaseAdmin
-      .from('products')
-      .update(updates)
-      .eq('id', id)
-      .select('*')
-      .single();
+    const setClauses = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+    const values = [...Object.values(updates), id];
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return apiError('Product not found.', 'NOT_FOUND', 404);
-      }
-      console.error('[admin/products/:id] Supabase error:', error.message);
-      return apiError('Failed to update product.', 'DB_ERROR', 500);
+    const [result] = await pool.execute(
+      `UPDATE products SET ${setClauses} WHERE id = ?`,
+      values
+    );
+
+    const updateResult = result as { affectedRows: number };
+    if (updateResult.affectedRows === 0) {
+      return apiError('Product not found.', 'NOT_FOUND', 404);
     }
 
+    // Fetch the updated row
+    const [updatedRows] = await pool.execute<
+      Array<{ id: string; name: string; category: string; wholesale_price: number; retail_price: number; markup_pct: number; active: number; updated_at: string }>
+    >('SELECT id, name, category, wholesale_price, retail_price, markup_pct, active, updated_at FROM products WHERE id = ?', [id]);
+
+    if (updatedRows.length === 0) {
+      return apiError('Product not found after update.', 'NOT_FOUND', 404);
+    }
+
+    const updated = updatedRows[0];
     return apiOk({
       product: {
         id: updated.id,
@@ -97,7 +101,7 @@ export const PATCH: APIRoute = async ({ request, params }) => {
         wholesalePriceUSD: (updated.wholesale_price / 100).toFixed(2),
         retailPriceUSD: (updated.retail_price / 100).toFixed(2),
         markupPct: updated.markup_pct,
-        active: updated.active,
+        active: !!updated.active,
         updated_at: updated.updated_at,
       },
     });

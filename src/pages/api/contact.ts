@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { pool } from '../../../lib/db/pool.js';
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
 // In-memory store. Capped at MAX_ENTRIES to prevent unbounded memory growth.
@@ -16,13 +16,7 @@ function evictOldestRateLimitEntry(): void {
 }
 
 // Helper to get client IP address.
-// NOTE: In production Astro, prefer context.clientAddress (set by the adapter)
-// over header-based detection, which is spoofable. Header fallback is kept
-// for local dev only.
 function getClientIP(request: Request): string {
-  // Cloudflare sets this header after verifying the real IP — more trustworthy
-  // than x-forwarded-for when behind CF. Both are still spoofable if the
-  // server is hit directly, which is why unknown IPs are rejected below.
   return (
     request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
@@ -32,16 +26,13 @@ function getClientIP(request: Request): string {
 }
 
 // Rate limit: 5 submissions per IP per hour.
-// Returns false if the IP is unknown (reject rather than allow spoofed bypass).
 function checkRateLimit(ip: string): boolean {
-  // Reject unknown IPs — allows attacker to bypass by omitting headers.
   if (ip === 'unknown') return false;
 
   const now = Date.now();
   const limit = rateLimitStore.get(ip);
 
   if (!limit || now > limit.resetTime) {
-    // Evict oldest entry if cap is reached before inserting
     if (!limit && rateLimitStore.size >= RATE_LIMIT_MAX_ENTRIES) {
       evictOldestRateLimitEntry();
     }
@@ -67,7 +58,6 @@ type AllowedSubject = (typeof ALLOWED_SUBJECTS)[number];
 
 function sanitizeSubject(raw: string | null): AllowedSubject {
   if (!raw) return 'General';
-  // Strip carriage returns and newlines that could inject additional headers
   const stripped = raw.replace(/[\r\n]/g, '').trim();
   if ((ALLOWED_SUBJECTS as readonly string[]).includes(stripped)) {
     return stripped as AllowedSubject;
@@ -77,7 +67,6 @@ function sanitizeSubject(raw: string | null): AllowedSubject {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    // Parse form data
     const formData = await request.formData();
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
@@ -96,7 +85,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Rate limiting check.
-    // Also rejects unknown IPs (prevents header-omission bypass).
     if (!checkRateLimit(clientIP)) {
       return new Response(
         JSON.stringify({ error: 'Too many submissions. Please try again later.' }),
@@ -104,7 +92,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Sanitize subject — validated against allowed enum; CR/LF stripped
+    // Sanitize subject
     const subject = sanitizeSubject(rawSubject);
 
     // Field validation
@@ -129,37 +117,11 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = import.meta.env.SUPABASE_URL;
-    const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Supabase configuration missing');
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Save to Supabase. ip_address is set server-side; clients cannot supply it.
-    const { error: dbError } = await supabase.from('contact_submissions').insert({
-      name: name.trim(),
-      email: email.trim(),
-      subject,
-      message: message.trim(),
-      ip_address: clientIP,
-      created_at: new Date().toISOString(),
-    });
-
-    if (dbError) {
-      console.error('Database error:', dbError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to save submission.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    // Insert into MySQL. ip_address is set server-side; clients cannot supply it.
+    await pool.execute(
+      'INSERT INTO contact_submissions (name, email, subject, message, ip_address, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [name.trim(), email.trim(), subject, message.trim(), clientIP, new Date().toISOString().slice(0, 19).replace('T', ' ')]
+    );
 
     // Send email notification via Resend if API key is set
     const resendApiKey = import.meta.env.RESEND_API_KEY;
@@ -167,9 +129,6 @@ export const POST: APIRoute = async ({ request }) => {
     if (resendApiKey) {
       try {
         const recipientEmail = 'hello@famtastichosting.com';
-        // subject is already an enum value — safe to interpolate.
-        // name is NOT interpolated into the Subject header to prevent
-        // header injection; it remains in the body only.
         const emailSubject = `New contact form submission — ${subject}`;
         const emailBody = `New contact form submission:\n\nSubject: ${subject}\nSubmitted: ${new Date().toISOString()}\n\nMessage:\n${message.trim()}\n`;
 
@@ -190,14 +149,11 @@ export const POST: APIRoute = async ({ request }) => {
         if (!response.ok) {
           const resendError = await response.text();
           console.error('Resend API error:', resendError);
-          // Don't fail the submission if email sending fails
         }
       } catch (emailError) {
         console.error('Email sending error:', emailError);
-        // Graceful degradation: don't fail submission if email fails
       }
     } else {
-      // No PII logged — submission is already persisted to the database.
       console.warn('[contact] Email transport unavailable — submission saved to DB only');
     }
 

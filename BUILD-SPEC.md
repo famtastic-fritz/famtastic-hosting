@@ -1,5 +1,5 @@
 ---
-title: "Build: FAMtasticHosting.com — Marketing Site + Dashboard"
+title: "Build: FAMtasticHosting.com — Hosting Site + Dashboard"
 date: 2026-06-10
 author: shay
 source: directive
@@ -10,16 +10,16 @@ status: pending
 assigned-to: claude-code-multiswarm
 ---
 
-# Build: FAMtasticHosting.com — Marketing Site + Dashboard
+# Build: FAMtasticHosting.com — Hosting Site + Dashboard
 
 ## Objective
 
-Build FAMtasticHosting.com as a full product: 7-page marketing site with real pricing, real copy, and consistent brand identity, PLUS a backend dashboard that replaces the GoDaddy reseller panel with a branded experience. Phase 1 ships the marketing site. Phase 2 ships the dashboard. Both are designed together so the architecture supports the full product from day one.
+Build FAMtasticHosting.com as a full product: 7-page hosting site with real pricing, real copy, and consistent brand identity, PLUS a backend dashboard that replaces the GoDaddy reseller panel with a branded experience. Phase 1 ships the hosting site. Phase 2 ships the dashboard. Both are designed together so the architecture supports the full product from day one.
 
 ## Phases
 
-- **Phase 1 (Build Now):** 7-page marketing site. Static or framework-rendered. Ship fast, validate, iterate.
-- **Phase 2 (Build After Marketing Site Is Live):** Customer portal + admin dashboard. Requires auth, GoDaddy API integration, database. Designed into the architecture now but built separately.
+- **Phase 1 (Build Now):** 7-page hosting site. Static or framework-rendered. Ship fast, validate, iterate.
+- **Phase 2 (Build After Hosting Site Is Live):** Customer portal + admin dashboard. Requires auth, GoDaddy API integration, database. Designed into the architecture now but built separately.
 
 ---
 
@@ -32,7 +32,7 @@ Build FAMtasticHosting.com as a full product: 7-page marketing site with real pr
 5. **NO template defaults.** No centered heroes, no Inter font, no 3-column feature grids, no stock photos, no "Trusted by 10,000+ businesses" fake social proof.
 6. **NO hardcoded placeholder content.** Every heading, paragraph, CTA, and price must be real, final copy. No "Lorem ipsum", no "Coming soon", no "TBD".
 7. **Cheap swarm execution.** Use Claude Code multi-agent (no Opus). Subagents use Sonnet/Haiku. This build does not need heavyweight models.
-8. **Framework choice is OPEN.** Pure static HTML, Astro, Next.js, whatever — the build team chooses the best tool for the job. The mockups are visual reference, not a prison. If a framework produces a more imaginative, more maintainable result with component reuse across 7 pages and an API layer for the dashboard, USE IT. The constraint is the outcome (matches the visual direction, fast, accessible), not the tool. Recommended: Astro for the marketing site (component islands, build-time rendering, fast loads) + a thin Node/Express backend for the dashboard.
+8. **Framework choice is OPEN.** Pure static HTML, Astro, Next.js, whatever — the build team chooses the best tool for the job. The mockups are visual reference, not a prison. If a framework produces a more imaginative, more maintainable result with component reuse across 7 pages and an API layer for the dashboard, USE IT. The constraint is the outcome (matches the visual direction, fast, accessible), not the tool. Recommended: Astro for the hosting site (component islands, build-time rendering, fast loads) + a thin Node/Express backend for the dashboard.
 
 ---
 
@@ -45,7 +45,7 @@ Build FAMtasticHosting.com as a full product: 7-page marketing site with real pr
 
 ---
 
-## Phase 1: Marketing Site (7 Pages)
+## Phase 1: Hosting Site (7 Pages)
 
 ### 1. index.html — Homepage (WILD template)
 
@@ -172,7 +172,7 @@ Build FAMtasticHosting.com as a full product: 7-page marketing site with real pr
 
 ---
 
-## Phase 2: Dashboard (Designed Now, Built After Marketing Site)
+## Phase 2: Dashboard (Designed Now, Built After Hosting Site)
 
 ### Customer Portal
 
@@ -336,7 +336,7 @@ famtastic-hosting/
 ```
 famtastic-hosting/
 ├── src/
-│   ├── pages/            (marketing site, unchanged)
+│   ├── pages/            (hosting site, unchanged)
 │   ├── components/       (marketing + dashboard shared components)
 │   ├── app/              (dashboard SPA — React/Svelte)
 │   │   ├── auth/         (login, register, password reset)
@@ -345,7 +345,7 @@ famtastic-hosting/
 │   │   └── api/          (GoDaddy API integration layer)
 │   └── lib/
 │       ├── godaddy/      (GoDaddy reseller API client)
-│       ├── db/           (supabase or equivalent)
+│       ├── db/           (MySQL — GoDaddy cPanel)
 │       └── auth/         (session management)
 └── ...
 ```
@@ -423,7 +423,7 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 
 ## Acceptance Criteria
 
-### Phase 1 (Marketing Site)
+### Phase 1 (Hosting Site)
 1. All 7 HTML pages (or framework equivalents) exist and render correctly in browser
 2. Mobile responsive at all breakpoints (320, 768, 1024px, 1440px)
 3. No external CDN dependencies in production — all fonts and CSS are local
@@ -448,7 +448,7 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 1. Customer portal wireframes designed (login, dashboard home, domain management, hosting management, billing, support)
 2. Admin dashboard wireframes designed (customer lookup, order management, revenue dashboard, product catalog, provisioning status, reports, settings)
 3. GoDaddy API integration layer spec written (endpoints, auth, data flow)
-4. Auth approach decided (supabase, auth0, or custom)
+4. Auth approach: MySQL session-based (bcrypt + httpOnly cookie)
 5. Visual direction documented: dark mode, Space Grotesk/DM Sans, violet accent, clean card layout, Stripe Dashboard aesthetic
 
 ---
@@ -456,12 +456,12 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 ## Deployment Target
 
 - **Domain:** famtastichosting.com
-- **Marketing site hosting:** Netlify (static deploy or Astro SSR)
+- **Hosting site hosting:** Netlify (static deploy or Astro SSR)
 - **Dashboard hosting:** Netlify or separate Node.js service (Phase 2)
 - **DNS:** Configured through GoDaddy (custom nameservers: ns1.famtastichosting.com, ns2.famtastichosting.com)
-- **SSL:** Netlify provides free SSL via Let's Encrypt (marketing site). Dashboard gets its own SSL.
+- **SSL:** Netlify provides free SSL via Let's Encrypt (hosting site). Dashboard gets its own SSL.
 - **Contact form:** Initially mailto: link. Netlify Forms or Formspree wired when dashboard is ready.
-- **Database:** Supabase or equivalent (Phase 2, dashboard only)
+- **Database:** GoDaddy cPanel MySQL (dashboard + hosting backend)
 
 ---
 

@@ -7,7 +7,7 @@
  *   PATCH /api/admin/products/:id
  * Toggle active/inactive per product.
  *
- * Data source: Supabase products table (seeded by Track 7).
+ * Data source: MySQL products table (seeded by db/seed.sql).
  *
  * Auth: requireAdmin()
  */
@@ -156,7 +156,7 @@ const sortedCategories = [
   {products.length === 0 && !loadError && (
     <div class="db-card">
       <p class="db-text-muted db-text-sm">
-        No products in the catalog yet. Run the Supabase seed migration to populate products from BUILD-SPEC.md pricing.
+        No products in the catalog yet. Run db/setup.sh to populate products from BUILD-SPEC.md pricing.
       </p>
     </div>
   )}

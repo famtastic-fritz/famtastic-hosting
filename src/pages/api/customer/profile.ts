@@ -2,9 +2,8 @@
  * GET  /api/customer/profile  — returns authenticated customer's profile
  * PATCH /api/customer/profile — updates allowed fields
  *
- * Profile data lives in the public.users table in Supabase.
- * Email is managed by Supabase Auth — changing it requires re-verification
- * and is not surfaced here.
+ * Profile data lives in the users table in MySQL.
+ * Email/password changes are not surfaced here.
  *
  * GET response:
  *   { id, email, role, godaddy_shopper_id, created_at, updated_at }
@@ -17,7 +16,7 @@
 
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/auth/middleware.js';
-import { supabaseAdmin } from '../../../lib/supabase/client.js';
+import { pool } from '../../../lib/db/pool.js';
 import { apiOk, apiError } from '../../../lib/api/response.js';
 
 export const prerender = false;
@@ -29,18 +28,18 @@ export const GET: APIRoute = async (context) => {
   if (authResult instanceof Response) return authResult;
   const user = authResult;
 
-  const { data, error } = await supabaseAdmin
-    .from('users')
-    .select('id, email, role, godaddy_shopper_id, created_at, updated_at')
-    .eq('id', user.id)
-    .single();
+  const [rows] = await pool.execute<
+    Array<{ id: number; email: string; role: string; godaddy_shopper_id: string | null; created_at: string; updated_at: string }>
+  >(
+    'SELECT id, email, role, godaddy_shopper_id, created_at, updated_at FROM users WHERE id = ?',
+    [user.id]
+  );
 
-  if (error || !data) {
-    console.error('[profile GET] Supabase error:', error);
+  if (rows.length === 0) {
     return apiError('Profile not found.', 'NOT_FOUND', 404);
   }
 
-  return apiOk(data);
+  return apiOk(rows[0]);
 };
 
 // ─── PATCH ────────────────────────────────────────────────────────────────────
@@ -60,7 +59,7 @@ export const PATCH: APIRoute = async (context) => {
   // godaddy_shopper_id is set by admin only via /api/admin/customers/:id.
   // Customers cannot self-assign a shopper ID — they could claim another
   // customer's GoDaddy account.
-  // Email changes require the Supabase auth flow.
+  // Email changes require the auth flow.
   // Role changes are admin-only and enforced at the DB column level.
   const allowedFields: string[] = [];
   const updates: Record<string, unknown> = {};
@@ -79,19 +78,28 @@ export const PATCH: APIRoute = async (context) => {
     return apiError('No updatable fields provided.', 'BAD_REQUEST', 400);
   }
 
-  updates['updated_at'] = new Date().toISOString();
+  updates['updated_at'] = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-  const { data, error } = await supabaseAdmin
-    .from('users')
-    .update(updates)
-    .eq('id', user.id)
-    .select('id, email, role, godaddy_shopper_id, created_at, updated_at')
-    .single();
+  const setClauses = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+  const values = [...Object.values(updates), user.id];
 
-  if (error || !data) {
-    console.error('[profile PATCH] Supabase error:', error);
+  const [result] = await pool.execute(
+    `UPDATE users SET ${setClauses} WHERE id = ?`,
+    values
+  );
+
+  const updateResult = result as { affectedRows: number };
+  if (updateResult.affectedRows === 0) {
     return apiError('Failed to update profile.', 'UPDATE_FAILED', 500);
   }
 
-  return apiOk(data);
+  // Fetch the updated row
+  const [updatedRows] = await pool.execute<
+    Array<{ id: number; email: string; role: string; godaddy_shopper_id: string | null; created_at: string; updated_at: string }>
+  >(
+    'SELECT id, email, role, godaddy_shopper_id, created_at, updated_at FROM users WHERE id = ?',
+    [user.id]
+  );
+
+  return apiOk(updatedRows[0]);
 };

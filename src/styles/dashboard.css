@@ -29,7 +29,7 @@
 }
 
 /* ─── DASHBOARD DESIGN TOKENS ────────────────────────────────────────────────
-   Extends the marketing site's :root tokens (--violet, --pitch, etc.)
+   Extends the hosting site's :root tokens (--violet, --pitch, etc.)
    without overriding them — all dashboard tokens are prefixed --db-*
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
@@ -41,7 +41,7 @@
   --db-bg-input:     #1a1a24;
   --db-bg-sidebar:   #0d0d14;
 
-  /* Violet accent — matches marketing site's --violet: #7c3aed */
+  /* Violet accent — matches hosting site's --violet: #7c3aed */
   --db-violet:       #7c3aed;
   --db-violet-light: #9d6ef8;
   --db-violet-lighter: #c4b5fd;

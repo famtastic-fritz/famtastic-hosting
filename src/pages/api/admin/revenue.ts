@@ -2,13 +2,7 @@
  * GET /api/admin/revenue
  *
  * Revenue dashboard aggregates for the admin command center.
- * - MTD revenue (current month to date) from GoDaddy /v1/orders
- * - Revenue by product category (best-effort label matching)
- * - Last 12 months of revenue (monthly totals) for the chart
- * - Active subscription count + MRR estimate from Supabase
- *
- * All GoDaddy prices are in MICRODOLLARS — microToUSD() converts them.
- * Server-side only. Requires admin role.
+ * Uses GoDaddy order data + MySQL subscription data.
  */
 
 export const prerender = false;
@@ -17,7 +11,7 @@ import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../lib/auth/middleware.js';
 import { apiOk, apiError, handleGoDaddyError } from '../../../lib/api/response.js';
 import { listOrdersNormalized, getRevenueStats } from '../../../lib/godaddy/orders.js';
-import { supabaseAdmin } from '../../../lib/supabase/client.js';
+import { pool } from '../../../lib/db/pool.js';
 
 // Category label keywords (GoDaddy product labels contain these)
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
@@ -45,17 +39,10 @@ export const GET: APIRoute = async ({ request }) => {
   if (auth instanceof Response) return auth;
 
   try {
-    // Date ranges
     const now = new Date();
     const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const today = now.toISOString();
-
-    // 12-month lookback for chart
-    const twelveMonthsAgo = new Date(
-      now.getFullYear(),
-      now.getMonth() - 11,
-      1
-    ).toISOString();
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString();
 
     // --- MTD revenue from GoDaddy /v1/orders ---
     const [mtdData, yearData] = await Promise.all([
@@ -70,24 +57,22 @@ export const GET: APIRoute = async ({ request }) => {
       byCategory[cat] = (byCategory[cat] ?? 0) + product.totalUSD;
     }
 
-    // --- Active subscriptions + MRR from Supabase ---
-    const { data: subRows, error: subError } = await supabaseAdmin
-      .from('subscriptions')
-      .select('id, product_id')
-      .eq('status', 'active');
-
-    const activeSubscriptions = subError ? 0 : (subRows?.length ?? 0);
+    // --- Active subscriptions + MRR from MySQL ---
+    const [subRows] = await pool.execute<Array<{ id: string; product_id: string }>>(
+      "SELECT id, product_id FROM subscriptions WHERE status = 'active'"
+    );
+    const activeSubscriptions = subRows.length;
 
     // Get product prices to estimate MRR
     let mrrEstimate = 0;
-    if (!subError && subRows && subRows.length > 0) {
+    if (subRows.length > 0) {
       const productIds = [...new Set(subRows.map(s => s.product_id))];
-      const { data: products } = await supabaseAdmin
-        .from('products')
-        .select('id, retail_price, category')
-        .in('id', productIds);
-
-      if (products) {
+      if (productIds.length > 0) {
+        const placeholders = productIds.map(() => '?').join(',');
+        const [products] = await pool.execute<Array<{ id: string; retail_price: number; category: string }>>(
+          `SELECT id, retail_price, category FROM products WHERE id IN (${placeholders})`,
+          productIds
+        );
         const priceMap = new Map(products.map(p => [p.id, p.retail_price]));
         for (const sub of subRows) {
           const price = priceMap.get(sub.product_id) ?? 0;

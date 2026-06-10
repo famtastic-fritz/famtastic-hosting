@@ -14,7 +14,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../lib/auth/middleware.js';
 import { apiOk, apiError } from '../../../lib/api/response.js';
-import { supabaseAdmin } from '../../../lib/supabase/client.js';
+import { pool } from '../../../lib/db/pool.js';
 
 const ALLOWED_KEYS = new Set([
   'notify_email',
@@ -42,15 +42,12 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const upsertRows = updates.map(([key, value]) => ({ key, value: String(value) }));
-
-    const { error } = await supabaseAdmin
-      .from('admin_settings')
-      .upsert(upsertRows, { onConflict: 'key' });
-
-    if (error) {
-      console.error('[admin/settings] Supabase error:', error.message);
-      return apiError('Failed to save settings.', 'DB_ERROR', 500);
+    // Use INSERT ... ON DUPLICATE KEY UPDATE for each key (upsert)
+    for (const [key, value] of updates) {
+      await pool.execute(
+        'INSERT INTO admin_settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)',
+        [key, String(value)]
+      );
     }
 
     return apiOk({

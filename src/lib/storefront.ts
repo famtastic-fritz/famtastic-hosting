@@ -1,7 +1,7 @@
 /**
  * Storefront URL helpers for FAMtastic Hosting
  *
- * All "Buy" buttons on the marketing site redirect to store.famtastichosting.com
+ * All "Buy" buttons on the hosting site redirect to store.famtastichosting.com
  * (GoDaddy storefront). GoDaddy handles all payment processing — we never touch
  * PCI data. This module provides the mapping from our product slugs to the
  * correct storefront product page URLs.

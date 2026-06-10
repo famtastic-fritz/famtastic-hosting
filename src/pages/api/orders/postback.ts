@@ -2,8 +2,8 @@
  * GoDaddy Order Postback Webhook Handler
  *
  * Receives provisioning status notifications from GoDaddy after a customer
- * completes a purchase on store.famtastichosting.com. GoDaddy POSTs order
- * data to this endpoint when provisioning events occur.
+ * completes a purchase. GoDaddy POSTs order data to this endpoint when
+ * provisioning events occur.
  *
  * Route: POST /api/orders/postback
  *
@@ -15,7 +15,7 @@
  */
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { pool } from '../../../lib/db/pool.js';
 import { timingSafeEqual } from 'node:crypto';
 
 // ─── Expected GoDaddy postback payload shape ─────────────────────────────────
@@ -46,7 +46,6 @@ function validatePostback(request: Request): boolean {
   const expectedSecret = import.meta.env.GODADDY_POSTBACK_SECRET;
 
   if (!expectedSecret) {
-    // Allow insecure mode ONLY in local development with explicit opt-in
     const isDev = import.meta.env.MODE === 'development';
     const allowInsecure = import.meta.env.GODADDY_POSTBACK_ALLOW_INSECURE === '1';
     if (isDev && allowInsecure) {
@@ -55,7 +54,6 @@ function validatePostback(request: Request): boolean {
       );
       return true;
     }
-    // Fail closed in all other cases
     console.error(
       '[postback] GODADDY_POSTBACK_SECRET is not set — rejecting request'
     );
@@ -65,18 +63,13 @@ function validatePostback(request: Request): boolean {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) return false;
 
-  // Accept "Bearer <secret>" format
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
 
-  // Constant-time comparison to prevent timing attacks.
-  // Pad the shorter buffer to match lengths; mismatched lengths always fail.
   try {
     const tokenBuf = Buffer.from(token);
     const secretBuf = Buffer.from(expectedSecret);
 
     if (tokenBuf.length !== secretBuf.length) {
-      // Different lengths: always reject, but do a dummy comparison to
-      // preserve constant time on the branch.
       const dummy = Buffer.alloc(secretBuf.length);
       timingSafeEqual(dummy, secretBuf);
       return false;
@@ -125,13 +118,11 @@ export const POST: APIRoute = async ({ request }) => {
       const formData = await request.formData();
       payload = Object.fromEntries(formData.entries()) as GoDaddyPostbackPayload;
     } else {
-      // Attempt JSON anyway — GoDaddy sometimes omits Content-Type
       const rawText = await request.text();
       payload = rawText ? (JSON.parse(rawText) as GoDaddyPostbackPayload) : {};
     }
   } catch (parseError) {
     console.error('[postback] Failed to parse payload:', parseError);
-    // Return 200 to prevent GoDaddy retrying a malformed payload indefinitely
     return new Response(
       JSON.stringify({ ok: true, warning: 'payload_parse_error' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -145,28 +136,23 @@ export const POST: APIRoute = async ({ request }) => {
     domain: payload.domain,
   });
 
-  // ── Persist to Supabase ───────────────────────────────────────────────────
-  const supabaseUrl = import.meta.env.SUPABASE_URL;
-  const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (supabaseUrl && supabaseServiceKey && payload.orderId) {
+  // ── Persist to MySQL ────────────────────────────────────────────────────
+  if (payload.orderId) {
     try {
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
       const internalStatus = mapProvisioningStatus(payload.status);
 
       // Safety check: only update orders we already know about.
-      // Never upsert based on an attacker-supplied godaddy_order_id.
-      const { data: existingOrder, error: lookupError } = await supabase
-        .from('orders')
-        .select('id')
-        .eq('godaddy_order_id', payload.orderId)
-        .single();
+      const [existing] = await pool.execute<
+        Array<{ id: string }>
+      >(
+        'SELECT id FROM orders WHERE godaddy_order_id = ?',
+        [payload.orderId]
+      );
 
-      if (lookupError || !existingOrder) {
+      if (existing.length === 0) {
         console.warn(
           `[postback] Order ${payload.orderId} not found in orders table — rejecting`
         );
-        // Return 200 so GoDaddy doesn't retry; we just don't persist it.
         return new Response(
           JSON.stringify({ ok: true, note: 'order_not_recognized' }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -174,42 +160,26 @@ export const POST: APIRoute = async ({ request }) => {
       }
 
       // Update the existing, verified order row
-      const { error: updateError } = await supabase
-        .from('orders')
-        .update({
-          status: internalStatus,
-          provisioning_status: payload.status ?? null,
-          provisioned_at: internalStatus === 'active' ? timestamp : null,
-          updated_at: timestamp,
-          raw_postback: payload,
-        })
-        .eq('godaddy_order_id', payload.orderId);
+      const provisionedAt = internalStatus === 'active' ? timestamp.slice(0, 19).replace('T', ' ') : null;
+      const updatedAt = timestamp.slice(0, 19).replace('T', ' ');
 
-      if (updateError) {
-        // Log but don't surface to GoDaddy — return 200 to prevent retries
-        console.error('[postback] Supabase update error:', updateError);
-      } else {
-        console.log(
-          `[postback] Order ${payload.orderId} updated to: ${internalStatus}`
-        );
-      }
+      await pool.execute(
+        'UPDATE orders SET status = ?, provisioning_status = ?, provisioned_at = COALESCE(?, provisioned_at), updated_at = ?, raw_postback = ? WHERE godaddy_order_id = ?',
+        [internalStatus, payload.status ?? null, provisionedAt, updatedAt, JSON.stringify(payload), payload.orderId]
+      );
+
+      console.log(
+        `[postback] Order ${payload.orderId} updated to: ${internalStatus}`
+      );
     } catch (dbError) {
       console.error('[postback] Database error:', dbError);
       // Fall through — return 200 regardless to prevent GoDaddy retry storms
     }
   } else {
-    // No DB configured or no orderId — log for debugging
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.warn('[postback] Supabase not configured — order not persisted');
-    }
-    if (!payload.orderId) {
-      console.warn('[postback] Received postback with no orderId:', payload);
-    }
+    console.warn('[postback] Received postback with no orderId:', payload);
   }
 
   // ── Always return 200 to acknowledge receipt ──────────────────────────────
-  // GoDaddy retries on non-2xx. Return 200 even on DB errors so we don't get
-  // duplicate processing storms when the DB is temporarily unavailable.
   return new Response(
     JSON.stringify({ ok: true, received_at: timestamp }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }

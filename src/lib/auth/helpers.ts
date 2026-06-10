@@ -2,9 +2,19 @@
  * Auth helpers — rate limiting, session cookie management.
  *
  * hashRateLimit(ip, action)        — simple in-memory limiter (5 attempts/min)
- * setSessionCookie(response, data) — writes the fam_session httpOnly cookie
- * clearSessionCookie(response)     — expires the fam_session cookie
- * buildSessionCookieValue(session) — serializes a Supabase session for the cookie
+ * clearRateLimit(ip, action)       — resets the rate limit counter
+ * rateLimitResetSeconds(ip, action)— seconds until rate-limit window resets
+ * buildSetCookieHeader(data, secure) — writes the fam_session httpOnly cookie
+ * buildClearCookieHeader()         — expires the fam_session cookie
+ * setSessionCookie(response, data) — appends Set-Cookie header to a Response
+ * clearSessionCookie(response)     — appends expiring Set-Cookie header
+ * getClientIP(request)             — extracts client IP from proxy headers
+ *
+ * Cookie format change:
+ *   Previously stored { access_token, refresh_token } from Supabase Auth.
+ *   Now stores an opaque session token string from the MySQL `sessions` table.
+ *   The `SessionData` interface holds { userId, email, role } for building
+ *   the response, but only the session token goes into the cookie.
  */
 
 import { SESSION_COOKIE } from './middleware.js';
@@ -80,29 +90,34 @@ export function rateLimitResetSeconds(ip: string, action: string): number {
   return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
 }
 
+// ─── Session data type ───────────────────────────────────────────────────────
+
+/**
+ * Simple JSON-serializable user identity. Used by login/signup routes to
+ * return user info in the response body. The cookie itself stores only
+ * the opaque session token — not this data.
+ */
+export interface SessionData {
+  userId: string;
+  email: string;
+  role: 'customer' | 'admin';
+}
+
 // ─── Cookie helpers ───────────────────────────────────────────────────────────
 
 /** 30-day session lifetime (seconds) */
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
-export interface SessionTokens {
-  access_token: string;
-  refresh_token: string;
-}
-
 /**
  * Builds the Set-Cookie header value for the session cookie.
+ * The value is the opaque session token (not user data).
+ *
  * httpOnly=true  — prevents XSS from reading the token.
  * SameSite=Lax   — protects against CSRF while allowing top-level navigation.
  * Secure         — only sent over HTTPS (set by caller based on env).
  */
-export function buildSetCookieHeader(tokens: SessionTokens, secure: boolean): string {
-  const value = encodeURIComponent(
-    JSON.stringify({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-    })
-  );
+export function buildSetCookieHeader(token: string, secure: boolean): string {
+  const value = encodeURIComponent(token);
 
   const parts = [
     `${SESSION_COOKIE}=${value}`,
@@ -131,19 +146,19 @@ export function buildClearCookieHeader(): string {
 
 /**
  * Appends the session cookie to a Response (or returns a new Response with
- * the cookie header added). Works with any Response-like object.
+ * the cookie header added).
  *
  * @param response  The Response to annotate
- * @param tokens    Supabase access_token + refresh_token
+ * @param token     Opaque session token from the `sessions` table
  * @param secure    Pass true in production (HTTPS); false in local dev
  */
 export function setSessionCookie(
   response: Response,
-  tokens: SessionTokens,
+  token: string,
   secure = import.meta.env.PROD as boolean
 ): Response {
   const headers = new Headers(response.headers);
-  headers.set('Set-Cookie', buildSetCookieHeader(tokens, secure));
+  headers.set('Set-Cookie', buildSetCookieHeader(token, secure));
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

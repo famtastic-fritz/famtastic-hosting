@@ -2,22 +2,31 @@
  * Auth middleware for Astro API routes and server-rendered pages.
  *
  * Three exported functions:
- *   requireAuth(request)   — extracts Supabase session from cookie, returns
- *                            user or redirects to /dashboard/login
- *   requireAdmin(request)  — same as requireAuth but also checks role=admin,
+ *   requireAuth(request)   — reads fam_session cookie, queries MySQL sessions
+ *                            table joined with users, returns AuthUser or redirect
+ *   requireAdmin(request)  — same as requireAuth but also checks role='admin',
  *                            redirects to /admin/login if not admin
  *   getSession(request)    — returns session without redirecting (optional auth)
  *
  * Session flow:
  *   1. Client sends the `fam_session` httpOnly cookie with every request.
- *   2. We extract the raw JSON token, call supabase.auth.setSession() to
- *      validate and refresh it if needed, then look up the user's role in
- *      public.users.
+ *   2. We extract the session token from the cookie, query the `sessions`
+ *      table (joined with `users`) to validate it and load the user's data.
  *   3. On success we return an AuthUser. On failure we redirect or return null.
+ *
+ * The `sessions` table is expected to have this schema:
+ *   CREATE TABLE sessions (
+ *     id         CHAR(36) PRIMARY KEY,           -- UUID session id
+ *     user_id    CHAR(36) NOT NULL,              -- FK → users.id
+ *     token      VARCHAR(255) NOT NULL,          -- opaque session token
+ *     expires_at DATETIME NOT NULL,
+ *     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+ *     INDEX idx_sessions_token  (token),
+ *     INDEX idx_sessions_user   (user_id)
+ *   );
  */
 
-import { supabaseAdmin } from '../supabase/client.js';
-import type { UserRow } from '../supabase/types.js';
+import { pool } from '../db/pool.js';
 
 // ─── Session cookie name ──────────────────────────────────────────────────────
 
@@ -28,7 +37,7 @@ export const SESSION_COOKIE = 'fam_session';
 export interface AuthUser {
   id: string;
   email: string;
-  role: UserRow['role'];
+  role: 'customer' | 'admin';
 }
 
 // Backward-compatible alias used by GoDaddy route stubs
@@ -36,52 +45,53 @@ export type AuthSession = AuthUser;
 
 // ─── Internal: extract & validate session from cookie ────────────────────────
 
+interface SessionRow {
+  s_id: string;
+  s_token: string;
+  s_expires_at: Date;
+  u_id: string;
+  u_email: string;
+  u_role: 'customer' | 'admin';
+}
+
 async function extractSession(request: Request): Promise<AuthUser | null> {
   const cookieHeader = request.headers.get('Cookie') ?? '';
   const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]+)`));
   if (!match) return null;
 
-  let sessionData: { access_token?: string; refresh_token?: string };
+  // The cookie value is the session token (opaque string)
+  const token = decodeURIComponent(match[1]).trim();
+  if (!token) return null;
+
   try {
-    sessionData = JSON.parse(decodeURIComponent(match[1])) as typeof sessionData;
-  } catch {
+    const [rows] = await pool.query<SessionRow[]>(
+      `SELECT s.id AS s_id, s.token AS s_token, s.expires_at AS s_expires_at,
+              u.id AS u_id, u.email AS u_email, u.role AS u_role
+       FROM sessions s
+       JOIN users u ON u.id = s.user_id
+       WHERE s.token = ?
+         AND s.expires_at > NOW()`,
+      [token]
+    );
+
+    if (rows.length === 0) return null;
+
+    const row = rows[0];
+    return {
+      id:    row.u_id,
+      email: row.u_email,
+      role:  row.u_role,
+    };
+  } catch (err) {
+    console.error('[auth] session lookup failed:', err);
     return null;
   }
-
-  if (!sessionData.access_token || !sessionData.refresh_token) return null;
-
-  // Validate the session tokens with Supabase
-  const { data, error } = await supabaseAdmin.auth.setSession({
-    access_token: sessionData.access_token,
-    refresh_token: sessionData.refresh_token,
-  });
-
-  if (error || !data.user) return null;
-
-  // Look up role from our public.users table (Supabase auth doesn't store role)
-  const { data: rawRow, error: userError } = await supabaseAdmin
-    .from('users')
-    .select('id, email, role')
-    .eq('id', data.user.id)
-    .single();
-
-  if (userError || !rawRow) return null;
-
-  // Cast through unknown — Supabase generic inference can narrow to 'never' when
-  // the select string doesn't perfectly match a Database column subset type.
-  const userRow = rawRow as unknown as Pick<UserRow, 'id' | 'email' | 'role'>;
-
-  return {
-    id: userRow.id,
-    email: userRow.email,
-    role: userRow.role,
-  };
 }
 
 // ─── requireAuth ─────────────────────────────────────────────────────────────
 
 /**
- * Extracts the Supabase session from the request cookie and validates it.
+ * Extracts the session from the request cookie and validates it against MySQL.
  * Returns an AuthUser if authenticated, or a redirect Response to /dashboard/login.
  *
  * Usage in an Astro API route:

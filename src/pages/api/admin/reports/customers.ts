@@ -1,7 +1,7 @@
 /**
  * GET /api/admin/reports/customers
  *
- * CSV export of all customers from the Supabase users table.
+ * CSV export of all customers from MySQL users table.
  * Downloads as: famtastic-customers-YYYY-MM-DD.csv
  *
  * Includes: email, created date, active subscriptions, order count, total spend.
@@ -12,18 +12,16 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/middleware.js';
 import { apiError } from '../../../../lib/api/response.js';
-import { supabaseAdmin } from '../../../../lib/supabase/client.js';
+import { pool } from '../../../../lib/db/pool.js';
 
 /**
  * Escapes a value for safe inclusion in a CSV cell.
- *
  * Prefixes cells starting with =, +, -, @, tab, or carriage return with a
- * single quote so spreadsheet applications (Excel, Google Sheets) do not
- * interpret them as formula or DDE injection.
+ * single quote so spreadsheet applications do not interpret them as formulas.
  */
 function csvSafe(v: unknown): string {
   const s = String(v ?? '');
-  const escaped = (/^[=+\-@\t\r]/.test(s) ? "'" + s : s).replace(/"/g, '""');
+  const escaped = (/^[=+\-\@\t\r]/.test(s) ? "'" + s : s).replace(/"/g, '""');
   return `"${escaped}"`;
 }
 
@@ -33,15 +31,11 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     // Fetch all customers
-    const { data: users, error } = await supabaseAdmin
-      .from('users')
-      .select('id, email, created_at')
-      .eq('role', 'customer')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      return apiError('Failed to fetch customer data.', 'DB_ERROR', 500);
-    }
+    const [users] = await pool.execute<
+      Array<{ id: string; email: string; created_at: string }>
+    >(
+      "SELECT id, email, created_at FROM users WHERE role = 'customer' ORDER BY created_at DESC"
+    );
 
     if (!users || users.length === 0) {
       return apiError('No customers found.', 'NO_DATA', 404);
@@ -49,33 +43,32 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Fetch aggregated order data
     const userIds = users.map(u => u.id);
+    const placeholders = userIds.map(() => '?').join(',');
 
-    const [{ data: orders }, { data: subs }] = await Promise.all([
-      supabaseAdmin
-        .from('orders')
-        .select('user_id, amount_cents')
-        .in('user_id', userIds),
-      supabaseAdmin
-        .from('subscriptions')
-        .select('user_id')
-        .in('user_id', userIds)
-        .eq('status', 'active'),
-    ]);
+    const [orderAggs] = await pool.execute<
+      Array<{ user_id: string; total_cents: number; order_count: number }>
+    >(
+      `SELECT user_id, SUM(amount_cents) as total_cents, COUNT(*) as order_count FROM orders WHERE user_id IN (${placeholders}) GROUP BY user_id`,
+      userIds
+    );
+
+    const [subAggs] = await pool.execute<
+      Array<{ user_id: string; sub_count: number }>
+    >(
+      `SELECT user_id, COUNT(*) as sub_count FROM subscriptions WHERE user_id IN (${placeholders}) AND status = 'active' GROUP BY user_id`,
+      userIds
+    );
 
     const spendMap = new Map<string, number>();
     const orderCountMap = new Map<string, number>();
-    if (orders) {
-      for (const o of orders) {
-        spendMap.set(o.user_id, (spendMap.get(o.user_id) ?? 0) + o.amount_cents);
-        orderCountMap.set(o.user_id, (orderCountMap.get(o.user_id) ?? 0) + 1);
-      }
+    for (const row of orderAggs) {
+      spendMap.set(row.user_id, row.total_cents);
+      orderCountMap.set(row.user_id, row.order_count);
     }
 
     const subMap = new Map<string, number>();
-    if (subs) {
-      for (const s of subs) {
-        subMap.set(s.user_id, (subMap.get(s.user_id) ?? 0) + 1);
-      }
+    for (const row of subAggs) {
+      subMap.set(row.user_id, row.sub_count);
     }
 
     // Build CSV

@@ -81,5 +81,5 @@
 ## Reseller Context
 - This is a GoDaddy reseller storefront FACELIFT, not a new build
 - `store.famtastichosting.com` = existing GoDaddy reseller store (purchase engine)
-- `famtasticHosting.com` = branded 7-page marketing site (what we just deployed)
+- `famtasticHosting.com` = branded 7-page hosting site (what we just deployed)
 - Customers route through FAMtastic brand → GoDaddy is wholesale backend only

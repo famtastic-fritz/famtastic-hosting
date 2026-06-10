@@ -160,7 +160,7 @@ const currentMonth = now.toLocaleDateString('en-US', { month: 'long', year: 'num
     <h4 class="db-card__title db-mb-4" style="font-size:0.875rem;">About Report Data</h4>
     <ul class="notes-list">
       <li>Revenue data comes directly from GoDaddy <code>/v1/orders</code> API — prices are converted from microdollars to USD.</li>
-      <li>Customer data comes from the FAMtastic Hosting Supabase database. Customers are added via GoDaddy postback after purchase.</li>
+      <li>Customer data comes from the FAMtastic Hosting MySQL database. Customers are added via GoDaddy postback after purchase.</li>
       <li>All exports are generated in real-time. Download the same report twice to get the latest data.</li>
       <li>GoDaddy processes all payments — FAMtastic Hosting never stores PCI data.</li>
     </ul>

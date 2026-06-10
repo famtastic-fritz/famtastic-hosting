@@ -1,7 +1,7 @@
 /**
  * POST /api/auth/admin/login
  *
- * Admin-only login route. Authenticates via Supabase, then enforces
+ * Admin-only login route. Authenticates against MySQL, then enforces
  * role === 'admin'. Returns 403 if the user exists but is not an admin.
  *
  * Separate from /api/auth/login so admin brute-force rate limits are
@@ -18,8 +18,7 @@
  */
 
 import type { APIRoute } from 'astro';
-import { supabaseAdmin } from '../../../../lib/supabase/client.js';
-import type { UserRow } from '../../../../lib/supabase/types.js';
+import { pool } from '../../../../lib/db/pool.js';
 import {
   hashRateLimit,
   clearRateLimit,
@@ -27,11 +26,10 @@ import {
   buildSetCookieHeader,
   getClientIP,
 } from '../../../../lib/auth/helpers.js';
+import crypto from 'node:crypto';
 
 export const prerender = false;
 
-// Stricter rate limit for admin login — 5 attempts/min same as customer
-// but tracked under a separate action key ('admin_login') so they don't share buckets
 const RATE_LIMIT_ACTION = 'admin_login';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -65,56 +63,65 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  // ── Supabase auth ─────────────────────────────────────────────────────────
-  const { data, error } = await supabaseAdmin.auth.signInWithPassword({ email, password });
+  // ── Look up user in MySQL ─────────────────────────────────────────────────
+  const [rows] = await pool.execute<
+    Array<{ id: string; email: string; role: string; password_hash: string }>
+  >(
+    'SELECT id, email, role, password_hash FROM users WHERE email = ?',
+    [email]
+  );
 
-  if (error || !data.session || !data.user) {
+  if (rows.length === 0) {
     return json(
       { ok: false, error: 'Invalid credentials.', code: 'AUTH_FAILED' },
       401
     );
   }
 
-  // ── Verify admin role ─────────────────────────────────────────────────────
-  const { data: rawUser, error: userError } = await supabaseAdmin
-    .from('users')
-    .select('id, email, role')
-    .eq('id', data.user.id)
-    .single();
-  // Cast through unknown — Supabase generic inference can narrow to 'never'
-  const userRow = rawUser as unknown as Pick<UserRow, 'id' | 'email' | 'role'> | null;
+  const user = rows[0];
 
-  if (userError || !userRow) {
+  // ── Verify password (bcrypt) ──────────────────────────────────────────────
+  const bcrypt = await import('bcryptjs');
+  const passwordMatch = await bcrypt.compare(password, user.password_hash);
+
+  if (!passwordMatch) {
     return json(
-      { ok: false, error: 'Account not found.', code: 'USER_NOT_FOUND' },
+      { ok: false, error: 'Invalid credentials.', code: 'AUTH_FAILED' },
       401
     );
   }
 
-  if (userRow.role !== 'admin') {
-    // Auth succeeded but user is not admin — don't hint at account existence
+  // ── Verify admin role ──────────────────────────────────────────────────────
+  if (user.role !== 'admin') {
     return json(
       { ok: false, error: 'Invalid credentials.', code: 'FORBIDDEN' },
       403
     );
   }
 
+  // ── Create session ───────────────────────────────────────────────────────
+  const sessionId = crypto.randomUUID();
+  const sessionToken = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 19)
+    .replace('T', ' ');
+
+  await pool.execute(
+    'INSERT INTO sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
+    [sessionId, user.id, sessionToken, expiresAt]
+  );
+
   // ── Clear rate limit on success ───────────────────────────────────────────
   clearRateLimit(ip, RATE_LIMIT_ACTION);
 
   // ── Build response with session cookie ───────────────────────────────────
-  const cookie = buildSetCookieHeader(
-    {
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
-    },
-    import.meta.env.PROD
-  );
+  const cookie = buildSetCookieHeader(sessionToken, import.meta.env.PROD);
 
   return new Response(
     JSON.stringify({
       ok: true,
-      user: { id: userRow.id, email: userRow.email, role: 'admin' as const },
+      user: { id: user.id, email: user.email, role: 'admin' as const },
       redirectTo: '/admin',
     }),
     {

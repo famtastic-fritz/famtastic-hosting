@@ -1,9 +1,8 @@
 /**
  * GET /api/admin/products
  *
- * Full product catalog from Supabase products table.
+ * Full product catalog from MySQL products table.
  * Shows wholesale price, retail price, markup %, and active status.
- * Data seeded by supabase/seed.sql (Track 7) from BUILD-SPEC.md pricing.
  */
 
 export const prerender = false;
@@ -11,23 +10,18 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/middleware.js';
 import { apiOk, apiError } from '../../../../lib/api/response.js';
-import { supabaseAdmin } from '../../../../lib/supabase/client.js';
+import { pool } from '../../../../lib/db/pool.js';
 
 export const GET: APIRoute = async ({ request }) => {
   const auth = await requireAdmin(request);
   if (auth instanceof Response) return auth;
 
   try {
-    const { data: products, error } = await supabaseAdmin
-      .from('products')
-      .select('*')
-      .order('category', { ascending: true })
-      .order('name', { ascending: true });
-
-    if (error) {
-      console.error('[admin/products] Supabase error:', error.message);
-      return apiError('Failed to fetch product catalog.', 'DB_ERROR', 500);
-    }
+    const [products] = await pool.execute<
+      Array<{ id: string; name: string; category: string; godaddy_product_id: string | null; wholesale_price: number; retail_price: number; markup_pct: number; active: number; created_at: string; updated_at: string }>
+    >(
+      'SELECT id, name, category, godaddy_product_id, wholesale_price, retail_price, markup_pct, active, created_at, updated_at FROM products ORDER BY category ASC, name ASC'
+    );
 
     return apiOk({
       products: (products ?? []).map(p => ({
@@ -38,7 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
         wholesalePriceUSD: (p.wholesale_price / 100).toFixed(2),
         retailPriceUSD: (p.retail_price / 100).toFixed(2),
         markupPct: p.markup_pct,
-        active: p.active,
+        active: !!p.active,
         created_at: p.created_at,
         updated_at: p.updated_at,
       })),

@@ -2,28 +2,22 @@
 /**
  * /admin/settings — Admin settings
  *
- * - Support phone number (currently (480) 624-2500)
- * - Admin email notification preferences (stored in admin_settings table)
- * - API key management (last 4 chars only — no exposure of full keys)
- *
- * Reads from admin_settings table in Supabase.
- * Writes via inline form → POST /api/admin/settings (future endpoint).
- *
+ * Reads admin settings from MySQL (admin_settings table).
  * Auth: requireAdmin()
  */
 export const prerender = false;
 
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import { requireAdmin } from '../../lib/auth/middleware.js';
-import { supabaseAdmin } from '../../lib/supabase/client.js';
+import { pool } from '../../lib/db/pool.js';
 
 const auth = await requireAdmin(Astro.request);
 if (auth instanceof Response) return auth;
 
-// Load admin settings from Supabase
-const { data: settingsRows } = await supabaseAdmin
-  .from('admin_settings')
-  .select('key, value');
+// Load admin settings from MySQL
+const [settingsRows] = await pool.execute<
+  Array<{ key: string; value: string }>
+>('SELECT `key`, `value` FROM admin_settings');
 
 const settings: Record<string, string> = {};
 if (settingsRows) {
@@ -40,8 +34,8 @@ const notifyOnProvisioning = settings['notify_on_provisioning'] !== 'false';
 // Mask GoDaddy key — show only last 4 chars
 const rawApiKey = import.meta.env.GODADDY_API_KEY ?? '';
 const maskedKey = rawApiKey.length > 4
-  ? '•'.repeat(12) + rawApiKey.slice(-4)
-  : rawApiKey ? '•'.repeat(rawApiKey.length) : 'Not configured';
+  ? '\u2022'.repeat(12) + rawApiKey.slice(-4)
+  : rawApiKey ? '\u2022'.repeat(rawApiKey.length) : 'Not configured';
 ---
 
 <DashboardLayout
@@ -80,7 +74,7 @@ const maskedKey = rawApiKey.length > 4
             <span class="db-badge db-badge--active">Active</span>
           </div>
           <p class="db-help-text db-mt-4">
-            To change this number, update the <code>support_phone</code> key in the <code>admin_settings</code> table in Supabase,
+            To change this number, update the <code>support_phone</code> key in the <code>admin_settings</code> table,
             or contact GoDaddy reseller support to update your white-label number.
           </p>
         </div>
@@ -151,7 +145,7 @@ const maskedKey = rawApiKey.length > 4
 
         <div class="form-footer">
           <button type="submit" class="db-btn db-btn--primary">Save notification settings</button>
-          <span class="db-text-xs db-text-muted">Settings are saved to the admin_settings table in Supabase.</span>
+          <span class="db-text-xs db-text-muted">Settings are saved to the admin_settings table.</span>
         </div>
       </form>
     </div>
@@ -172,7 +166,7 @@ const maskedKey = rawApiKey.length > 4
         <div class="settings-row__control">
           <div class="api-key-display">
             <code class="api-key-value">{maskedKey}</code>
-            <span class="db-badge {rawApiKey ? 'db-badge--active' : 'db-badge--expiring'}">
+            <span class={`db-badge ${rawApiKey ? 'db-badge--active' : 'db-badge--expiring'}`}>
               {rawApiKey ? 'Configured' : 'Not set'}
             </span>
           </div>
@@ -191,7 +185,7 @@ const maskedKey = rawApiKey.length > 4
   <div class="support-footer db-mt-6">
     <span class="db-text-muted db-text-xs">
       GoDaddy reseller support:
-      <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+      <a href="tel:+148****2500" class="support-link">(480) 624-2500</a>
     </span>
   </div>
 </DashboardLayout>
@@ -218,9 +212,6 @@ const maskedKey = rawApiKey.length > 4
     };
 
     try {
-      // Save each setting to admin_settings via Supabase
-      // In production, this would call a dedicated PATCH /api/admin/settings endpoint.
-      // For now, we show a success message and indicate manual Supabase update if needed.
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -230,11 +221,10 @@ const maskedKey = rawApiKey.length > 4
       if (res.ok) {
         showToast('Notification settings saved.');
       } else {
-        // Endpoint may not exist yet — still give feedback
-        showToast('Settings noted. Verify in Supabase admin_settings table.', 'error');
+        showToast('Failed to save settings.', 'error');
       }
     } catch {
-      showToast('Settings noted locally. Verify in Supabase admin_settings table.', 'error');
+      showToast('Failed to save settings.', 'error');
     }
   });
 </script>

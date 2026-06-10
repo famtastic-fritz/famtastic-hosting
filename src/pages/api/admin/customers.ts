@@ -2,9 +2,7 @@
  * GET /api/admin/customers
  *
  * Customer list with optional search.
- * Data source: Supabase public.users table (synced from GoDaddy postback or
- * manual admin provisioning). GoDaddy /v1/customers requires OAuth and returns
- * 401 with sso-key — we use our own users table as the source of truth.
+ * Data source: MySQL users table.
  *
  * Query params:
  *   search  — filter by email (partial match)
@@ -20,7 +18,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../lib/auth/middleware.js';
 import { apiOk, apiError } from '../../../lib/api/response.js';
-import { supabaseAdmin } from '../../../lib/supabase/client.js';
+import { pool } from '../../../lib/db/pool.js';
 
 export const GET: APIRoute = async ({ request }) => {
   const auth = await requireAdmin(request);
@@ -32,58 +30,62 @@ export const GET: APIRoute = async ({ request }) => {
   const offset = parseInt(url.searchParams.get('offset') ?? '0', 10);
 
   try {
-    // Build query — fetch customers (non-admin users)
-    let query = supabaseAdmin
-      .from('users')
-      .select('id, email, role, godaddy_shopper_id, created_at', { count: 'exact' })
-      .eq('role', 'customer')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    // Fetch customers (non-admin)
+    let customerQuery: string;
+    let params: unknown[];
 
     if (search) {
-      query = query.ilike('email', `%${search}%`);
+      customerQuery = 'SELECT id, email, role, godaddy_shopper_id, created_at FROM users WHERE role = ? AND email LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      params = ['customer', `%${search}%`, limit, offset];
+    } else {
+      customerQuery = 'SELECT id, email, role, godaddy_shopper_id, created_at FROM users WHERE role = ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      params = ['customer', limit, offset];
     }
 
-    const { data: users, count, error } = await query;
+    const [users] = await pool.execute<
+      Array<{ id: string; email: string; role: string; godaddy_shopper_id: string | null; created_at: string }>
+    >(customerQuery, params);
 
-    if (error) {
-      console.error('[admin/customers] Supabase error:', error.message);
-      return apiError('Failed to fetch customer list.', 'DB_ERROR', 500);
-    }
+    // Get total count
+    const [countResult] = await pool.execute<Array<{ cnt: number }>>(
+      'SELECT COUNT(*) as cnt FROM users WHERE role = ?',
+      ['customer']
+    );
+    const count = countResult[0]?.cnt ?? users.length;
 
-    if (!users) {
+    if (!users || users.length === 0) {
       return apiOk({ customers: [], total: 0, limit, offset });
     }
 
     // For each customer, fetch order count and total spend
     const customerIds = users.map(u => u.id);
+    const placeholders = customerIds.map(() => '?').join(',');
 
-    const { data: orderAggs } = await supabaseAdmin
-      .from('orders')
-      .select('user_id, amount_cents')
-      .in('user_id', customerIds);
+    const [orderAggs] = await pool.execute<
+      Array<{ user_id: string; total_cents: number; order_count: number }>
+    >(
+      `SELECT user_id, SUM(amount_cents) as total_cents, COUNT(*) as order_count FROM orders WHERE user_id IN (${placeholders}) GROUP BY user_id`,
+      customerIds
+    );
 
-    const { data: subCounts } = await supabaseAdmin
-      .from('subscriptions')
-      .select('user_id')
-      .in('user_id', customerIds)
-      .eq('status', 'active');
+    const [subCounts] = await pool.execute<
+      Array<{ user_id: string; sub_count: number }>
+    >(
+      `SELECT user_id, COUNT(*) as sub_count FROM subscriptions WHERE user_id IN (${placeholders}) AND status = 'active' GROUP BY user_id`,
+      customerIds
+    );
 
     // Build aggregation maps
     const spendMap = new Map<string, number>();
     const orderCountMap = new Map<string, number>();
-    if (orderAggs) {
-      for (const row of orderAggs) {
-        spendMap.set(row.user_id, (spendMap.get(row.user_id) ?? 0) + row.amount_cents);
-        orderCountMap.set(row.user_id, (orderCountMap.get(row.user_id) ?? 0) + 1);
-      }
+    for (const row of orderAggs) {
+      spendMap.set(row.user_id, row.total_cents);
+      orderCountMap.set(row.user_id, row.order_count);
     }
 
     const subCountMap = new Map<string, number>();
-    if (subCounts) {
-      for (const row of subCounts) {
-        subCountMap.set(row.user_id, (subCountMap.get(row.user_id) ?? 0) + 1);
-      }
+    for (const row of subCounts) {
+      subCountMap.set(row.user_id, row.sub_count);
     }
 
     const customers = users.map(u => ({

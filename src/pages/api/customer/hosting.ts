@@ -27,7 +27,7 @@ import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/auth/middleware.js';
 import { listOrdersNormalized } from '../../../lib/godaddy/orders.js';
 import { apiOk, handleGoDaddyError } from '../../../lib/api/response.js';
-import { supabaseAdmin } from '../../../lib/supabase/client.js';
+import { pool } from '../../../lib/db/pool.js';
 
 export const prerender = false;
 
@@ -57,13 +57,14 @@ export const GET: APIRoute = async (context) => {
 
   // IDOR gate: only return data for the authenticated user's linked GoDaddy
   // account. If godaddy_shopper_id is null the account is not yet linked.
-  const { data: profile } = await supabaseAdmin
-    .from('users')
-    .select('godaddy_shopper_id')
-    .eq('id', user.id)
-    .single();
+  const [rows] = await pool.execute<
+    Array<{ godaddy_shopper_id: string | null }>
+  >(
+    'SELECT godaddy_shopper_id FROM users WHERE id = ?',
+    [user.id]
+  );
 
-  const shopperId = profile?.godaddy_shopper_id ?? null;
+  const shopperId = rows[0]?.godaddy_shopper_id ?? null;
 
   if (!shopperId) {
     return apiOk({

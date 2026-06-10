@@ -1,6 +1,6 @@
 export const meta = {
   name: 'famtastic-hosting-build',
-  description: 'Build FAMtasticHosting.com — 7-page Astro marketing site with shared components',
+  description: 'Build FAMtasticHosting.com — 7-page Astro hosting site with shared components',
   phases: [
     { title: 'Scaffold', detail: 'Astro project init, components, styles, data' },
     { title: 'Pages', detail: '7 pages built in parallel' },
@@ -88,7 +88,7 @@ NO AI references anywhere.
 phase('Scaffold')
 
 const SCAFFOLD_PROMPT = `
-You are building the scaffold for FAMtasticHosting.com, a 7-page Astro marketing site.
+You are building the scaffold for FAMtasticHosting.com, a 7-page Astro hosting site.
 Working directory: ${ROOT}
 
 TASK: Create all files needed BEFORE the pages are built:
@@ -1112,7 +1112,7 @@ TASKS:
 2. Run: npm run build 2>&1 | head -100 — check for build errors.
 3. If build errors exist, attempt to fix them (missing imports, syntax errors, prop mismatches).
 4. After successful build (or after fixing): run "git -C ${ROOT}/../../ add famtastic-sites/famtastic-hosting/" then commit with message:
-   "feat: FAMtasticHosting.com — 7-page Astro marketing site"
+   "feat: FAMtasticHosting.com — 7-page Astro hosting site"
 5. Report: which pages built successfully, any remaining issues, what was fixed.
 
 Expected files:

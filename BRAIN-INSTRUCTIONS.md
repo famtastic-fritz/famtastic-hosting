@@ -4,7 +4,7 @@
 
 1. **7 pages, not 6** — added `builder.html` (Website Builder with FAMtastic Designs tie-in)
 2. **Framework is OPEN** — the build team can use Astro, Next.js, or whatever produces the best result. Not locked to vanilla HTML. Recommended: Astro for Phase 1 + easy Phase 2 dashboard expansion.
-3. **Dashboard is designed into the architecture** — Phase 1 ships the marketing site. Phase 2 adds customer portal + admin dashboard. File structure accounts for both.
+3. **Dashboard is designed into the architecture** — Phase 1 ships the hosting site. Phase 2 adds customer portal + admin dashboard. File structure accounts for both.
 4. **GoDaddy white-label support phone** — (480) 624-2500 must appear on every page footer and in the dashboard.
 5. **Website Builder page has a dual purpose** — sells the builder AND tees up FAMtastic Designs as the upgrade path. The Crossroads section is the key differentiator.
 
@@ -18,7 +18,7 @@ cd ~/famtastic-sites/famtastic-hosting && claude --model sonnet -p "Read BUILD-S
 
 ## What Gets Built (Phase 1)
 
-7-page marketing site with:
+7-page hosting site with:
 - Real pricing from the pricing table in BUILD-SPEC.md
 - WILD template for 6 pages, EXTREME for servers only
 - builder.html has a Crossroads section (DIY vs Custom Design) and FAMtastic Designs tie-in

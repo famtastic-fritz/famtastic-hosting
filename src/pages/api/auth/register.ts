@@ -1,8 +1,10 @@
 /**
  * POST /api/auth/register
  *
- * Creates a new customer account via Supabase Auth, then inserts a row
- * into public.users with role='customer'.
+ * Creates a new customer account in MySQL:
+ *   1. Hashes the password with bcrypt
+ *   2. Inserts a row into users with role='customer'
+ *   3. Creates a session row and sets the fam_session cookie
  *
  * Request body (JSON):
  *   { email: string; password: string; name?: string }
@@ -12,27 +14,24 @@
  *
  * Response (400/409/429):
  *   { ok: false; error: string; code: string }
- *
- * Note: GoDaddy storefront handles payment/provisioning. Registration here
- * creates the portal login. GoDaddy order data is synced later via postback.
  */
 
 import type { APIRoute } from 'astro';
-import { supabaseAdmin } from '../../../lib/supabase/client.js';
-import type { UserInsert } from '../../../lib/supabase/types.js';
+import { pool } from '../../../lib/db/pool.js';
 import {
   hashRateLimit,
   rateLimitResetSeconds,
   buildSetCookieHeader,
   getClientIP,
 } from '../../../lib/auth/helpers.js';
+import crypto from 'node:crypto';
 
 export const prerender = false;
 
 // Minimum password length
 const MIN_PASSWORD_LENGTH = 8;
 
-// Basic email regex — Supabase will do the authoritative check
+// Basic email regex
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST: APIRoute = async ({ request }) => {
@@ -74,84 +73,63 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  // ── Create Supabase auth user ─────────────────────────────────────────────
-  const { data, error } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,   // Auto-confirm for portal-first flow
-  });
+  // ── Check if email already exists ─────────────────────────────────────────
+  const [existing] = await pool.execute<Array<{ id: string }>>(
+    'SELECT id FROM users WHERE email = ?',
+    [email]
+  );
 
-  if (error) {
-    if (error.message.toLowerCase().includes('already registered') ||
-        error.message.toLowerCase().includes('already exists')) {
+  if (existing.length > 0) {
+    return json(
+      { ok: false, error: 'An account with this email already exists.', code: 'EMAIL_TAKEN' },
+      409
+    );
+  }
+
+  // ── Hash password and insert user ─────────────────────────────────────────
+  const bcrypt = await import('bcryptjs');
+  const passwordHash = await bcrypt.hash(password, 12);
+  const userId = crypto.randomUUID();
+
+  try {
+    await pool.execute(
+      'INSERT INTO users (id, email, password_hash, role, godaddy_shopper_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+      [userId, email, passwordHash, 'customer', null]
+    );
+  } catch (insertError: any) {
+    // Duplicate email — race condition between SELECT and INSERT
+    if (insertError?.code === 'ER_DUP_ENTRY') {
       return json(
         { ok: false, error: 'An account with this email already exists.', code: 'EMAIL_TAKEN' },
         409
       );
     }
-    console.error('[register] Supabase auth error:', error.message);
-    return json(
-      { ok: false, error: 'Registration failed. Please try again.', code: 'AUTH_ERROR' },
-      500
-    );
-  }
-
-  if (!data.user) {
-    return json({ ok: false, error: 'Registration failed.', code: 'AUTH_ERROR' }, 500);
-  }
-
-  // ── Insert into public.users ──────────────────────────────────────────────
-  // Cast through UserInsert — Supabase generic inference can narrow insert type to 'never'
-  const newUser: UserInsert = {
-    id: data.user.id,
-    email,
-    role: 'customer',
-    godaddy_shopper_id: null,
-  };
-  const { error: insertError } = await supabaseAdmin.from('users').insert(newUser as never);
-
-  if (insertError) {
-    // Clean up the auth user if the profile insert fails
-    await supabaseAdmin.auth.admin.deleteUser(data.user.id);
-    console.error('[register] Profile insert error:', insertError.message);
+    console.error('[register] Insert error:', insertError);
     return json(
       { ok: false, error: 'Registration failed. Please try again.', code: 'DB_ERROR' },
       500
     );
   }
 
-  // ── Sign in to get a session ──────────────────────────────────────────────
-  const { data: sessionData, error: signInError } = await supabaseAdmin.auth.signInWithPassword({
-    email,
-    password,
-  });
+  // ── Create session and set cookie ────────────────────────────────────────
+  const sessionId = crypto.randomUUID();
+  const sessionToken = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 19)
+    .replace('T', ' ');
 
-  if (signInError || !sessionData.session) {
-    // Account created, but couldn't auto-login — redirect to login page
-    return json(
-      {
-        ok: true,
-        user: { id: data.user.id, email, role: 'customer' as const },
-        redirectTo: '/dashboard/login',
-        message: 'Account created. Please sign in.',
-      },
-      201
-    );
-  }
-
-  // ── Auto-login: set session cookie ────────────────────────────────────────
-  const cookie = buildSetCookieHeader(
-    {
-      access_token: sessionData.session.access_token,
-      refresh_token: sessionData.session.refresh_token,
-    },
-    import.meta.env.PROD
+  await pool.execute(
+    'INSERT INTO sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
+    [sessionId, userId, sessionToken, expiresAt]
   );
+
+  const cookie = buildSetCookieHeader(sessionToken, import.meta.env.PROD);
 
   return new Response(
     JSON.stringify({
       ok: true,
-      user: { id: data.user.id, email, role: 'customer' as const },
+      user: { id: userId, email, role: 'customer' as const },
       redirectTo: '/dashboard',
     }),
     {
