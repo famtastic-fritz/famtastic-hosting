@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAMtastic Hosting — Infrastructure that disappears. Brand that doesn't.</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'term-green': '#00ff41',
+            'term-green-dim': '#00a829',
+            'term-green-ghost': 'rgba(0,255,65,0.12)',
+            'void-blue': '#060a10',
+            'void-mid': '#0d1520',
+            'neon-white': '#f0fff4',
+          },
+          fontFamily: {
+            mono: ['"Share Tech Mono"', 'monospace'],
+            grotesk: ['"Space Grotesk"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    /* ============================================================
+       CSS CUSTOM PROPERTIES — EXTREME THEME ENGINE
+    ============================================================ */
+    :root {
+      --green: #00ff41;
+      --green-dim: #00a829;
+      --green-ghost: rgba(0,255,65,0.08);
+      --green-glow: rgba(0,255,65,0.35);
+      --black: #000000;
+      --void: #060a10;
+      --void-mid: #0d1520;
+      --white: #ffffff;
+      --scanline-gap: 4px;
+      --crt-barrel: perspective(1200px) rotateX(0.3deg);
+      --glitch-offset: 3px;
+      --cursor-blink: 0.8s;
+      --grain-opacity: 0.055;
+      --mono: 'Share Tech Mono', monospace;
+      --grotesk: 'Space Grotesk', sans-serif;
+    }
+
+    /* ============================================================
+       RESET + GLOBALS
+    ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--black);
+      color: var(--green);
+      font-family: var(--mono);
+      overflow-x: hidden;
+      transform: var(--crt-barrel);
+      transform-origin: center top;
+      animation: crt-flicker 12s infinite;
+    }
+
+    ::selection {
+      background: var(--green);
+      color: var(--black);
+    }
+
+    /* ============================================================
+       CRT FLICKER ANIMATION
+    ============================================================ */
+    @keyframes crt-flicker {
+      0%, 19.9%, 22%, 62.9%, 64%, 74.9%, 76%, 89%, 100% { opacity: 1; }
+      20%   { opacity: 0.97; }
+      63%   { opacity: 0.98; }
+      75%   { opacity: 0.99; }
+      90%   { opacity: 0.97; }
+    }
+
+    /* ============================================================
+       GRAIN NOISE PSEUDO-ELEMENT (SVG turbulence filter)
+    ============================================================ */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: var(--grain-opacity);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      mix-blend-mode: overlay;
+    }
+
+    /* ============================================================
+       SCANLINE OVERLAY (fixed, always on top)
+    ============================================================ */
+    .crt-scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0,255,65,0.025) 2px,
+        rgba(0,255,65,0.025) var(--scanline-gap)
+      );
+      animation: scanline-scroll 8s linear infinite;
+    }
+
+    @keyframes scanline-scroll {
+      0%   { background-position: 0 0; }
+      100% { background-position: 0 300px; }
+    }
+
+    /* ============================================================
+       GLOBAL LINK RESET
+    ============================================================ */
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ============================================================
+       NAV
+    ============================================================ */
+    .nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.92);
+      border-bottom: 1px solid rgba(0,255,65,0.2);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 2rem;
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    /* GLITCH EFFECT on logo */
+    .nav-logo::before,
+    .nav-logo::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+    }
+
+    .nav-logo::before {
+      color: #ff003c;
+      clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+    }
+
+    .nav-logo::after {
+      color: #00d4ff;
+      clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+    }
+
+    .nav-logo:hover::before {
+      opacity: 1;
+      animation: glitch-before 0.15s steps(2) infinite;
+    }
+
+    .nav-logo:hover::after {
+      opacity: 1;
+      animation: glitch-after 0.2s steps(2) infinite;
+    }
+
+    @keyframes glitch-before {
+      0%   { transform: translateX(calc(var(--glitch-offset) * -1)); }
+      50%  { transform: translateX(var(--glitch-offset)); }
+      100% { transform: translateX(calc(var(--glitch-offset) * -1)); }
+    }
+
+    @keyframes glitch-after {
+      0%   { transform: translateX(var(--glitch-offset)); }
+      50%  { transform: translateX(calc(var(--glitch-offset) * -2)); }
+      100% { transform: translateX(var(--glitch-offset)); }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--green-dim);
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover {
+      color: var(--green);
+    }
+
+    .nav-links a::before {
+      content: './';
+      opacity: 0.5;
+    }
+
+    /* ============================================================
+       HERO — .fam-hero-layered
+    ============================================================ */
+    .fam-hero-layered {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding-top: 5rem;
+    }
+
+    .fam-hero-layer--bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 50%, #080808 0%, #000000 100%);
+      z-index: 0;
+    }
+
+    /* CSS Matrix Rain — multi-shadow cascade on a single element */
+    .fam-hero-layer--fx {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* Scanlines + grain within hero */
+    .fam-hero-layer--fx::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0,255,65,0.04) 2px,
+        rgba(0,255,65,0.04) 4px
+      );
+      z-index: 2;
+    }
+
+    /* Matrix rain columns via CSS box-shadow cascade */
+    .matrix-rain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .matrix-col {
+      position: absolute;
+      top: -100%;
+      width: 1.2rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--green);
+      writing-mode: vertical-rl;
+      animation: matrix-fall linear infinite;
+      opacity: 0.12;
+      user-select: none;
+    }
+
+    @keyframes matrix-fall {
+      0%   { transform: translateY(-100%); opacity: 0.18; }
+      80%  { opacity: 0.06; }
+      100% { transform: translateY(220vh); opacity: 0; }
+    }
+
+    /* Ghost stat — "99.9%" behind content */
+    .fam-hero-layer--character {
+      position: absolute;
+      right: -2vw;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      font-family: var(--mono);
+      font-size: 20vw;
+      color: var(--green);
+      opacity: 0.06;
+      line-height: 1;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+
+    .fam-hero-layer--content {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      padding: 0 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ============================================================
+       TERMINAL TYPEWRITER
+    ============================================================ */
+    .terminal-prompt-block {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      color: var(--green-dim);
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .prompt-line {
+      overflow: hidden;
+      white-space: nowrap;
+      width: 0;
+      opacity: 0;
+    }
+
+    .prompt-line.typing {
+      animation: typewriter var(--tw-dur, 0.6s) steps(var(--tw-steps, 30)) var(--tw-delay, 0s) forwards;
+    }
+
+    @keyframes typewriter {
+      0%   { width: 0; opacity: 1; }
+      1%   { opacity: 1; }
+      100% { width: 100%; opacity: 1; }
+    }
+
+    .prompt-cursor::after {
+      content: '_';
+      animation: blink-cursor var(--cursor-blink) step-end infinite;
+    }
+
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* Hero headline */
+    .hero-headline {
+      font-family: var(--mono);
+      font-size: clamp(1.8rem, 5vw, 4.2rem);
+      color: var(--green);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      text-shadow:
+        0 0 20px rgba(0,255,65,0.5),
+        0 0 60px rgba(0,255,65,0.2);
+    }
+
+    .hero-headline .break-word {
+      display: block;
+    }
+
+    .hero-subline {
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: rgba(0,255,65,0.55);
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hero CTA — Space Grotesk exception */
+    .btn-primary {
+      font-family: var(--grotesk);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      background: var(--green);
+      color: var(--black);
+      border: none;
+      padding: 0.9rem 2.2rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.15s;
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--black);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+
+    .btn-primary:hover::before {
+      transform: scaleX(1);
+    }
+
+    .btn-primary:hover {
+      color: var(--green);
+      box-shadow:
+        0 0 20px var(--green-glow),
+        0 0 60px rgba(0,255,65,0.15),
+        inset 0 0 0 1px var(--green);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-secondary {
+      font-family: var(--grotesk);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      background: transparent;
+      color: var(--green);
+      border: 1px solid var(--green-dim);
+      padding: 0.8rem 2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    }
+
+    .btn-secondary:hover {
+      background: var(--green-ghost);
+      border-color: var(--green);
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+
+    /* ============================================================
+       SECTION ANGLED DIVIDER
+    ============================================================ */
+    .section-skewed {
+      transform: skewY(-3deg);
+      transform-origin: left;
+    }
+
+    .section-skewed > .section-inner {
+      transform: skewY(3deg);
+    }
+
+    /* ============================================================
+       STATUS TICKER STRIP
+    ============================================================ */
+    .status-ticker {
+      border-top: 1px solid rgba(0,255,65,0.15);
+      border-bottom: 1px solid rgba(0,255,65,0.15);
+      overflow: hidden;
+      background: rgba(0,255,65,0.03);
+      padding: 0.5rem 0;
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 4rem;
+      animation: ticker-scroll 25s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--green-dim);
+    }
+
+    .ticker-item .status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.5); opacity: 0.6; }
+    }
+
+    /* ============================================================
+       SECTION: SYSTEM STATUS (Features)
+    ============================================================ */
+    .section-status {
+      padding: 6rem 2rem;
+      background: var(--void);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-status::before {
+      content: 'STATUS';
+      position: absolute;
+      left: -0.05em;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: 30vw;
+      color: rgba(0,255,65,0.02);
+      pointer-events: none;
+      line-height: 1;
+      user-select: none;
+      mix-blend-mode: screen;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      color: var(--green-dim);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .section-label::before {
+      content: '// ';
+    }
+
+    .section-title {
+      font-family: var(--mono);
+      font-size: clamp(1.8rem, 4vw, 3.2rem);
+      color: var(--green);
+      line-height: 1.1;
+      margin-bottom: 3rem;
+      text-shadow: 0 0 30px rgba(0,255,65,0.3);
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px;
+      background: rgba(0,255,65,0.08);
+    }
+
+    .status-item {
+      background: var(--void);
+      padding: 2rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .status-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--green-dim);
+      transition: width 0.3s, background 0.3s;
+    }
+
+    .status-item:hover::before {
+      width: 4px;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green-glow);
+    }
+
+    .status-item:hover {
+      background: rgba(0,255,65,0.04);
+    }
+
+    .status-badge {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .status-badge.online  { color: var(--green); }
+    .status-badge.fast    { color: #00d4ff; }
+    .status-badge.secure  { color: #ffe01b; }
+    .status-badge.live    { color: #ff8c00; }
+
+    .status-badge-text {
+      padding: 0.15rem 0.5rem;
+      border: 1px solid currentColor;
+      font-size: 0.65rem;
+      opacity: 0.8;
+    }
+
+    .status-stat {
+      font-family: var(--mono);
+      font-size: 2.5rem;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 0.4rem;
+      text-shadow: 0 0 20px rgba(0,255,65,0.4);
+    }
+
+    .status-desc {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: rgba(0,255,65,0.5);
+      letter-spacing: 0.04em;
+    }
+
+    /* ============================================================
+       SECTION: PRICING — SYSTEM SELECT
+    ============================================================ */
+    .section-pricing {
+      padding: 6rem 2rem;
+      background: var(--black);
+      position: relative;
+      transform: skewY(-3deg);
+      transform-origin: right;
+    }
+
+    .section-pricing > .section-inner {
+      transform: skewY(3deg);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Terminal Window Card */
+    .term-window {
+      background: var(--void);
+      border: 1px solid rgba(0,255,65,0.15);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      transform-style: preserve-3d;
+    }
+
+    .term-window:hover {
+      border-color: var(--green);
+      box-shadow:
+        0 0 30px rgba(0,255,65,0.2),
+        0 0 80px rgba(0,255,65,0.08),
+        inset 0 0 20px rgba(0,255,65,0.03);
+      transform: translateY(-4px) perspective(800px) rotateX(2deg);
+    }
+
+    .term-window.featured {
+      border-color: var(--green);
+      box-shadow: 0 0 30px rgba(0,255,65,0.25);
+    }
+
+    /* Fake loading bar on hover */
+    .term-window::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      width: 0;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      transition: width 0.6s ease;
+    }
+
+    .term-window:hover::after {
+      width: 100%;
+    }
+
+    .term-titlebar {
+      background: rgba(0,255,65,0.06);
+      border-bottom: 1px solid rgba(0,255,65,0.15);
+      padding: 0.6rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .term-dot-red   { background: #ff5f57; }
+    .term-dot-yel   { background: #ffbd2e; }
+    .term-dot-grn   { background: #28c840; }
+
+    .term-title-text {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: rgba(0,255,65,0.4);
+      letter-spacing: 0.12em;
+      margin-left: 0.4rem;
+    }
+
+    .term-body {
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+
+    .term-plan-name {
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      color: var(--green);
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.1em;
+    }
+
+    .term-price {
+      font-family: var(--mono);
+      font-size: 2.4rem;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+      text-shadow: 0 0 20px rgba(0,255,65,0.4);
+    }
+
+    .term-price-sub {
+      font-size: 0.7rem;
+      color: rgba(0,255,65,0.4);
+      margin-bottom: 1.5rem;
+    }
+
+    .term-divider {
+      border: none;
+      border-top: 1px solid rgba(0,255,65,0.12);
+      margin: 1rem 0;
+    }
+
+    .term-feature {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.78rem;
+      color: rgba(0,255,65,0.65);
+    }
+
+    .term-feature .fstat {
+      font-size: 0.7rem;
+      min-width: 48px;
+      opacity: 0.7;
+    }
+
+    .term-feature .fstat.ok   { color: var(--green); }
+    .term-feature .fstat.warn { color: #ffbd2e; }
+    .term-feature .fstat.crit { color: #ff5f57; }
+
+    /* Cursor blink in active card */
+    .term-cursor {
+      display: inline-block;
+      width: 9px;
+      height: 1.1em;
+      background: var(--green);
+      vertical-align: middle;
+      margin-left: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .term-window:hover .term-cursor {
+      opacity: 1;
+      animation: blink-cursor var(--cursor-blink) step-end infinite;
+    }
+
+    .term-selected-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--green);
+      letter-spacing: 0.15em;
+      margin-top: 1rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .term-window:hover .term-selected-label,
+    .term-window.featured .term-selected-label {
+      opacity: 1;
+    }
+
+    /* ============================================================
+       SECTION: 3D PERSPECTIVE SHOWCASE
+    ============================================================ */
+    .section-3d {
+      padding: 6rem 2rem;
+      background: var(--void-mid);
+      position: relative;
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    .section-3d::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(0,255,65,0.04) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(0,100,255,0.03) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .cards-3d-container {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      transform-style: preserve-3d;
+    }
+
+    .card-3d {
+      width: 280px;
+      height: 340px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease;
+      cursor: pointer;
+    }
+
+    .card-3d:hover {
+      transform: rotateY(180deg);
+    }
+
+    .card-3d-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border: 1px solid rgba(0,255,65,0.2);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-3d-front {
+      background: var(--void);
+    }
+
+    .card-3d-back {
+      background: var(--black);
+      transform: rotateY(180deg);
+      border-color: var(--green);
+      box-shadow: 0 0 30px rgba(0,255,65,0.2);
+    }
+
+    .card-3d-icon {
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(0,255,65,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      margin-bottom: 1rem;
+    }
+
+    .card-3d-title {
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--green);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.1em;
+    }
+
+    .card-3d-text {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: rgba(0,255,65,0.5);
+      line-height: 1.6;
+    }
+
+    .card-3d-number {
+      font-family: var(--mono);
+      font-size: 4rem;
+      color: rgba(0,255,65,0.06);
+      line-height: 1;
+      align-self: flex-end;
+      letter-spacing: -0.04em;
+    }
+
+    .card-flip-hint {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: rgba(0,255,65,0.25);
+      text-align: center;
+      margin-top: 1.5rem;
+      letter-spacing: 0.12em;
+      animation: blink-cursor 2s step-end infinite;
+    }
+
+    /* ============================================================
+       SECTION: DESIGN UPSELL — TERMINAL RECOMMENDATION
+    ============================================================ */
+    .section-upsell {
+      padding: 6rem 2rem;
+      background: var(--black);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-upsell::before {
+      content: 'DESIGN';
+      position: absolute;
+      right: -0.05em;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: 28vw;
+      color: rgba(0,255,65,0.018);
+      pointer-events: none;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .upsell-terminal {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--void);
+      border: 1px solid rgba(0,255,65,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upsell-terminal::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,255,65,0.015) 3px,
+        rgba(0,255,65,0.015) 4px
+      );
+      pointer-events: none;
+    }
+
+    .upsell-titlebar {
+      background: rgba(0,255,65,0.08);
+      border-bottom: 1px solid rgba(0,255,65,0.15);
+      padding: 0.6rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .upsell-body {
+      padding: 2rem 2rem;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+    }
+
+    .upsell-line {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0.7rem;
+      align-items: baseline;
+      opacity: 0;
+      animation: fade-in-up 0.4s ease forwards;
+    }
+
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .upsell-line:nth-child(1) { animation-delay: 0.1s; }
+    .upsell-line:nth-child(2) { animation-delay: 0.3s; }
+    .upsell-line:nth-child(3) { animation-delay: 0.5s; }
+    .upsell-line:nth-child(4) { animation-delay: 0.7s; }
+    .upsell-line:nth-child(5) { animation-delay: 0.9s; }
+    .upsell-line:nth-child(6) { animation-delay: 1.1s; }
+    .upsell-line:nth-child(7) { animation-delay: 1.3s; }
+
+    .upsell-prompt { color: var(--green-dim); min-width: 1rem; }
+    .upsell-cmd    { color: var(--green); }
+    .upsell-ready  { color: var(--green); font-size: 0.75rem; }
+    .upsell-warn   { color: #ffbd2e; }
+    .upsell-rec    { color: #00d4ff; }
+    .upsell-action { color: var(--green); font-weight: bold; }
+
+    .upsell-cta-row {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(0,255,65,0.12);
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .upsell-url {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: rgba(0,255,65,0.4);
+      letter-spacing: 0.06em;
+    }
+
+    /* ============================================================
+       SECTION: BROAD TRUST BAND (angled)
+    ============================================================ */
+    .section-trust {
+      padding: 5rem 2rem;
+      background: var(--green);
+      transform: skewY(-2.5deg);
+      transform-origin: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-trust > .section-inner {
+      transform: skewY(2.5deg);
+    }
+
+    .section-trust::before {
+      content: 'FAM';
+      position: absolute;
+      left: -0.05em;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: 45vw;
+      color: rgba(0,0,0,0.07);
+      pointer-events: none;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .trust-stat-number {
+      font-family: var(--mono);
+      font-size: 3rem;
+      color: var(--black);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .trust-stat-label {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: rgba(0,0,0,0.6);
+      letter-spacing: 0.12em;
+    }
+
+    /* ============================================================
+       SECTION: DOMAIN SEARCH
+    ============================================================ */
+    .section-domain {
+      padding: 6rem 2rem;
+      background: var(--void);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .domain-search-bar {
+      max-width: 700px;
+      margin: 3rem auto 0;
+      display: flex;
+      border: 1px solid rgba(0,255,65,0.25);
+      background: var(--black);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .domain-search-bar:focus-within {
+      border-color: var(--green);
+      box-shadow: 0 0 30px rgba(0,255,65,0.2);
+    }
+
+    .domain-prompt {
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--green-dim);
+      padding: 1rem 1rem 1rem 1.2rem;
+      white-space: nowrap;
+    }
+
+    .domain-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--green);
+      padding: 1rem 0;
+      caret-color: var(--green);
+    }
+
+    .domain-input::placeholder {
+      color: rgba(0,255,65,0.2);
+    }
+
+    .domain-btn {
+      font-family: var(--grotesk);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      background: var(--green);
+      color: var(--black);
+      border: none;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .domain-btn:hover {
+      background: rgba(0,255,65,0.8);
+    }
+
+    .domain-tld-list {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: rgba(0,255,65,0.35);
+    }
+
+    .domain-tld-list span {
+      padding: 0.2rem 0.5rem;
+      border: 1px solid rgba(0,255,65,0.12);
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .domain-tld-list span:hover {
+      color: var(--green);
+      border-color: var(--green);
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .site-footer {
+      background: var(--black);
+      border-top: 1px solid rgba(0,255,65,0.15);
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: rgba(0,255,65,0.35);
+      letter-spacing: 0.08em;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .footer-links a {
+      color: rgba(0,255,65,0.35);
+      letter-spacing: 0.06em;
+      transition: color 0.15s;
+    }
+
+    .footer-links a::before {
+      content: './';
+      opacity: 0.6;
+    }
+
+    .footer-links a:hover {
+      color: var(--green);
+    }
+
+    /* ============================================================
+       MOBILE RESPONSIVE
+    ============================================================ */
+    @media (max-width: 768px) {
+      .fam-hero-layer--character {
+        font-size: 40vw;
+        opacity: 0.04;
+      }
+
+      .hero-headline {
+        font-size: clamp(1.5rem, 7vw, 2.5rem);
+      }
+
+      .cards-3d-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .card-3d {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .section-pricing {
+        transform: none;
+      }
+
+      .section-pricing > .section-inner {
+        transform: none;
+      }
+
+      .section-trust {
+        transform: none;
+      }
+
+      .section-trust > .section-inner {
+        transform: none;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .nav-bar {
+        padding: 0.75rem 1rem;
+      }
+
+      .site-footer {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      body {
+        transform: none;
+      }
+    }
+
+    /* ============================================================
+       EXTRA: GLOWING SCROLLBAR
+    ============================================================ */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--black);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--green-dim);
+      box-shadow: 0 0 8px var(--green-glow);
+    }
+
+    /* ============================================================
+       BLEND MODE LAYER
+    ============================================================ */
+    .blend-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9997;
+      background:
+        radial-gradient(ellipse 50% 30% at 80% 20%, rgba(0,255,65,0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 20% at 20% 80%, rgba(0,100,255,0.03) 0%, transparent 70%);
+      mix-blend-mode: screen;
+    }
+
+    /* ============================================================
+       TYPOGRAPHY AS VISUAL TEXTURE — single letters
+    ============================================================ */
+    .bg-letter {
+      position: absolute;
+      font-family: var(--mono);
+      font-size: 50vw;
+      color: rgba(0,255,65,0.015);
+      pointer-events: none;
+      user-select: none;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    /* ============================================================
+       SECTION: COMMAND LINE FEATURE LIST
+    ============================================================ */
+    .section-terminal-features {
+      padding: 6rem 2rem;
+      background: var(--black);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cli-table {
+      max-width: 800px;
+      margin: 3rem auto 0;
+      border: 1px solid rgba(0,255,65,0.1);
+    }
+
+    .cli-table-header {
+      background: rgba(0,255,65,0.06);
+      border-bottom: 1px solid rgba(0,255,65,0.12);
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      padding: 0.6rem 1.2rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--green-dim);
+      letter-spacing: 0.15em;
+    }
+
+    .cli-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      padding: 0.8rem 1.2rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      border-bottom: 1px solid rgba(0,255,65,0.06);
+      transition: background 0.15s;
+    }
+
+    .cli-row:last-child {
+      border-bottom: none;
+    }
+
+    .cli-row:hover {
+      background: rgba(0,255,65,0.04);
+    }
+
+    .cli-cmd   { color: var(--green); }
+    .cli-desc  { color: rgba(0,255,65,0.55); }
+    .cli-avail { color: rgba(0,255,65,0.4); font-size: 0.72rem; }
+    .cli-avail.all   { color: var(--green); }
+    .cli-avail.growth { color: #00d4ff; }
+    .cli-avail.pro   { color: #ffe01b; }
+
+    /* ============================================================
+       MARQUEE — horizontal scrolling text
+    ============================================================ */
+    .marquee-band {
+      overflow: hidden;
+      border-top: 1px solid rgba(0,255,65,0.08);
+      border-bottom: 1px solid rgba(0,255,65,0.08);
+      padding: 1.2rem 0;
+      background: rgba(0,255,65,0.02);
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 3rem;
+      animation: marquee-scroll 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes marquee-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .marquee-item {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      color: rgba(0,255,65,0.15);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .marquee-item .sep {
+      margin: 0 1rem;
+      color: rgba(0,255,65,0.06);
+    }
+
+    /* ============================================================
+       SCROLL INDICATOR
+    ============================================================ */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      z-index: 10;
+    }
+
+    .scroll-indicator-text {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: rgba(0,255,65,0.25);
+    }
+
+    .scroll-arrow {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, rgba(0,255,65,0.4), transparent);
+      animation: scroll-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scroll-pulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50%       { opacity: 1; transform: scaleY(1.3); }
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- CRT Scanline overlay -->
+<div class="crt-scanlines" aria-hidden="true"></div>
+
+<!-- Blend mode ambient light -->
+<div class="blend-overlay" aria-hidden="true"></div>
+
+<!-- ================================================================
+     NAV
+================================================================ -->
+<nav class="nav-bar" role="navigation" aria-label="Main navigation">
+  <div class="nav-logo" data-text="FAMtastic_Hosting" aria-label="FAMtastic Hosting">
+    <span style="color: var(--green);">FAMtastic</span><span style="opacity:0.5;">_Hosting</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">features</a></li>
+    <li><a href="#pricing">pricing</a></li>
+    <li><a href="#domains">domains</a></li>
+    <li><a href="#upsell">designs</a></li>
+  </ul>
+  <button class="btn-primary" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">
+    <span>Get Started</span>
+  </button>
+</nav>
+
+<!-- ================================================================
+     HERO
+================================================================ -->
+<section class="fam-hero-layered" id="hero" aria-label="Hero">
+
+  <!-- BG Layer -->
+  <div class="fam-hero-layer--bg" aria-hidden="true"></div>
+
+  <!-- FX Layer — matrix rain -->
+  <div class="fam-hero-layer--fx" aria-hidden="true">
+    <div class="matrix-rain" id="matrixRain"></div>
+  </div>
+
+  <!-- Character Layer — ghost stat -->
+  <div class="fam-hero-layer--character" aria-hidden="true">99.9%</div>
+
+  <!-- Content Layer -->
+  <div class="fam-hero-layer--content">
+
+    <div class="terminal-prompt-block" aria-label="Terminal prompt output">
+      <div class="prompt-line typing" style="--tw-dur: 0.8s; --tw-steps: 30; --tw-delay: 0.3s;">
+        <span style="color: var(--green-dim);">&gt; hostname: </span><span style="color: var(--green);">famtastic-hosting</span>
+      </div>
+      <div class="prompt-line typing" style="--tw-dur: 0.5s; --tw-steps: 20; --tw-delay: 1.2s;">
+        <span style="color: var(--green-dim);">&gt; status: </span><span style="color: var(--green);">ONLINE</span>
+      </div>
+      <div class="prompt-line typing" style="--tw-dur: 0.5s; --tw-steps: 18; --tw-delay: 1.8s;">
+        <span style="color: var(--green-dim);">&gt; uptime: </span><span style="color: var(--green);">99.9%</span>
+      </div>
+      <div class="prompt-line typing prompt-cursor" style="--tw-dur: 0.7s; --tw-steps: 25; --tw-delay: 2.4s;">
+        <span style="color: var(--green-dim);">&gt; next: </span><span style="color: var(--green);">[YOUR DOMAIN]</span>
+      </div>
+    </div>
+
+    <h1 class="hero-headline">
+      <span class="break-word">Infrastructure that</span>
+      <span class="break-word">disappears.</span>
+      <span class="break-word" style="opacity: 0.55;">Brand that doesn't.</span>
+    </h1>
+
+    <p class="hero-subline">
+      Premium hosting built for businesses that refuse to look like everyone else.
+      Your domain. Your stack. Your brand — uncompromised.
+    </p>
+
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+      <button class="btn-primary">
+        <span>Initialize Project</span>
+      </button>
+      <button class="btn-secondary">View Plans</button>
+    </div>
+
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator" aria-hidden="true">
+    <span class="scroll-indicator-text">SCROLL</span>
+    <div class="scroll-arrow"></div>
+  </div>
+
+</section>
+
+<!-- ================================================================
+     STATUS TICKER
+================================================================ -->
+<div class="status-ticker" aria-label="System status ticker">
+  <div class="ticker-track">
+    <!-- First set -->
+    <span class="ticker-item"><span class="status-dot"></span>ALL SYSTEMS OPERATIONAL</span>
+    <span class="ticker-item">UPTIME: 99.97% — 30 DAYS</span>
+    <span class="ticker-item"><span class="status-dot"></span>CDN NODES: 28 ACTIVE</span>
+    <span class="ticker-item">SSL PROVISIONING: &lt;60s</span>
+    <span class="ticker-item"><span class="status-dot"></span>SUPPORT RESPONSE: &lt;2HR</span>
+    <span class="ticker-item">NEXT MAINTENANCE: NONE SCHEDULED</span>
+    <span class="ticker-item"><span class="status-dot"></span>MIGRATIONS: FREE + SAME-DAY</span>
+    <!-- Duplicate for infinite scroll -->
+    <span class="ticker-item"><span class="status-dot"></span>ALL SYSTEMS OPERATIONAL</span>
+    <span class="ticker-item">UPTIME: 99.97% — 30 DAYS</span>
+    <span class="ticker-item"><span class="status-dot"></span>CDN NODES: 28 ACTIVE</span>
+    <span class="ticker-item">SSL PROVISIONING: &lt;60s</span>
+    <span class="ticker-item"><span class="status-dot"></span>SUPPORT RESPONSE: &lt;2HR</span>
+    <span class="ticker-item">NEXT MAINTENANCE: NONE SCHEDULED</span>
+    <span class="ticker-item"><span class="status-dot"></span>MIGRATIONS: FREE + SAME-DAY</span>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION: SYSTEM STATUS (Features)
+================================================================ -->
+<section class="section-status" id="features" aria-labelledby="features-title">
+  <div style="max-width: 1100px; margin: 0 auto; position: relative; z-index: 1;">
+    <p class="section-label">System Output</p>
+    <h2 class="section-title" id="features-title">
+      Every node.<br/>Every metric.<br/>Online.
+    </h2>
+
+    <div class="status-grid" role="list">
+
+      <div class="status-item" role="listitem">
+        <div class="status-badge online">
+          <span class="status-badge-text">ONLINE</span>
+        </div>
+        <div class="status-stat">99.9%</div>
+        <div class="status-desc">uptime SLA — guaranteed or credited.</div>
+      </div>
+
+      <div class="status-item" role="listitem">
+        <div class="status-badge fast">
+          <span class="status-badge-text">FAST</span>
+        </div>
+        <div class="status-stat">&lt;200ms</div>
+        <div class="status-desc">global response from 28 edge nodes worldwide.</div>
+      </div>
+
+      <div class="status-item" role="listitem">
+        <div class="status-badge secure">
+          <span class="status-badge-text">SECURE</span>
+        </div>
+        <div class="status-stat">Free SSL</div>
+        <div class="status-desc">on every plan. Auto-renewed. Never lapses.</div>
+      </div>
+
+      <div class="status-item" role="listitem">
+        <div class="status-badge live">
+          <span class="status-badge-text">LIVE</span>
+        </div>
+        <div class="status-stat">Same-day</div>
+        <div class="status-desc">provisioning + free migration from any host.</div>
+      </div>
+
+    </div>
+
+    <!-- CLI-style feature output below stats -->
+    <div class="cli-table" style="margin-top: 3rem;" role="table" aria-label="Feature command reference">
+      <div class="cli-table-header" role="row">
+        <span role="columnheader">COMMAND</span>
+        <span role="columnheader">DESCRIPTION</span>
+        <span role="columnheader">AVAILABILITY</span>
+      </div>
+      <div class="cli-row" role="row">
+        <span class="cli-cmd" role="cell">./ssl --auto-renew</span>
+        <span class="cli-desc" role="cell">Free SSL certificate, auto-renewed</span>
+        <span class="cli-avail all" role="cell">ALL PLANS</span>
+      </div>
+      <div class="cli-row" role="row">
+        <span class="cli-cmd" role="cell">./email --custom</span>
+        <span class="cli-desc" role="cell">Professional email at your domain</span>
+        <span class="cli-avail all" role="cell">ALL PLANS</span>
+      </div>
+      <div class="cli-row" role="row">
+        <span class="cli-cmd" role="cell">./cdn --global</span>
+        <span class="cli-desc" role="cell">28-node global CDN acceleration</span>
+        <span class="cli-avail growth" role="cell">GROWTH+</span>
+      </div>
+      <div class="cli-row" role="row">
+        <span class="cli-cmd" role="cell">./backups --daily</span>
+        <span class="cli-desc" role="cell">Automated daily backups, 30-day retention</span>
+        <span class="cli-avail growth" role="cell">GROWTH+</span>
+      </div>
+      <div class="cli-row" role="row">
+        <span class="cli-cmd" role="cell">./staging --deploy</span>
+        <span class="cli-desc" role="cell">One-click staging environment</span>
+        <span class="cli-avail pro" role="cell">PRO ONLY</span>
+      </div>
+      <div class="cli-row" role="row">
+        <span class="cli-cmd" role="cell">./devtools --access</span>
+        <span class="cli-desc" role="cell">SSH, WP-CLI, Git deploy, cron manager</span>
+        <span class="cli-avail pro" role="cell">PRO ONLY</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================================================================
+     MARQUEE BAND
+================================================================ -->
+<div class="marquee-band" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="marquee-item">FAMTASTIC HOSTING<span class="sep">///</span></span>
+    <span class="marquee-item">INFRASTRUCTURE<span class="sep">///</span></span>
+    <span class="marquee-item">PREMIUM BRAND<span class="sep">///</span></span>
+    <span class="marquee-item">99.9% UPTIME<span class="sep">///</span></span>
+    <span class="marquee-item">FREE SSL<span class="sep">///</span></span>
+    <span class="marquee-item">SAME-DAY PROVISIONING<span class="sep">///</span></span>
+    <span class="marquee-item">STAND APART<span class="sep">///</span></span>
+    <!-- duplicate -->
+    <span class="marquee-item">FAMTASTIC HOSTING<span class="sep">///</span></span>
+    <span class="marquee-item">INFRASTRUCTURE<span class="sep">///</span></span>
+    <span class="marquee-item">PREMIUM BRAND<span class="sep">///</span></span>
+    <span class="marquee-item">99.9% UPTIME<span class="sep">///</span></span>
+    <span class="marquee-item">FREE SSL<span class="sep">///</span></span>
+    <span class="marquee-item">SAME-DAY PROVISIONING<span class="sep">///</span></span>
+    <span class="marquee-item">STAND APART<span class="sep">///</span></span>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION: 3D CARD SHOWCASE
+================================================================ -->
+<section class="section-3d" id="showcase" aria-labelledby="showcase-title">
+  <div style="max-width: 1100px; margin: 0 auto; position: relative; z-index: 1;">
+    <p class="section-label">Why FAMtastic</p>
+    <h2 class="section-title" id="showcase-title" style="text-align: center; margin-bottom: 1rem;">
+      Built different.<br/>Priced fair.
+    </h2>
+    <p class="card-flip-hint">// hover cards to flip //</p>
+
+    <div class="cards-3d-container" style="margin-top: 3rem;" role="list">
+
+      <!-- Card 1 -->
+      <div class="card-3d" role="listitem" tabindex="0" aria-label="Speed card — hover to reveal details">
+        <div class="card-3d-face card-3d-front">
+          <div>
+            <div class="card-3d-icon">
+              <i data-lucide="zap" style="width:24px;height:24px;"></i>
+            </div>
+            <div class="card-3d-title">SPEED</div>
+            <div class="card-3d-text">LiteSpeed servers, NVMe SSD, full-page caching. Your site loads before the visitor blinks.</div>
+          </div>
+          <div class="card-3d-number">01</div>
+        </div>
+        <div class="card-3d-face card-3d-back">
+          <div>
+            <div class="card-3d-title" style="color:var(--green);margin-bottom:1rem;">&gt; SPEED_OUTPUT</div>
+            <div class="card-3d-text" style="color:rgba(0,255,65,0.7);">
+              [OK] LiteSpeed cache active<br/>
+              [OK] NVMe SSD storage<br/>
+              [OK] HTTP/3 enabled<br/>
+              [OK] Brotli compression<br/>
+              [OK] Pre-warming on deploy<br/><br/>
+              <span style="color:var(--green);">AVG TTFB: 87ms</span>
+            </div>
+          </div>
+          <div class="card-3d-number" style="color:rgba(0,255,65,0.04);">01</div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card-3d" role="listitem" tabindex="0" aria-label="Security card — hover to reveal details">
+        <div class="card-3d-face card-3d-front">
+          <div>
+            <div class="card-3d-icon">
+              <i data-lucide="shield" style="width:24px;height:24px;"></i>
+            </div>
+            <div class="card-3d-title">SECURITY</div>
+            <div class="card-3d-text">Imunify360 malware scanning, DDoS mitigation, daily backups, free SSL on every plan.</div>
+          </div>
+          <div class="card-3d-number">02</div>
+        </div>
+        <div class="card-3d-face card-3d-back">
+          <div>
+            <div class="card-3d-title" style="color:var(--green);margin-bottom:1rem;">&gt; SECURITY_SCAN</div>
+            <div class="card-3d-text" style="color:rgba(0,255,65,0.7);">
+              [OK] SSL: valid, auto-renew on<br/>
+              [OK] Imunify360: active<br/>
+              [OK] DDoS shield: enabled<br/>
+              [OK] Backup: daily, 30-day<br/>
+              [OK] 2FA: available<br/><br/>
+              <span style="color:var(--green);">THREAT LEVEL: CLEAR</span>
+            </div>
+          </div>
+          <div class="card-3d-number" style="color:rgba(0,255,65,0.04);">02</div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card-3d" role="listitem" tabindex="0" aria-label="Support card — hover to reveal details">
+        <div class="card-3d-face card-3d-front">
+          <div>
+            <div class="card-3d-icon">
+              <i data-lucide="terminal" style="width:24px;height:24px;"></i>
+            </div>
+            <div class="card-3d-title">SUPPORT</div>
+            <div class="card-3d-text">Real humans. Under 2-hour response. No scripts, no runaround. We talk tech or plain English.</div>
+          </div>
+          <div class="card-3d-number">03</div>
+        </div>
+        <div class="card-3d-face card-3d-back">
+          <div>
+            <div class="card-3d-title" style="color:var(--green);margin-bottom:1rem;">&gt; SUPPORT_STATUS</div>
+            <div class="card-3d-text" style="color:rgba(0,255,65,0.7);">
+              [OK] Chat: available 24/7<br/>
+              [OK] Email: &lt;2hr response<br/>
+              [OK] Migrations: handled free<br/>
+              [OK] Onboarding: guided setup<br/>
+              [OK] SLA: documented + honored<br/><br/>
+              <span style="color:var(--green);">STATUS: READY</span>
+            </div>
+          </div>
+          <div class="card-3d-number" style="color:rgba(0,255,65,0.04);">03</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SECTION: PRICING — SYSTEM SELECT
+================================================================ -->
+<section class="section-pricing" id="pricing" aria-labelledby="pricing-title">
+  <div class="section-inner" style="max-width: 1100px; margin: 0 auto;">
+    <p class="section-label">System Select</p>
+    <h2 class="section-title" id="pricing-title">Choose your<br/>configuration.</h2>
+
+    <div class="pricing-grid" role="list">
+
+      <!-- Starter Plan -->
+      <div class="term-window" role="listitem" aria-label="Starter plan — $5.99 per month">
+        <div class="term-titlebar">
+          <div class="term-dot term-dot-red"></div>
+          <div class="term-dot term-dot-yel"></div>
+          <div class="term-dot term-dot-grn"></div>
+          <span class="term-title-text">plan_starter.sh<span class="term-cursor"></span></span>
+        </div>
+        <div class="term-body">
+          <div class="term-plan-name">STARTER</div>
+          <div class="term-price">$5.99</div>
+          <div class="term-price-sub">/month — billed annually</div>
+          <hr class="term-divider" />
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Free SSL certificate</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>5 custom email accounts</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>10 GB NVMe storage</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>1-click WordPress install</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat warn">[WARN]</span>
+            <span>Limited to 1 website</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat warn">[WARN]</span>
+            <span>No staging environment</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat warn">[WARN]</span>
+            <span>Shared CDN (no priority)</span>
+          </div>
+          <div class="term-selected-label">&gt; SELECT PLAN_</div>
+          <button class="btn-secondary" style="width: 100%; margin-top: 1.2rem; display: block;">
+            Select Starter
+          </button>
+        </div>
+      </div>
+
+      <!-- Growth Plan — FEATURED -->
+      <div class="term-window featured" role="listitem" aria-label="Growth plan — $12.99 per month — most popular">
+        <div class="term-titlebar">
+          <div class="term-dot term-dot-red"></div>
+          <div class="term-dot term-dot-yel"></div>
+          <div class="term-dot term-dot-grn"></div>
+          <span class="term-title-text">plan_growth.sh — RECOMMENDED<span class="term-cursor"></span></span>
+        </div>
+        <div class="term-body">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div class="term-plan-name">GROWTH</div>
+            <span style="font-family:var(--mono);font-size:0.65rem;color:var(--black);background:var(--green);padding:0.2rem 0.5rem;letter-spacing:0.1em;">&gt; POPULAR</span>
+          </div>
+          <div class="term-price">$12.99</div>
+          <div class="term-price-sub">/month — billed annually</div>
+          <hr class="term-divider" />
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Free SSL + auto-renewal</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Unlimited email accounts</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>50 GB NVMe SSD storage</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Up to 10 websites</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Daily backups (30-day)</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Global CDN priority routing</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat warn">[WARN]</span>
+            <span>No dedicated staging env</span>
+          </div>
+          <div class="term-selected-label">&gt; ACTIVE SELECTION_</div>
+          <button class="btn-primary" style="width: 100%; margin-top: 1.2rem; display: block;">
+            <span>Select Growth</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pro Plan -->
+      <div class="term-window" role="listitem" aria-label="Pro plan — $24.99 per month">
+        <div class="term-titlebar">
+          <div class="term-dot term-dot-red"></div>
+          <div class="term-dot term-dot-yel"></div>
+          <div class="term-dot term-dot-grn"></div>
+          <span class="term-title-text">plan_pro.sh<span class="term-cursor"></span></span>
+        </div>
+        <div class="term-body">
+          <div class="term-plan-name">PRO</div>
+          <div class="term-price">$24.99</div>
+          <div class="term-price-sub">/month — billed annually</div>
+          <hr class="term-divider" />
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Free SSL + wildcard cert</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Unlimited everything</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>200 GB NVMe SSD storage</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Staging environment</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>SSH access + WP-CLI</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Git deploy + cron manager</span>
+          </div>
+          <div class="term-feature">
+            <span class="fstat ok">[OK]</span>
+            <span>Priority support SLA</span>
+          </div>
+          <div class="term-selected-label">&gt; SELECT PLAN_</div>
+          <button class="btn-secondary" style="width: 100%; margin-top: 1.2rem; display: block;">
+            Select Pro
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <p style="font-family:var(--mono);font-size:0.72rem;color:rgba(0,255,65,0.25);text-align:center;margin-top:2rem;letter-spacing:0.1em;">
+      &gt; all plans include free migration // no lock-in // cancel anytime
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================
+     TRUST BAND (angled green)
+================================================================ -->
+<section class="section-trust" aria-label="Trust statistics">
+  <div class="section-inner">
+    <div class="trust-grid" role="list">
+      <div role="listitem">
+        <div class="trust-stat-number">4,200+</div>
+        <div class="trust-stat-label">SITES HOSTED</div>
+      </div>
+      <div role="listitem">
+        <div class="trust-stat-number">99.97%</div>
+        <div class="trust-stat-label">AVG UPTIME — 12 MO</div>
+      </div>
+      <div role="listitem">
+        <div class="trust-stat-number">&lt;90s</div>
+        <div class="trust-stat-label">SSL PROVISIONING</div>
+      </div>
+      <div role="listitem">
+        <div class="trust-stat-number">4.9★</div>
+        <div class="trust-stat-label">SUPPORT RATING</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SECTION: DOMAIN SEARCH
+================================================================ -->
+<section class="section-domain" id="domains" aria-labelledby="domain-title">
+  <div style="max-width: 900px; margin: 0 auto; position: relative; z-index: 1;">
+    <p class="section-label">Domain Registry</p>
+    <h2 class="section-title" id="domain-title">
+      Find your<br/>namespace.
+    </h2>
+    <p style="font-family:var(--mono);font-size:0.9rem;color:rgba(0,255,65,0.45);margin-bottom:0;">
+      The domain is the first impression. Claim it before someone else does.
+    </p>
+
+    <div class="domain-search-bar" role="search" aria-label="Domain search">
+      <div class="domain-prompt" aria-hidden="true">&gt; search:</div>
+      <input
+        class="domain-input"
+        type="text"
+        placeholder="yourbrand.com"
+        aria-label="Enter your domain name"
+      />
+      <button class="domain-btn" aria-label="Search domain availability">
+        ./search
+      </button>
+    </div>
+
+    <div class="domain-tld-list" aria-label="Popular domain extensions">
+      <span role="button" tabindex="0">.com</span>
+      <span role="button" tabindex="0">.net</span>
+      <span role="button" tabindex="0">.org</span>
+      <span role="button" tabindex="0">.io</span>
+      <span role="button" tabindex="0">.co</span>
+      <span role="button" tabindex="0">.shop</span>
+      <span role="button" tabindex="0">.design</span>
+      <span role="button" tabindex="0">.agency</span>
+      <span role="button" tabindex="0">.studio</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SECTION: DESIGN UPSELL
+================================================================ -->
+<section class="section-upsell" id="upsell" aria-labelledby="upsell-title">
+  <div style="position: relative; z-index: 1;">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <p class="section-label">System Recommendation</p>
+      <h2 class="section-title" id="upsell-title" style="text-align:center;">
+        Infrastructure is ready.<br/>
+        <span style="opacity:0.45;">Your brand is next.</span>
+      </h2>
+    </div>
+
+    <div class="upsell-terminal" role="region" aria-label="Design recommendation terminal">
+      <div class="upsell-titlebar">
+        <div class="term-dot term-dot-red"></div>
+        <div class="term-dot term-dot-yel"></div>
+        <div class="term-dot term-dot-grn"></div>
+        <span class="term-title-text">analyze_brand.sh — FAMtastic Intelligence</span>
+      </div>
+      <div class="upsell-body">
+        <div class="upsell-line">
+          <span class="upsell-prompt">&gt;</span>
+          <span class="upsell-cmd">Running brand diagnostic... DONE</span>
+        </div>
+        <div class="upsell-line">
+          <span class="upsell-prompt">&gt;</span>
+          <span class="upsell-ready">ANALYSIS COMPLETE</span>
+        </div>
+        <div class="upsell-line">
+          <span class="upsell-prompt">&gt;</span>
+          <span style="color:rgba(0,255,65,0.5);">Your infrastructure:</span>
+          <span class="upsell-ready" style="margin-left:0.5rem;">READY ✓</span>
+        </div>
+        <div class="upsell-line">
+          <span class="upsell-prompt">&gt;</span>
+          <span style="color:rgba(0,255,65,0.5);">Your brand:</span>
+          <span class="upsell-warn" style="margin-left:0.5rem;">UNRESOLVED ⚠</span>
+        </div>
+        <div class="upsell-line">
+          <span class="upsell-prompt">&gt;</span>
+          <span class="upsell-rec">RECOMMENDED ACTION: famtastic-designs.com</span>
+        </div>
+        <div class="upsell-line">
+          <span class="upsell-prompt">&gt;</span>
+          <span style="color:rgba(0,255,65,0.4);">FAMtasticDesigns.com — logo, identity, web design by the same team</span>
+        </div>
+        <div class="upsell-line">
+          <span class="upsell-prompt">&gt;</span>
+          <span class="upsell-action">COMMAND: get-my-brand</span>
+          <span class="term-cursor" style="opacity:1;animation:blink-cursor 0.8s step-end infinite;"></span>
+        </div>
+
+        <div class="upsell-cta-row">
+          <a href="https://famtasticdesigns.com" target="_blank" rel="noopener noreferrer">
+            <button class="btn-primary">
+              <span>Run Command</span>
+            </button>
+          </a>
+          <span class="upsell-url">famtasticdesigns.com &rarr;</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-family:var(--mono);font-size:0.75rem;color:rgba(0,255,65,0.2);text-align:center;margin-top:1.5rem;letter-spacing:0.08em;">
+      // bundle hosting + design for maximum brand cohesion //
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================
+     FOOTER
+================================================================ -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-copy">
+    FAMtastic Hosting v2.1 &mdash; &copy; 2026 &mdash; All systems operational.
+  </div>
+  <nav class="footer-links" aria-label="Social links">
+    <a href="#" aria-label="Twitter">twitter</a>
+    <a href="#" aria-label="Instagram">instagram</a>
+    <a href="#" aria-label="LinkedIn">linkedin</a>
+  </nav>
+</footer>
+
+<!-- ================================================================
+     SCRIPTS
+================================================================ -->
+<script>
+  // Init Lucide icons
+  lucide.createIcons();
+
+  // ================================================================
+  // MATRIX RAIN — pure JS + CSS injection
+  // ================================================================
+  (function buildMatrixRain() {
+    const container = document.getElementById('matrixRain');
+    if (!container) return;
+
+    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ▓▒░█▄▀FAMtastic'.split('');
+    const columns = Math.floor(window.innerWidth / 20);
+
+    for (let i = 0; i < columns; i++) {
+      const col = document.createElement('div');
+      col.className = 'matrix-col';
+
+      // Generate a column of random chars
+      const len = 10 + Math.floor(Math.random() * 20);
+      let colContent = '';
+      for (let j = 0; j < len; j++) {
+        colContent += chars[Math.floor(Math.random() * chars.length)] + '\n';
+      }
+      col.textContent = colContent;
+
+      // Random position and timing
+      col.style.setProperty('left', (i * 20 + Math.random() * 10) + 'px');
+      col.style.setProperty('animation-duration', (6 + Math.random() * 14) + 's');
+      col.style.setProperty('animation-delay', (Math.random() * -20) + 's');
+      col.style.setProperty('opacity', (0.04 + Math.random() * 0.12).toString());
+
+      container.appendChild(col);
+    }
+  })();
+
+  // ================================================================
+  // TYPEWRITER — trigger typing class with delay
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    const lines = document.querySelectorAll('.prompt-line.typing');
+    lines.forEach(function(line) {
+      const delay = parseFloat(line.style.getPropertyValue('--tw-delay') || '0') * 1000;
+      setTimeout(function() {
+        line.style.width = '100%';
+        line.style.opacity = '1';
+      }, delay);
+    });
+  });
+
+  // ================================================================
+  // KEYBOARD INTERACTION — card flip on Enter/Space
+  // ================================================================
+  document.querySelectorAll('.card-3d').forEach(function(card) {
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.style.transform = card.style.transform === 'rotateY(180deg)'
+          ? ''
+          : 'rotateY(180deg)';
+      }
+    });
+  });
+
+  // ================================================================
+  // DOMAIN INPUT — press Enter to search
+  // ================================================================
+  const domainInput = document.querySelector('.domain-input');
+  if (domainInput) {
+    domainInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const val = domainInput.value.trim();
+        if (val) {
+          // Visual feedback — flash the border
+          const bar = domainInput.closest('.domain-search-bar');
+          if (bar) {
+            bar.style.boxShadow = '0 0 40px rgba(0,255,65,0.5)';
+            setTimeout(function() {
+              bar.style.boxShadow = '';
+            }, 600);
+          }
+        }
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
