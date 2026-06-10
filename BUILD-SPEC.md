@@ -1,5 +1,5 @@
 ---
-title: "Build: FAMtasticHosting.com Multi-Page Static Site"
+title: "Build: FAMtasticHosting.com — Marketing Site + Dashboard"
 date: 2026-06-10
 author: shay
 source: directive
@@ -10,21 +10,31 @@ status: pending
 assigned-to: claude-code-multiswarm
 ---
 
-# Build: FAMtasticHosting.com Multi-Page Static Site
+# Build: FAMtasticHosting.com — Marketing Site + Dashboard
 
 ## Objective
 
-Build a complete multi-page static website for famtastichosting.com using the wild.html mockup as the primary design template and extreme.html for the servers/dedicated resources page. Ship 6 pages: homepage + 5 product category pages, each with real pricing, real copy, and consistent brand identity.
+Build FAMtasticHosting.com as a full product: 7-page marketing site with real pricing, real copy, and consistent brand identity, PLUS a backend dashboard that replaces the GoDaddy reseller panel with a branded experience. Phase 1 ships the marketing site. Phase 2 ships the dashboard. Both are designed together so the architecture supports the full product from day one.
+
+## Phases
+
+- **Phase 1 (Build Now):** 7-page marketing site. Static or framework-rendered. Ship fast, validate, iterate.
+- **Phase 2 (Build After Marketing Site Is Live):** Customer portal + admin dashboard. Requires auth, GoDaddy API integration, database. Designed into the architecture now but built separately.
+
+---
 
 ## Critical Constraints (NEVER VIOLATE)
 
-1. **NO single-page site.** Every product category gets its own HTML file. The homepage is a product PREVIEW that links out. This is a standing directive from Fritz — Claude tends to collapse everything into one page. Fight that instinct.
+1. **NO single-page site.** Every product category gets its own page. The homepage is a product PREVIEW that links out. This is a standing directive from Fritz — Claude tends to collapse everything into one page. Fight that instinct.
 2. **NO AI references in commits.** No "Claude", "AI", "Co-Authored-By", "generated", "assisted" anywhere in commit messages.
 3. **NO official FAMtastic logo yet.** Use text-based branding (Space Grotesk "FAMtastic" wordmark) or the SVG orbital/tech marks from the mockups. Do not create or reference a logo image file.
-4. **NO GoDaddy branding exposed.** GoDaddy is invisible infrastructure. Custom nameservers, branded touchpoints. ICANN disclosure line only where legally required (footer).
+4. **NO GoDaddy branding exposed.** GoDaddy is invisible infrastructure. Custom nameservers, branded touchpoints. ICANN disclosure line only where legally required (footer). The only GoDaddy-visible element is the **customer service phone number** required for reseller support — and even that is presented under the FAMtastic Hosting brand.
 5. **NO template defaults.** No centered heroes, no Inter font, no 3-column feature grids, no stock photos, no "Trusted by 10,000+ businesses" fake social proof.
 6. **NO hardcoded placeholder content.** Every heading, paragraph, CTA, and price must be real, final copy. No "Lorem ipsum", no "Coming soon", no "TBD".
-7. **Cheap swarm execution.** Use Claude Code multi-agent (no Opus). Subagents use Sonnet/Haiku. This is a static HTML build — it does not need heavyweight models.
+7. **Cheap swarm execution.** Use Claude Code multi-agent (no Opus). Subagents use Sonnet/Haiku. This build does not need heavyweight models.
+8. **Framework choice is OPEN.** Pure static HTML, Astro, Next.js, whatever — the build team chooses the best tool for the job. The mockups are visual reference, not a prison. If a framework produces a more imaginative, more maintainable result with component reuse across 7 pages and an API layer for the dashboard, USE IT. The constraint is the outcome (matches the visual direction, fast, accessible), not the tool. Recommended: Astro for the marketing site (component islands, build-time rendering, fast loads) + a thin Node/Express backend for the dashboard.
+
+---
 
 ## Source Files
 
@@ -33,21 +43,24 @@ Build a complete multi-page static website for famtastichosting.com using the wi
 - **Design decisions doc:** `~/famtastic/FAMtastic Fishing Lines 6-8/design-decisions/hosting-com.md`
 - **Strategy doc:** `~/famtastic/FAMTASTIC-HOSTING-STRATEGY.md`
 
-## Page Structure (6 pages)
+---
+
+## Phase 1: Marketing Site (7 Pages)
 
 ### 1. index.html — Homepage (WILD template)
 
 **Purpose:** Product preview hub. Visitor lands here, sees the product categories, clicks through to the one they need.
 
 **Sections (in order):**
-1. **Hero** — Layered hero from wild.html. Headline: "Your site. Hosted right. No one needs to know who's behind the curtain." Subhead: "Premium hosting with custom nameservers, starting at $5.99/mo." Two CTAs: primary "See Plans" (#plans), secondary "Talk to a Human" (mailto or contact).
+1. **Hero** — Layered hero from wild.html. Headline: "Your site. Hosted right. No one needs to know who's behind the curtain." Subhead: "Premium hosting with custom nameservers, starting at $5.99/mo." Two CTAs: primary "See Plans" (#plans), secondary "Talk to a Human" (links to contact).
 2. **Trust Bar** — One tight row: "99.9% Uptime" | "1,000+ Sites Hosted" | "Based in Miami, FL" — three elements max, no logo carousel, no fake testimonials.
-3. **Product Preview Grid** — Four cards, each linking to its own page:
+3. **Product Preview Grid** — Five cards, each linking to its own page:
    - "WordPress Hosting" → wordpress.html (icon: WordPress logo or editorial icon, short desc: "Managed. Optimized. Yours.")
    - "Web Hosting" → hosting.html (icon: cPanel/server icon, short desc: "cPanel. Full control. Your brand.")
+   - "Website Builder" → builder.html (icon: design/wrench icon, short desc: "Build it yourself. Or let us build it for you.")
    - "Servers & Infrastructure" → servers.html (icon: terminal/server icon, short desc: "Dedicated resources. Zero sharing.")
    - "Domains & Email" → domains.html (icon: globe/mail icon, short desc: "Your name. Your inbox. Secured.")
-4. **Bundle Highlight** — Feature the "Small Biz Starter" bundle prominently. $299/yr. Includes domain + 3 emails + SSL. CTA links to a bundle detail section or bundles.html.
+4. **Bundle Highlight** — Feature the "Small Biz Starter" bundle prominently. $299/yr. Includes domain + 3 emails + SSL. CTA links to bundles.html.
 5. **How It Works** — Three numbered steps, prose-style (NOT icon grid):
    - Step 1: "Pick your plan." One sentence.
    - Step 2: "We set you up." One sentence about custom nameservers and white-labeling.
@@ -55,7 +68,7 @@ Build a complete multi-page static website for famtastichosting.com using the wi
 6. **Design Bridge** — Full section with its own bg color (#1a0d3a deep indigo). Accent CTA in #ff007a. Copy: "A lot of our clients came to us for hosting and left with a site they're proud of." Link to famtasticdesigns.com. This is NOT a banner — it's a full editorial section.
 7. **Founder Voice** — Short, first person. Three paragraphs max. No corporate bio. "×" marks for what others do wrong, checks for what we do right.
 8. **FAMtasticThoughts strip** — One strip: "Running a site? Learn how to grow it." Link to famtasticthoughts.com. Editorial framing, not self-promotion.
-9. **Footer** — Required ICANN disclosure, copyright, links to all pages, social links (placeholder URLs), contact email.
+9. **Footer** — Required ICANN disclosure, copyright, links to all pages, social links (placeholder URLs), **GoDaddy 24/7 support phone number** (required for reseller customers — white-labeled, presented as FAMtastic Hosting support), contact email.
 
 ### 2. wordpress.html — Managed WordPress (WILD template)
 
@@ -85,7 +98,28 @@ Build a complete multi-page static website for famtastichosting.com using the wi
 4. **cPanel vs WordPress section** — Clear prose explaining when to choose cPanel vs managed WP. Not a hard sell — just clarity.
 5. **Design Bridge + CTA**
 
-### 4. servers.html — Web Hosting Plus / Dedicated Resources (EXTREME template)
+### 4. builder.html — Website Builder (WILD template)
+
+**Purpose:** GoDaddy's Website Builder product resold under our brand, with a prominent FAMtastic Designs tie-in. This page has a DUAL purpose: sell the builder AND tee up the design services upsell.
+
+**THIS IS THE DESIGNS BRIDGE PAGE.** While every page has a Design Bridge section, this page's entire second half is about the transition from "build it yourself" to "let us build it for you."
+
+**Sections:**
+1. **Hero** — "Build it yourself. Or let us build it for you." Sub: "Website Builder starts at $12/mo. Custom design starts at $300. You pick your path."
+2. **Pricing Cards** — Two tiers (GoDaddy Website Builder resold):
+   - **Essential: $12/mo** (wholesale $4.13). Features: 1 site, free domain, 24/7 phone support, mobile-optimized templates, SSL included, basic marketing suite.
+   - **Commerce: $30/mo** (wholesale $10.44). Features: Online store, product listings, payments, shipping labels, marketing suite, SSL included, priority support.
+3. **Builder Features** — Show what the builder includes: drag-and-drop, templates, mobile-optimized, built-in SEO tools, social media integration. Outcome-focused, not feature list.
+4. **The Crossroads Section** — This is the key differentiator. Two columns:
+   - **Left: "Build it yourself."** — You pick a template, you drag, you drop, you launch. It works. You own it. 10-20 hours of your time. $12/mo.
+   - **Right: "Let us build it."** — You tell us what you want. We design it. We build it. You approve it. It's yours. 2-3 weeks. Starting at $300 for a logo package, $800 for a brand refresh, $1,500+ for a full site. Link to famtasticdesigns.com.
+   - **Bottom: "Not sure? Start with the builder. Upgrade to custom when you're ready."** — This is the honest pitch. Start small, grow into design.
+5. **FAMtastic Designs Showcase** — Brief section about what FAMtastic Designs offers: custom site design, brand identity, logo packages. Link to famtasticdesigns.com. This is future integration — for now, just a prominent link with editorial copy.
+6. **Design Bridge** — More prominent here than on any other page. Full section: "You came here to build a site. What if someone could build it for you — and make it look like nothing else on the internet?" Link to famtasticdesigns.com.
+7. **FAQ** — "What's the difference between Website Builder and custom design?" "Can I start with the builder and upgrade to custom later?" "Do I need hosting if I use the builder?" (Yes, it's included.)
+8. **CTA** — "Start Building" (builder purchase) primary. "Talk to a Designer" (famtasticdesigns.com) secondary.
+
+### 5. servers.html — Web Hosting Plus / Dedicated Resources (EXTREME template)
 
 **Purpose:** The serious infrastructure page. Uses the extreme.html template aesthetic — dark terminal green, CRT scanlines, Share Tech Mono, hacker/server DNA.
 
@@ -101,7 +135,7 @@ Build a complete multi-page static website for famtastichosting.com using the wi
 5. **"When You've Outgrown Shared"** — Prose section for people migrating from cheap shared hosting. Empathy ("you've been burned before") + clarity ("this is the step up").
 6. **Design Bridge** — Adapted: "Running serious infrastructure? Your site deserves serious design." Link to famtasticdesigns.com.
 
-### 5. domains.html — Domains, Email & SSL (WILD template, lighter tone)
+### 6. domains.html — Domains, Email & SSL (WILD template, lighter tone)
 
 **Purpose:** Domain registration, professional email, and SSL certificates. This is the "get your name" page.
 
@@ -113,7 +147,7 @@ Build a complete multi-page static website for famtastichosting.com using the wi
    - .org: $22/yr (wholesale ~$12)
    - .co: $35/yr (wholesale ~$20)
    Note: These are our retail prices with ~1.75x markup.
-3. **Email Packages** — 
+3. **Email Packages** —
    - Professional Email: $3/mo (wholesale $1.61) — custom domain address, 10GB
    - Group Email: $4/mo (wholesale $2.12) — team inboxes, shared calendars
    - Microsoft 365: from $9/mo (wholesale $4.29) — full suite
@@ -122,7 +156,7 @@ Build a complete multi-page static website for famtastichosting.com using the wi
 5. **Bundle Upsell** — "Small Biz Starter: $299/yr" — Domain + 3 email addresses + SSL. The all-in-one kickoff.
 6. **Design Bridge + Footer**
 
-### 6. bundles.html — Pre-Built Combos (WILD template)
+### 7. bundles.html — Pre-Built Combos (WILD template)
 
 **Purpose:** Packaging page. Makes the bundle buying decision easy.
 
@@ -136,9 +170,61 @@ Build a complete multi-page static website for famtastichosting.com using the wi
 3. **How Bundles Work** — Three-step flow: Choose → We configure → You build. Clean, simple.
 4. **CTA** — Primary: "Start with a bundle" Secondary: "Talk to us"
 
+---
+
+## Phase 2: Dashboard (Designed Now, Built After Marketing Site)
+
+### Customer Portal
+
+**Purpose:** Branded self-service portal where customers manage their hosting, domains, email, and billing. Replaces the GoDaddy reseller storefront experience with something that feels like FAMtastic, not GoDaddy.
+
+**Features:**
+1. **Login / Auth** — Email + password. Phase 2 can add social login (Google, Microsoft). The customer creates an account at purchase time or via invitation email from GoDaddy provisioning.
+2. **Dashboard Home** — Overview of all services: active domains, hosting plans, email accounts, SSL certs, renewal dates. At-a-glance status (active, expiring soon, expired).
+3. **Domain Management** — List domains, view DNS settings, manage nameserver records (showing ns1.famtastichosting.com / ns2.famtastichosting.com), renewal status, auto-renew toggle.
+4. **Hosting Management** — View plan details, resource usage (bandwidth, storage), cPanel access link (branded), SSL status.
+5. **Email Management** — List email accounts, add/remove addresses, change passwords, view quota usage.
+6. **Billing** — View invoices, payment history, upcoming renewals, payment method on file. GoDaddy processes payments — we display the data.
+7. **Support** — White-labeled GoDaddy support phone number prominently displayed. "Call us: [number]" visible from every page. Link to knowledge base / FAQ. Contact form that routes to support.
+8. **Upgrade Path** — Links to upgrade current plans, add services (more email, SSL, security). Cross-sell bundles. "Want a custom site?" → famtasticdesigns.com.
+
+### Admin Dashboard
+
+**Purpose:** Fritz's command center. Everything the GoDaddy reseller panel does, but branded and simplified. One place to see all customers, all orders, all revenue.
+
+**Features:**
+1. **Customer Lookup** — Search by name, email, domain. View all services for a customer. View order history. View support tickets (if GoDaddy API exposes them).
+2. **Order Management** — View all orders (pending, active, cancelled, expired). Provision new services manually. Cancel or suspend services. View GoDaddy order IDs alongside FAMtastic order references.
+3. **Revenue Dashboard** — Total revenue MTD. Revenue by product category. Revenue by bundle type. Margin calculations (wholesale vs retail). Recurring revenue projection.
+4. **Product Catalog** — View and manage pricing. Adjust markups per product. Toggle products on/off. Add bundles. The GoDaddy API provides the wholesale price; we set the retail price.
+5. **Provisioning Status** — View GoDaddy provisioning status for each order. Track pending activations. Identify stuck orders.
+6. **Reports** — Monthly revenue report. Customer growth report. Churn report. Popular products report. Export to CSV.
+7. **Settings** — Profile settings. Branding settings (logo, colors, support phone number markup). Notification preferences. API key management (GoDaddy reseller API key, view/regenerate).
+
+### GoDaddy API Integration Points
+
+The dashboard backend talks to GoDaddy's reseller API for:
+- **Customer provisioning** — Creating accounts, assigning products
+- **Order management** — Placing orders, viewing order status
+- **DNS management** — Reading/setting DNS records
+- **Product catalog** — Reading available products and wholesale pricing
+- **Billing data** — Reading invoices, payment status
+- **Support routing** — Displaying GoDaddy's white-label support number
+
+**GoDaddy Reseller API endpoints used:**
+- `/v1/orders` — Order management (confirmed working with sso-key auth)
+- `/v1/domains` — Domain management
+- `/v1/customers` — Customer management (note: currently 401 with sso-key, may need different auth)
+- Product catalog endpoints for pricing
+- DNS management endpoints
+
+**Phone number:** GoDaddy provides 24/7 white-label phone support for reseller customers. The number must be prominently displayed on every page of the site and in the customer portal. Fritz needs to configure this in the GoDaddy reseller panel — the support team answers as "FAMtastic Hosting support."
+
+---
+
 ## Design System
 
-### WILD Template (pages 1, 2, 3, 5, 6)
+### WILD Template (pages 1, 2, 3, 4, 6, 7)
 
 Source: wild.html mockup. Key attributes:
 
@@ -166,7 +252,7 @@ Source: wild.html mockup. Key attributes:
 - Two-column feature layout
 - Footer with FAM text branding
 
-### EXTREME Template (page 4 ONLY)
+### EXTREME Template (page 5 ONLY — servers)
 
 Source: extreme.html mockup. Key attributes:
 
@@ -193,48 +279,93 @@ Source: extreme.html mockup. Key attributes:
 - Console/terminal-style spec blocks
 - Green-on-black pricing cards styled like terminal windows
 
+### Dashboard Design (Phase 2)
+
+**Visual direction:** Clean, dark mode, minimal. Not WILD or EXTREME — a professional admin interface. Space Grotesk for headings, DM Sans for body, violet accent for CTAs and active states, clean card layout, ample whitespace. Inspired by Stripe Dashboard and Linear's admin aesthetic.
+
+The dashboard is NOT a marketing page. It's a productivity tool. Function over form. The brand identity comes through in typography and accent color, not in visual effects.
+
 ### Shared Across All Pages
 
-**Navigation:** Top nav with FAMtastic wordmark (text, no logo image), page links (WordPress, Hosting, Servers, Domains, Bundles), and "Talk to a Human" CTA button. Consistent across all pages.
+**Navigation:** Top nav with FAMtastic wordmark (text, no logo image), page links (WordPress, Hosting, Builder, Servers, Domains, Bundles), and "Talk to a Human" CTA button. Consistent across all pages.
 
-**Footer:** ICANN disclosure line, copyright, links to all pages, email contact, social links (placeholders), famtasticdesigns.com and famtasticthoughts.com cross-promo links.
+**Footer:** ICANN disclosure line, copyright, links to all pages, **GoDaddy 24/7 white-label support phone number** (required for reseller), email contact, social links (placeholders), famtasticdesigns.com and famtasticthoughts.com cross-promo links.
 
 **Mobile-first responsive:** Every page must look correct on mobile, tablet, desktop. The wild.html mockup already has mobile breakpoints — use those as the model.
 
-## File Structure
+---
 
+## File Structure (Framework-Open)
+
+The build team chooses the framework. Here's a reference structure for Astro (recommended for Phase 1) and what it would evolve into for Phase 2:
+
+**Phase 1 — Astro (or equivalent):**
 ```
 famtastic-hosting/
-├── index.html              (homepage — WILD)
-├── wordpress.html          (managed WP — WILD)
-├── hosting.html            (cPanel hosting — WILD)
-├── servers.html            (Web Hosting Plus — EXTREME)
-├── domains.html            (domains + email + SSL — WILD lighter)
-├── bundles.html            (pre-built combos — WILD)
-├── css/
-│   ├── base.css            (shared resets, typography, variables)
-│   ├── wild.css            (WILD template styles)
-│   ├── extreme.css         (EXTREME template styles)
-│   └── components.css     (shared components: nav, footer, cards)
-├── js/
-│   ├── nav.js              (mobile nav toggle, scroll behavior)
-│   ├── billing-toggle.js   (monthly/annual price toggle — shared)
-│   └── animations.js       (tickers, fades, scroll-triggered)
-├── assets/
-│   └── fonts/              (self-hosted font files, no CDN)
-└── README.md               (build notes, deployment instructions)
+├── src/
+│   ├── components/       (shared: Nav, Footer, DesignBridge, PricingCard, etc.)
+│   ├── layouts/          (WildLayout, ExtremeLayout)
+│   ├── pages/
+│   │   ├── index.astro       (homepage — WILD)
+│   │   ├── wordpress.astro    (managed WP — WILD)
+│   │   ├── hosting.astro     (cPanel — WILD)
+│   │   ├── builder.astro     (website builder — WILD + Designs tie-in)
+│   │   ├── servers.astro     (Web Hosting Plus — EXTREME)
+│   │   ├── domains.astro     (domains + email + SSL — WILD lighter)
+│   │   └── bundles.astro     (pre-built combos — WILD)
+│   ├── styles/
+│   │   ├── global.css        (resets, typography, variables)
+│   │   ├── wild.css          (WILD template styles)
+│   │   ├── extreme.css       (EXTREME template styles)
+│   │   └── components.css    (shared components)
+│   ├── data/
+│   │   ├── products.json     (all product/pricing data — single source of truth)
+│   │   └── bundles.json     (bundle definitions)
+│   └── scripts/
+│       ├── nav.ts            (mobile nav toggle, scroll behavior)
+│       ├── billing-toggle.ts (monthly/annual price toggle)
+│       └── animations.ts    (tickers, fades, scroll-triggered)
+├── public/
+│   └── fonts/                (self-hosted font files)
+├── astro.config.mjs
+├── package.json
+└── README.md
 ```
+
+**Phase 2 — Dashboard evolves into:**
+```
+famtastic-hosting/
+├── src/
+│   ├── pages/            (marketing site, unchanged)
+│   ├── components/       (marketing + dashboard shared components)
+│   ├── app/              (dashboard SPA — React/Svelte)
+│   │   ├── auth/         (login, register, password reset)
+│   │   ├── dashboard/    (customer portal)
+│   │   ├── admin/        (admin dashboard)
+│   │   └── api/          (GoDaddy API integration layer)
+│   └── lib/
+│       ├── godaddy/      (GoDaddy reseller API client)
+│       ├── db/           (supabase or equivalent)
+│       └── auth/         (session management)
+└── ...
+```
+
+---
 
 ## Technical Implementation
 
-1. **Static HTML + CSS + JS.** No frameworks. No build step. No Astro. No React. Pure files.
-2. **Self-host fonts.** Download Space Grotesk, Lora, JetBrains Mono, Share Tech Mono from Google Fonts and serve locally. Remove all CDN `<link>` tags. This eliminates SRI concerns and external dependencies.
-3. **Tailwind CSS → custom CSS.** The mockups use Tailwind via CDN. Extract the utility classes used into a custom CSS file. The final site should NOT load Tailwind CDN. Write proper CSS with variables matching the design system above.
-4. **Responsive.** Test at 320px, 768px, 1024px, 1440px minimum. Use clamp() for fluid typography. Mobile nav is a hamburger menu.
-5. **Accessible.** Semantic HTML5 elements, proper heading hierarchy, ARIA labels on interactive elements, sufficient color contrast (WCAG AA minimum). The dark theme can still pass AA with the text colors specified.
-6. **Fast.** No render-blocking external resources. Inline critical CSS or load with `<link rel="preload">`. Images (if any) use lazy loading. Target <3s full page load on 4G.
-7. **SEO.** Proper `<title>`, `<meta description>`, Open Graph tags per page. Structured data (JSON-LD) for Organization and Product schemas. Canonical URLs.
-8. **Contact.** "Talk to a Human" links to `mailto:hello@famtastichosting.com` (placeholder email). When Netlify Forms or Formspree is wired, this becomes a real contact flow.
+1. **Framework choice is OPEN.** Pure static HTML, Astro, Next.js — whatever the build team believes produces the best result. The mockups are visual reference, not a straitjacket. If a framework enables better component reuse, faster iterations, and a clear path to the Phase 2 dashboard, USE IT. Recommended: Astro for Phase 1 (component islands, build-time rendering, zero JS by default, easy SSR if needed later).
+2. **Component reuse.** Whether Astro components, React components, or Svelte components — the nav, footer, Design Bridge section, pricing cards, and billing toggle should be shared components, not copy-pasted across 7 pages. The mockups have consistent patterns; the implementation should reflect that with DRY code.
+3. **Self-host fonts.** Download Space Grotesk, Lora, JetBrains Mono, Share Tech Mono from Google Fonts and serve locally. Remove all CDN `<link>` tags. This eliminates SRI concerns and external dependencies.
+4. **Extract Tailwind into proper CSS.** The mockups use Tailwind via CDN. Extract the utility classes into custom CSS with design tokens (CSS variables for colors, spacing, typography). If using Astro, this can be done with scoped styles or a global stylesheet. The final site should NOT rely on the Tailwind CDN in production.
+5. **Responsive.** Test at 320px, 768px, 1024px, 1440px minimum. Use clamp() for fluid typography. Mobile nav is a hamburger menu.
+6. **Accessible.** Semantic HTML5 elements, proper heading hierarchy, ARIA labels on interactive elements, sufficient color contrast (WCAG AA minimum).
+7. **Fast.** No render-blocking external resources. Images (if any) use lazy loading. Target <3s full page load on 4G.
+8. **SEO.** Proper `<title>`, `<meta description>`, Open Graph tags per page. Structured data (JSON-LD) for Organization and Product schemas. Canonical URLs.
+9. **Contact.** "Talk to a Human" links to `mailto:hello@famtastichosting.com` (placeholder email). When Netlify Forms or Formspree is wired, this becomes a real contact flow.
+10. **GoDaddy white-label support number.** Every page footer AND the contact/support section must display the GoDaddy 24/7 white-label support phone number. This is required by the reseller agreement and is a trust signal for customers. The number will be configured in the GoDaddy reseller panel — use a placeholder `1-XXX-XXX-XXXX` until Fritz provides the actual number. The wording: "24/7 Support: [number]" presented under the FAMtastic Hosting brand.
+
+---
 
 ## Pricing Data (Official — Use These Numbers)
 
@@ -256,6 +387,8 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 | Group Email | $4/mo | monthly | Team inboxes |
 | Microsoft 365 (base) | $9/mo | monthly | Full suite |
 | SSL Standard | $79/yr | annual | Single domain, DV |
+| Website Builder Essential | $12/mo | monthly | 1 site, templates, free domain, SSL |
+| Website Builder Commerce | $30/mo | monthly | Online store, payments, marketing suite |
 | Website Security Std | $8/mo | monthly | Malware scan + removal |
 | Website Security Premium | $39/mo | monthly | Advanced WAF + monitoring |
 | Email Marketing Beginner | $13/mo | monthly | |
@@ -272,6 +405,8 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 
 **Annual discount:** 20% off monthly equivalent (so $7/mo → ~$67/yr or $5.58/mo equiv). Toggle between monthly/annual on pricing cards.
 
+---
+
 ## Copy Voice & Tone
 
 - **Confident but not arrogant.** "Your site. Hosted right." not "The best hosting on the planet."
@@ -282,32 +417,53 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 - **Honest about what this is.** We're not claiming enterprise infrastructure. We're saying: premium-branded hosting, custom nameservers, white-label support, and a clear path to getting your site designed too.
 - **No fear in the ICANN disclosure.** One honest line in the footer: "Domain registration services fulfilled through WildWestDomains.com, an ICANN-accredited registrar." Own it. Porkbun proves this builds trust.
 - **Design Bridge is editorial, not an ad.** "A lot of our clients came to us for hosting and left with a site they're proud of." This is a referral framing, not a banner.
+- **Website Builder page has DUAL voice.** The first half sells the builder (confident, clear). The second half — the Crossroads section — shifts to editorial: "Not sure? Start with the builder. Upgrade to custom when you're ready." This is the honest pitch.
+
+---
 
 ## Acceptance Criteria
 
-1. All 6 HTML pages exist and render correctly in browser
-2. Mobile responsive at all breakpoints (320, 768, 1024, 1440)
-3. No external CDN dependencies — all fonts and CSS are local
+### Phase 1 (Marketing Site)
+1. All 7 HTML pages (or framework equivalents) exist and render correctly in browser
+2. Mobile responsive at all breakpoints (320, 768, 1024px, 1440px)
+3. No external CDN dependencies in production — all fonts and CSS are local
 4. Navigation links between all pages work
 5. Pricing matches the table above exactly
 6. Design Bridge section appears on all pages with correct copy and link to famtasticdesigns.com
-7. ICANN disclosure in every footer
-8. servers.html uses the EXTREME template aesthetic (dark terminal green, Share Tech Mono, CRT effects)
-9. All other pages use WILD template aesthetic (violet/lime, Space Grotesk, perspective grid)
-10. No placeholder content — every word is real, final copy
-11. No logo image files — text wordmark only
-12. Billing toggle works (monthly/annual) on pages with pricing
-13. "Talk to a Human" CTA links to mailto:hello@famtastichosting.com
-14. All images/icons are inline SVG or CSS — no external image dependencies
-15. Page load under 3 seconds on 4G connection
+7. Website Builder page (builder.html) has the Crossroads section and FAMtastic Designs tie-in
+8. ICANN disclosure in every footer
+9. GoDaddy white-label support phone number (placeholder until Fritz provides actual number) in every footer and contact section
+10. servers.html uses the EXTREME template aesthetic (dark terminal green, Share Tech Mono, CRT effects)
+11. All other pages use WILD template aesthetic (violet/lime, Space Grotesk, perspective grid)
+12. No placeholder content — every word is real, final copy
+13. No logo image files — text wordmark only
+14. Billing toggle works (monthly/annual) on pages with pricing
+15. "Talk to a Human" CTA links to mailto:hello@famtastichosting.com
+16. All images/icons are inline SVG or CSS — no external image dependencies
+17. Page load under 3 seconds on 4G connection
+18. Product data (pricing, feature lists, bundle definitions) is in a centralized data file, not copy-pasted across pages
+19. Shared components (nav, footer, Design Bridge, pricing cards) are DRY — defined once, reused across pages
+
+### Phase 2 (Dashboard — Design Only, Build Later)
+1. Customer portal wireframes designed (login, dashboard home, domain management, hosting management, billing, support)
+2. Admin dashboard wireframes designed (customer lookup, order management, revenue dashboard, product catalog, provisioning status, reports, settings)
+3. GoDaddy API integration layer spec written (endpoints, auth, data flow)
+4. Auth approach decided (supabase, auth0, or custom)
+5. Visual direction documented: dark mode, Space Grotesk/DM Sans, violet accent, clean card layout, Stripe Dashboard aesthetic
+
+---
 
 ## Deployment Target
 
 - **Domain:** famtastichosting.com
-- **Hosting:** Netlify (static site deploy)
-- **DNS:** Already configured through GoDaddy
-- **SSL:** Netlify provides free SSL via Let's Encrypt
-- **Contact form:** Initially mailto: link. Netlify Forms or Formspree to be wired in Phase 2.
+- **Marketing site hosting:** Netlify (static deploy or Astro SSR)
+- **Dashboard hosting:** Netlify or separate Node.js service (Phase 2)
+- **DNS:** Configured through GoDaddy (custom nameservers: ns1.famtastichosting.com, ns2.famtastichosting.com)
+- **SSL:** Netlify provides free SSL via Let's Encrypt (marketing site). Dashboard gets its own SSL.
+- **Contact form:** Initially mailto: link. Netlify Forms or Formspree wired when dashboard is ready.
+- **Database:** Supabase or equivalent (Phase 2, dashboard only)
+
+---
 
 ## Provenance
 
@@ -316,4 +472,8 @@ All prices are our retail. Wholesale is shown for reference only — customers n
 - Pricing: 1.75x global markup, 2.5x SSL (confirmed by Fritz June 9-10, 2026)
 - Multi-page directive: Fritz explicitly rejected single-page approach ("claude tends to build one page sites which I hate")
 - No-logo constraint: Fritz confirmed no official FAMtastic signature logo yet — use wordmark
+- Framework: Fritz directed framework choice should be open — let the build team choose the best tool for imagination and maintainability. Pure static is not required if a framework produces better results.
 - Swarm execution: Fritz directed multi-swarm, autonomous, cheap (no Opus)
+- Backend dashboard: Fritz required — customer portal + admin panel that mirrors GoDaddy reseller functions
+- Website Builder page: Fritz directed — tied to FAMtastic Designs. Builder page IS the Designs bridge. Future deep integration, current page has the crossroads + tie-in.
+- GoDaddy support phone: Fritz required — must be visible on every page and in the dashboard. White-labeled under FAMtastic Hosting brand. Needs actual number from GoDaddy reseller panel configuration.
