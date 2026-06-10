@@ -1,6 +1,6 @@
 /**
  * GET  /api/customer/profile  — returns authenticated customer's profile
- * PATCH /api/customer/profile — updates allowed fields (godaddy_shopper_id only for now)
+ * PATCH /api/customer/profile — updates allowed fields
  *
  * Profile data lives in the public.users table in Supabase.
  * Email is managed by Supabase Auth — changing it requires re-verification
@@ -10,8 +10,9 @@
  *   { id, email, role, godaddy_shopper_id, created_at, updated_at }
  *
  * PATCH body (JSON):
- *   { godaddy_shopper_id?: string }
- *   Returns updated profile on success.
+ *   No customer-settable fields are currently exposed.
+ *   godaddy_shopper_id is intentionally excluded — it is set by admin only
+ *   via /api/admin/customers/:id to prevent account-hijacking.
  */
 
 import type { APIRoute } from 'astro';
@@ -56,9 +57,12 @@ export const PATCH: APIRoute = async (context) => {
     return apiError('Invalid JSON body.', 'BAD_REQUEST', 400);
   }
 
-  // Only allow updating godaddy_shopper_id for now
-  // Email changes require Supabase auth flow; role changes are admin-only
-  const allowedFields = ['godaddy_shopper_id'] as const;
+  // godaddy_shopper_id is set by admin only via /api/admin/customers/:id.
+  // Customers cannot self-assign a shopper ID — they could claim another
+  // customer's GoDaddy account.
+  // Email changes require the Supabase auth flow.
+  // Role changes are admin-only and enforced at the DB column level.
+  const allowedFields: string[] = [];
   const updates: Record<string, unknown> = {};
 
   for (const field of allowedFields) {

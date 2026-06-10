@@ -5,8 +5,9 @@
  *
  * MVP NOTE: GoDaddy's /v1/customers and /v1/shoppers/self endpoints
  * return 401/403 with sso-key auth. We cannot filter domains to a specific
- * customer via the GoDaddy API at this tier. For MVP, we return all domains
- * in the reseller account, and the UI displays them to any authenticated user.
+ * customer via the GoDaddy API at this tier. For MVP, we return domains
+ * filtered by the authenticated user's godaddy_shopper_id.
+ * If the account is not yet linked, an empty array is returned.
  * Post-MVP: implement shopper-level GoDaddy auth to filter per-customer.
  *
  * Query parameters:
@@ -18,7 +19,8 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/auth/middleware.js';
 import { listDomains } from '../../../lib/godaddy/domains.js';
-import { apiOk, apiError, handleGoDaddyError } from '../../../lib/api/response.js';
+import { apiOk, handleGoDaddyError } from '../../../lib/api/response.js';
+import { supabaseAdmin } from '../../../lib/supabase/client.js';
 
 export const prerender = false;
 
@@ -26,6 +28,26 @@ export const GET: APIRoute = async (context) => {
   // Require customer (or admin) auth
   const authResult = await requireAuth(context.request);
   if (authResult instanceof Response) return authResult;
+  const user = authResult;
+
+  // IDOR gate: only return data for the authenticated user's linked GoDaddy
+  // account. If godaddy_shopper_id is null the account is not yet linked —
+  // return empty rather than leaking the full reseller domain list.
+  const { data: profile } = await supabaseAdmin
+    .from('users')
+    .select('godaddy_shopper_id')
+    .eq('id', user.id)
+    .single();
+
+  const shopperId = profile?.godaddy_shopper_id ?? null;
+
+  if (!shopperId) {
+    return apiOk({
+      domains: [],
+      total: 0,
+      note: 'Account not yet linked to GoDaddy. Contact support.',
+    });
+  }
 
   const url = new URL(context.request.url);
   const statusesParam = url.searchParams.get('statuses');
@@ -33,11 +55,17 @@ export const GET: APIRoute = async (context) => {
   const skipCache = url.searchParams.get('skipCache') === 'true';
 
   try {
-    const domains = await listDomains({
+    const allDomains = await listDomains({
       statuses: statusesParam ? statusesParam.split(',') : undefined,
       limit: isNaN(limit) ? 100 : Math.min(limit, 1000),
       skipCache,
     });
+
+    // TODO: Filter domains by shopper_id when GoDaddy Reseller API access is
+    // available. Currently filtered client-side by godaddy_shopper_id match.
+    const domains = allDomains.filter(
+      (d) => (d as Record<string, unknown>).shopperId === shopperId
+    );
 
     // Annotate each domain with a "days until expiry" convenience field
     const now = Date.now();
@@ -46,7 +74,8 @@ export const GET: APIRoute = async (context) => {
       const daysUntilExpiry = expiresMs
         ? Math.ceil((expiresMs - now) / (1000 * 60 * 60 * 24))
         : null;
-      const expiringSoon = daysUntilExpiry !== null && daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+      const expiringSoon =
+        daysUntilExpiry !== null && daysUntilExpiry <= 30 && daysUntilExpiry > 0;
       const expired = daysUntilExpiry !== null && daysUntilExpiry <= 0;
 
       return {

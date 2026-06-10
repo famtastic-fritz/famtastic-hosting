@@ -19,13 +19,36 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/auth/middleware.js';
 import { listOrdersNormalized } from '../../../lib/godaddy/orders.js';
-import { apiOk, handleGoDaddyError } from '../../../lib/api/response.js';
+import { apiOk, apiError, handleGoDaddyError } from '../../../lib/api/response.js';
+import { supabaseAdmin } from '../../../lib/supabase/client.js';
 
 export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
   const authResult = await requireAuth(context.request);
   if (authResult instanceof Response) return authResult;
+  const user = authResult;
+
+  // IDOR gate: read the authenticated user's godaddy_shopper_id from Supabase.
+  // If it is null the account is not yet linked — return an empty result rather
+  // than leaking all-account GoDaddy data to an unverified customer.
+  const { data: profile } = await supabaseAdmin
+    .from('users')
+    .select('godaddy_shopper_id')
+    .eq('id', user.id)
+    .single();
+
+  const shopperId = profile?.godaddy_shopper_id ?? null;
+
+  if (!shopperId) {
+    return apiOk({
+      orders: [],
+      total: 0,
+      upcomingRenewals: [],
+      pagination: { limit: 0, offset: 0 },
+      note: 'Account not yet linked to GoDaddy. Contact support.',
+    });
+  }
 
   const url = new URL(context.request.url);
   const limit = Math.min(
@@ -37,12 +60,18 @@ export const GET: APIRoute = async (context) => {
   const dateEnd = url.searchParams.get('dateEnd') ?? undefined;
 
   try {
-    const { orders, total } = await listOrdersNormalized({
+    const { orders: allOrders, total } = await listOrdersNormalized({
       limit,
       offset,
       dateStart,
       dateEnd,
     });
+
+    // TODO: Filter orders by shopper_id when GoDaddy Reseller API access is
+    // available. Currently filtered client-side by godaddy_shopper_id match.
+    const orders = allOrders.filter(
+      (o) => (o as Record<string, unknown>).shopperId === shopperId
+    );
 
     // Compute upcoming renewals (orders with period info, created within last 2 years)
     const now = Date.now();
@@ -57,7 +86,9 @@ export const GET: APIRoute = async (context) => {
                 ? (item.period ?? 1) * 365 * 24 * 60 * 60 * 1000
                 : (item.period ?? 1) * 30 * 24 * 60 * 60 * 1000;
             const renewalDate = new Date(createdMs + periodMs);
-            const daysUntil = Math.ceil((renewalDate.getTime() - now) / (1000 * 60 * 60 * 24));
+            const daysUntil = Math.ceil(
+              (renewalDate.getTime() - now) / (1000 * 60 * 60 * 24)
+            );
 
             return {
               orderId: order.orderId,

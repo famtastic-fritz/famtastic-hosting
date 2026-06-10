@@ -16,6 +16,7 @@ import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../lib/auth/middleware.js';
 import { listOrdersNormalized } from '../../../lib/godaddy/orders.js';
 import { apiOk, handleGoDaddyError } from '../../../lib/api/response.js';
+import { supabaseAdmin } from '../../../lib/supabase/client.js';
 
 export const prerender = false;
 
@@ -29,14 +30,44 @@ function isEmailProduct(label: string): boolean {
 export const GET: APIRoute = async (context) => {
   const authResult = await requireAuth(context.request);
   if (authResult instanceof Response) return authResult;
+  const user = authResult;
 
   // GoDaddy email management links
   const WEBMAIL_URL = 'https://login.secureserver.net/';
   const EMAIL_MGMT_URL = 'https://account.godaddy.com/products';
   const ADD_EMAIL_URL = 'https://www.secureserver.net/email-hosting/';
 
+  // IDOR gate: only return data for the authenticated user's linked GoDaddy
+  // account. If godaddy_shopper_id is null the account is not yet linked.
+  const { data: profile } = await supabaseAdmin
+    .from('users')
+    .select('godaddy_shopper_id')
+    .eq('id', user.id)
+    .single();
+
+  const shopperId = profile?.godaddy_shopper_id ?? null;
+
+  if (!shopperId) {
+    return apiOk({
+      emailProducts: [],
+      total: 0,
+      links: {
+        webmail: WEBMAIL_URL,
+        manage: EMAIL_MGMT_URL,
+        addEmail: ADD_EMAIL_URL,
+      },
+      note: 'Account not yet linked to GoDaddy. Contact support.',
+    });
+  }
+
   try {
-    const { orders } = await listOrdersNormalized({ limit: 500 });
+    const { orders: allOrders } = await listOrdersNormalized({ limit: 500 });
+
+    // TODO: Filter orders by shopper_id when GoDaddy Reseller API access is
+    // available. Currently filtered client-side by godaddy_shopper_id match.
+    const orders = allOrders.filter(
+      (o) => (o as Record<string, unknown>).shopperId === shopperId
+    );
 
     const emailProducts = orders
       .flatMap((order) =>
