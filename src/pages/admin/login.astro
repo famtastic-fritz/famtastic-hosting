@@ -1,0 +1,288 @@
+---
+/**
+ * /admin/login
+ *
+ * Admin-only login page. Separate from the customer login at /dashboard/login.
+ * If already authenticated as admin, redirects to /admin.
+ * If authenticated as customer, shows the form (non-admin users are blocked
+ * at the API level).
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { getSession } from '../../lib/auth/middleware.js';
+
+const user = await getSession(Astro.request);
+if (user && user.role === 'admin') {
+  return Astro.redirect('/admin', 302);
+}
+
+const title = 'Admin Sign In';
+---
+
+<DashboardLayout {title} variant="admin" currentPath="/admin/login">
+  <div class="auth-page">
+    <div class="auth-card">
+      <!-- Brand -->
+      <div class="auth-brand">
+        <a href="/" class="brand-wordmark" aria-label="FAMtastic Hosting home">
+          <span class="brand-fam">FAM</span><span class="brand-tastic">tastic</span>
+          <span class="brand-hosting">Hosting</span>
+        </a>
+        <div class="admin-label">Admin Access</div>
+      </div>
+
+      <!-- Heading -->
+      <div class="auth-header">
+        <h1 class="auth-title">Command center</h1>
+        <p class="auth-subtitle">Sign in with your admin credentials to access revenue data, orders, and settings.</p>
+      </div>
+
+      <!-- Login form -->
+      <form class="auth-form" id="admin-login-form" novalidate>
+        <div class="db-form-group">
+          <label class="db-label" for="email">Email address</label>
+          <input
+            class="db-input"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="admin@famtastichosting.com"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="db-form-group">
+          <label class="db-label" for="password">Password</label>
+          <input
+            class="db-input"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Your admin password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <div class="auth-error" id="auth-error" aria-live="polite" hidden></div>
+
+        <button class="db-btn db-btn--primary auth-submit" type="submit" id="submit-btn">
+          Sign in to admin
+        </button>
+      </form>
+
+      <!-- Support callout -->
+      <div class="auth-support">
+        <p>
+          Customer portal?
+          <a href="/dashboard/login" class="support-link">Sign in here</a>
+          &nbsp;·&nbsp; Support:
+          <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+  const form = document.getElementById('admin-login-form') as HTMLFormElement;
+  const errorEl = document.getElementById('auth-error') as HTMLDivElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+
+  function showError(msg: string) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+  }
+
+  function clearError() {
+    errorEl.textContent = '';
+    errorEl.hidden = true;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+
+    if (!email || !password) {
+      showError('Please enter your email and password.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    try {
+      const res = await fetch('/api/auth/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.ok) {
+        showError(json.error ?? 'Sign-in failed. Check your credentials.');
+        return;
+      }
+
+      // Success — redirect to admin dashboard
+      window.location.href = '/admin';
+    } catch {
+      showError('Network error. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in to admin';
+    }
+  });
+</script>
+
+<style>
+  /* Auth page layout */
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: #0a0a0f;
+  }
+
+  /* Auth card */
+  .auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: #111118;
+    border: 1px solid #2a2a38;
+    border-radius: 16px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  /* Brand wordmark */
+  .auth-brand {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .brand-wordmark {
+    display: inline-block;
+    text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.375rem;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-fam    { color: #f5f5f0; }
+  .brand-tastic { color: #7c3aed; }
+
+  .brand-hosting {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9090a0;
+    margin-top: 2px;
+  }
+
+  .admin-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    background: rgba(124, 58, 237, 0.12);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 9999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #c4b5fd;
+  }
+
+  /* Auth header */
+  .auth-header {
+    text-align: center;
+  }
+
+  .auth-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f5f5f0;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .auth-subtitle {
+    font-size: 0.9rem;
+    color: #9090a0;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Form */
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .auth-submit {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.6875rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  /* Error state */
+  .auth-error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 8px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: #fca5a5;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+
+  /* Support line */
+  .auth-support {
+    text-align: center;
+    padding-top: 0.25rem;
+    border-top: 1px solid #1e1e28;
+  }
+
+  .auth-support p {
+    font-size: 0.8125rem;
+    color: #9090a0;
+    margin: 0;
+  }
+
+  .support-link {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .support-link:hover { text-decoration: underline; }
+
+  @media (max-width: 480px) {
+    .auth-card {
+      padding: 2rem 1.5rem;
+      border-radius: 12px;
+    }
+  }
+</style>
