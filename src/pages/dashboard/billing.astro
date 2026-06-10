@@ -1,0 +1,336 @@
+---
+/**
+ * /dashboard/billing — Billing and invoice history
+ *
+ * Shows order history from GoDaddy (prices normalized from microdollars to USD),
+ * upcoming renewals, and a link to manage payment methods on GoDaddy directly.
+ *
+ * Uses the DataTable Svelte component for the sortable/filterable order table.
+ * CRITICAL: prices come from GoDaddy as microdollars but are normalized to USD
+ * by the /api/customer/billing endpoint before reaching this page.
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import DataTable from '../../components/dashboard/DataTable.svelte';
+import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
+import { requireAuth } from '../../lib/auth/middleware.js';
+
+const user = await requireAuth(Astro.request);
+if (user instanceof Response) return user;
+
+const origin = new URL(Astro.request.url).origin;
+
+let orders: any[] = [];
+let upcomingRenewals: any[] = [];
+let fetchError = false;
+
+try {
+  const res = await fetch(`${origin}/api/customer/billing?limit=50`, {
+    headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+  });
+  if (res.ok) {
+    const data = await res.json();
+    orders = data?.data?.orders ?? [];
+    upcomingRenewals = data?.data?.upcomingRenewals ?? [];
+  }
+} catch (err) {
+  fetchError = true;
+  console.error('[dashboard/billing] SSR fetch failed:', err);
+}
+
+// Flatten orders for DataTable — one row per order
+const tableRows = orders.map((order: any) => ({
+  id: order.orderId,
+  date: new Date(order.createdAt).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  }),
+  products: order.items.map((i: any) => i.label).join(', '),
+  subtotal: `$${order.subtotalUSD.toFixed(2)}`,
+  tax: order.taxesUSD > 0 ? `$${order.taxesUSD.toFixed(2)}` : '—',
+  total: `$${order.totalUSD.toFixed(2)}`,
+  orderId: String(order.orderId),
+}));
+
+const tableColumns = [
+  { key: 'date', label: 'Date', sortable: true, width: '130px' },
+  { key: 'products', label: 'Products', sortable: false },
+  { key: 'subtotal', label: 'Subtotal', sortable: false, width: '100px', align: 'right' as const },
+  { key: 'tax', label: 'Tax', sortable: false, width: '80px', align: 'right' as const },
+  { key: 'total', label: 'Total', sortable: true, width: '100px', align: 'right' as const },
+  { key: 'orderId', label: 'Order #', sortable: true, width: '100px', align: 'right' as const },
+];
+
+// Revenue totals
+const totalSpent = orders.reduce((sum: number, o: any) => sum + o.totalUSD, 0);
+---
+
+<DashboardLayout
+  title="Billing"
+  variant="customer"
+  currentPath="/dashboard/billing"
+  userName={user.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h1 class="db-page-title">Billing &amp; Invoices</h1>
+        <p class="db-page-subtitle">
+          Order history and upcoming renewals.
+          All prices are in USD.
+        </p>
+      </div>
+      <div class="header-right">
+        <ContactPhone variant="inline" client:load />
+        <a
+          href="https://account.godaddy.com/billing"
+          class="db-btn db-btn--secondary db-btn--sm"
+          target="_blank"
+          rel="noopener"
+        >
+          Manage Payment Method
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {fetchError && (
+    <div class="db-alert db-alert--warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+      <span>Unable to load billing data. Refresh or call <a href="tel:+14806242500">(480) 624-2500</a>.</span>
+    </div>
+  )}
+
+  <!-- Summary stats -->
+  <section class="db-section" aria-labelledby="billing-stats-heading">
+    <h2 id="billing-stats-heading" class="db-sr-only">Billing Summary</h2>
+    <div class="db-grid db-grid--stats">
+      <div class="db-stat-card">
+        <div class="db-stat-card__label">Total Orders</div>
+        <div class="db-stat-card__value">{orders.length}</div>
+        <div class="db-stat-card__delta db-stat-card__delta--flat">All time</div>
+      </div>
+      <div class="db-stat-card">
+        <div class="db-stat-card__label">Total Spent</div>
+        <div class="db-stat-card__value">${totalSpent.toFixed(2)}</div>
+        <div class="db-stat-card__delta db-stat-card__delta--flat">USD</div>
+      </div>
+      <div class="db-stat-card">
+        <div class="db-stat-card__label">Upcoming Renewals</div>
+        <div class="db-stat-card__value">{upcomingRenewals.length}</div>
+        <div class="db-stat-card__delta db-stat-card__delta--{upcomingRenewals.length > 0 ? 'down' : 'flat'}">
+          Next 90 days
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upcoming renewals -->
+  {upcomingRenewals.length > 0 && (
+    <section class="db-section" aria-labelledby="renewals-heading">
+      <h2 id="renewals-heading" class="db-section-title">Upcoming Renewals</h2>
+      <div class="db-card db-card--flush">
+        <table class="db-table" aria-label="Upcoming renewals">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Renewal Date</th>
+              <th>Days</th>
+              <th style="text-align:right;">Est. Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {upcomingRenewals.map((r: any) => (
+              <tr>
+                <td class="db-text-primary">{r.label}</td>
+                <td class="db-text-mono db-text-sm">
+                  {new Date(r.renewalDate).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                  })}
+                </td>
+                <td>
+                  <span class={`db-badge ${r.daysUntil <= 7 ? 'db-badge--expired' : r.daysUntil <= 30 ? 'db-badge--expiring' : 'db-badge--pending'}`}>
+                    {r.daysUntil}d
+                  </span>
+                </td>
+                <td class="db-text-mono db-text-sm" style="text-align:right;">
+                  ${r.amountUSD.toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div class="db-alert db-alert--info" style="margin-top:var(--db-sp-3);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>
+          Renewal amounts shown are estimates based on original purchase price.
+          Actual renewal amounts are set by your plan.
+          <a href="https://account.godaddy.com/billing" target="_blank" rel="noopener">Manage auto-renew settings →</a>
+        </span>
+      </div>
+    </section>
+  )}
+
+  <!-- Order history table (DataTable Svelte component) -->
+  <section class="db-section" aria-labelledby="orders-heading">
+    <h2 id="orders-heading" class="db-section-title">Order History</h2>
+
+    {orders.length > 0 ? (
+      <DataTable
+        client:load
+        columns={tableColumns}
+        rows={tableRows}
+        searchable={true}
+        searchPlaceholder="Search orders…"
+        emptyMessage="No orders found matching your search."
+      />
+    ) : !fetchError ? (
+      <div class="empty-state">
+        <p class="empty-state__body">No order history found.</p>
+      </div>
+    ) : null}
+  </section>
+
+  <!-- Payment management info -->
+  <div class="payment-info">
+    <div class="payment-info__inner">
+      <div class="payment-info__icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="payment-info__title">Payment Methods</h3>
+        <p class="payment-info__body">
+          All payments are processed securely by GoDaddy.
+          We never store your payment information.
+          To update your card or billing address, visit GoDaddy's account portal.
+        </p>
+      </div>
+      <div class="payment-info__actions">
+        <a
+          href="https://account.godaddy.com/billing"
+          class="db-btn db-btn--secondary"
+          target="_blank"
+          rel="noopener"
+        >
+          Manage on GoDaddy
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone CTA -->
+  <div class="billing-support">
+    <span class="billing-support__label">Billing question?</span>
+    <ContactPhone variant="inline" client:load />
+    <span class="billing-support__or">or</span>
+    <a href="/dashboard/support" class="db-btn db-btn--ghost db-btn--sm">Open a Ticket</a>
+  </div>
+</DashboardLayout>
+
+<style>
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-3);
+    flex-wrap: wrap;
+  }
+
+  /* Payment info card */
+  .payment-info {
+    margin-top: var(--db-sp-6);
+    background: var(--db-bg-card);
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius-lg);
+    padding: var(--db-sp-5) var(--db-sp-6);
+  }
+
+  .payment-info__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--db-sp-5);
+    flex-wrap: wrap;
+  }
+
+  .payment-info__icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.04);
+    border-radius: var(--db-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--db-text-muted);
+    flex-shrink: 0;
+  }
+
+  .payment-info__title {
+    font-family: var(--db-font-heading);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--db-text-primary);
+    margin: 0 0 var(--db-sp-2);
+  }
+
+  .payment-info__body {
+    font-size: 0.875rem;
+    color: var(--db-text-secondary);
+    margin: 0;
+    line-height: 1.55;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .payment-info__actions {
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  /* Support strip */
+  .billing-support {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-3);
+    margin-top: var(--db-sp-6);
+    padding: var(--db-sp-4) var(--db-sp-5);
+    background: rgba(34, 197, 94, 0.05);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: var(--db-radius-lg);
+    flex-wrap: wrap;
+  }
+
+  .billing-support__label {
+    font-size: 0.9375rem;
+    color: var(--db-text-secondary);
+  }
+
+  .billing-support__or {
+    font-size: 0.875rem;
+    color: var(--db-text-muted);
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: var(--db-sp-10) var(--db-sp-4);
+    border: 1px dashed var(--db-border);
+    border-radius: var(--db-radius-lg);
+    text-align: center;
+  }
+
+  .empty-state__body {
+    font-size: 0.9375rem;
+    color: var(--db-text-secondary);
+    margin: 0;
+  }
+
+  @media (max-width: 640px) {
+    .header-right { flex-direction: column; align-items: flex-start; }
+    .billing-support { flex-direction: column; align-items: flex-start; }
+  }
+</style>

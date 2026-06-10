@@ -1,0 +1,367 @@
+---
+/**
+ * /dashboard/hosting — Hosting management page
+ *
+ * Shows active hosting plans derived from order history,
+ * cPanel access link, SSL certificate status per domain,
+ * and upgrade path to storefront.
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import ServiceCard from '../../components/dashboard/ServiceCard.svelte';
+import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
+import { requireAuth } from '../../lib/auth/middleware.js';
+
+const user = await requireAuth(Astro.request);
+if (user instanceof Response) return user;
+
+const origin = new URL(Astro.request.url).origin;
+
+let plans: any[] = [];
+let cPanelUrl = 'https://sg1plcpnl0082.prod.sin2.secureserver.net:2083';
+let fetchError = false;
+
+try {
+  const res = await fetch(`${origin}/api/customer/hosting`, {
+    headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+  });
+  if (res.ok) {
+    const data = await res.json();
+    plans = data?.data?.plans ?? [];
+    cPanelUrl = data?.data?.cPanelUrl ?? cPanelUrl;
+  }
+} catch (err) {
+  fetchError = true;
+  console.error('[dashboard/hosting] SSR fetch failed:', err);
+}
+
+// Map plan labels to human-friendly names and icon types
+function planIcon(label: string): 'hosting' | 'domain' | 'email' | 'ssl' | 'builder' {
+  const l = label.toLowerCase();
+  if (l.includes('wordpress') || l.includes('wp')) return 'hosting';
+  if (l.includes('builder')) return 'builder';
+  if (l.includes('email')) return 'email';
+  if (l.includes('ssl')) return 'ssl';
+  return 'hosting';
+}
+---
+
+<DashboardLayout
+  title="Hosting"
+  variant="customer"
+  currentPath="/dashboard/hosting"
+  userName={user.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h1 class="db-page-title">Hosting Management</h1>
+        <p class="db-page-subtitle">
+          Manage your hosting plans, access cPanel, and view SSL status.
+        </p>
+      </div>
+      <div class="header-right">
+        <ContactPhone variant="inline" client:load />
+        <a
+          href="https://store.famtastichosting.com/hosting"
+          class="db-btn db-btn--primary db-btn--sm"
+          target="_blank"
+          rel="noopener"
+        >
+          Upgrade Plan
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {fetchError && (
+    <div class="db-alert db-alert--warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+      <span>Unable to load hosting data. Refresh or call <a href="tel:+14806242500">(480) 624-2500</a>.</span>
+    </div>
+  )}
+
+  <!-- cPanel quick access -->
+  <section class="db-section" aria-labelledby="cpanel-heading">
+    <h2 id="cpanel-heading" class="db-section-title">Control Panel Access</h2>
+    <div class="cpanel-card">
+      <div class="cpanel-card__icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <div class="cpanel-card__content">
+        <h3 class="cpanel-card__title">cPanel</h3>
+        <p class="cpanel-card__desc">
+          Full control over your hosting environment — files, databases,
+          email, one-click installs, and more.
+        </p>
+      </div>
+      <div class="cpanel-card__actions">
+        <a
+          href={cPanelUrl}
+          class="db-btn db-btn--primary"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Log in to cPanel (opens in new tab)"
+        >
+          Log in to cPanel
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hosting plans -->
+  <section class="db-section" aria-labelledby="plans-heading">
+    <h2 id="plans-heading" class="db-section-title">
+      Your Plans ({plans.length})
+    </h2>
+
+    {plans.length > 0 ? (
+      <div class="db-grid db-grid--3">
+        {plans.map((plan: any) => (
+          <ServiceCard
+            client:load
+            title={plan.label}
+            subtitle={`Order #${plan.orderId}`}
+            status="active"
+            renewalDate={plan.purchasedAt
+              ? new Date(plan.purchasedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : ''}
+            actionLabel="Open cPanel"
+            actionHref={cPanelUrl}
+            iconType={planIcon(plan.label)}
+          />
+        ))}
+      </div>
+    ) : !fetchError ? (
+      <div class="empty-state">
+        <p class="empty-state__body">
+          No hosting plans found in your order history.
+          <a href="https://store.famtastichosting.com/hosting" target="_blank" rel="noopener">
+            Browse hosting plans →
+          </a>
+        </p>
+      </div>
+    ) : null}
+  </section>
+
+  <!-- SSL status info -->
+  <section class="db-section" aria-labelledby="ssl-heading">
+    <h2 id="ssl-heading" class="db-section-title">SSL Certificates</h2>
+    <div class="db-alert db-alert--info">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <div>
+        <strong>Free SSL included on all hosting plans.</strong>
+        <p style="margin:0.25rem 0 0; font-size:0.875rem;">
+          SSL certificates are provisioned automatically through your cPanel.
+          If your certificate needs renewal or you see a warning in your browser,
+          log in to cPanel and navigate to <em>SSL/TLS</em>, or call us at
+          <a href="tel:+14806242500">(480) 624-2500</a>.
+        </p>
+      </div>
+    </div>
+    <div class="ssl-grid">
+      <div class="ssl-feature">
+        <span class="ssl-feature__check" aria-hidden="true">✓</span>
+        <span>Let's Encrypt SSL — automatic renewal</span>
+      </div>
+      <div class="ssl-feature">
+        <span class="ssl-feature__check" aria-hidden="true">✓</span>
+        <span>HTTPS enforced on all domains</span>
+      </div>
+      <div class="ssl-feature">
+        <span class="ssl-feature__check" aria-hidden="true">✓</span>
+        <span>Wildcard SSL available via cPanel</span>
+      </div>
+      <div class="ssl-feature">
+        <span class="ssl-feature__check" aria-hidden="true">✓</span>
+        <span>Premium SSL from $79/yr for dedicated validation</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upgrade path -->
+  <section class="upgrade-callout" aria-label="Upgrade">
+    <div class="upgrade-callout__inner">
+      <div>
+        <h2 class="upgrade-callout__title">Need more power?</h2>
+        <p class="upgrade-callout__body">
+          Move to a dedicated server or upgrade to Web Hosting Plus for
+          guaranteed CPU, RAM, and NVMe storage. Starting at $37/mo.
+        </p>
+      </div>
+      <div class="upgrade-callout__actions">
+        <a
+          href="https://store.famtastichosting.com/hosting"
+          class="db-btn db-btn--primary"
+          target="_blank"
+          rel="noopener"
+        >
+          View Hosting Plans
+        </a>
+        <ContactPhone variant="block" client:load />
+      </div>
+    </div>
+  </section>
+</DashboardLayout>
+
+<style>
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-3);
+    flex-wrap: wrap;
+  }
+
+  /* cPanel access card */
+  .cpanel-card {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-5);
+    background: var(--db-bg-card);
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius-lg);
+    padding: var(--db-sp-5) var(--db-sp-6);
+    transition: border-color var(--db-transition-fast);
+    flex-wrap: wrap;
+  }
+
+  .cpanel-card:hover {
+    border-color: var(--db-border-light);
+  }
+
+  .cpanel-card__icon {
+    width: 56px;
+    height: 56px;
+    background: var(--db-violet-dim);
+    border-radius: var(--db-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--db-violet-light);
+    flex-shrink: 0;
+  }
+
+  .cpanel-card__content {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .cpanel-card__title {
+    font-family: var(--db-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--db-text-primary);
+    margin: 0 0 var(--db-sp-1);
+  }
+
+  .cpanel-card__desc {
+    font-size: 0.875rem;
+    color: var(--db-text-secondary);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  .cpanel-card__actions {
+    flex-shrink: 0;
+  }
+
+  /* SSL grid */
+  .ssl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--db-sp-3);
+    margin-top: var(--db-sp-4);
+  }
+
+  .ssl-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--db-sp-2);
+    font-size: 0.875rem;
+    color: var(--db-text-secondary);
+    background: var(--db-bg-card);
+    padding: var(--db-sp-3) var(--db-sp-4);
+    border-radius: var(--db-radius);
+    border: 1px solid var(--db-border);
+  }
+
+  .ssl-feature__check {
+    color: var(--db-status-active);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* Upgrade callout */
+  .upgrade-callout {
+    margin-top: var(--db-sp-8);
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, var(--db-bg-card) 100%);
+    border: 1px solid var(--db-border-light);
+    border-radius: var(--db-radius-lg);
+    padding: var(--db-sp-6);
+  }
+
+  .upgrade-callout__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--db-sp-6);
+    flex-wrap: wrap;
+  }
+
+  .upgrade-callout__title {
+    font-family: var(--db-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--db-text-primary);
+    margin: 0 0 var(--db-sp-2);
+  }
+
+  .upgrade-callout__body {
+    font-size: 0.875rem;
+    color: var(--db-text-secondary);
+    margin: 0;
+    line-height: 1.55;
+    max-width: 480px;
+  }
+
+  .upgrade-callout__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-3);
+    flex-wrap: wrap;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: var(--db-sp-8) var(--db-sp-4);
+    border: 1px dashed var(--db-border);
+    border-radius: var(--db-radius-lg);
+    text-align: center;
+  }
+
+  .empty-state__body {
+    font-size: 0.9375rem;
+    color: var(--db-text-secondary);
+    margin: 0;
+  }
+
+  .empty-state__body a {
+    color: var(--db-violet-light);
+  }
+
+  @media (max-width: 640px) {
+    .header-right { flex-direction: column; align-items: flex-start; }
+    .cpanel-card { flex-direction: column; align-items: flex-start; }
+    .upgrade-callout__inner { flex-direction: column; align-items: flex-start; }
+  }
+</style>

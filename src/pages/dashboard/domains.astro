@@ -1,0 +1,411 @@
+---
+/**
+ * /dashboard/domains — Domain management page
+ *
+ * Lists all customer domains with status, expiry, auto-renew toggle,
+ * and links to DNS management. Domains expiring within 30 days show
+ * a warning badge. Data from /api/customer/domains.
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
+import { requireAuth } from '../../lib/auth/middleware.js';
+
+const user = await requireAuth(Astro.request);
+if (user instanceof Response) return user;
+
+const origin = new URL(Astro.request.url).origin;
+
+let domains: any[] = [];
+let fetchError = false;
+
+try {
+  const res = await fetch(`${origin}/api/customer/domains?limit=200`, {
+    headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+  });
+  if (res.ok) {
+    const data = await res.json();
+    domains = data?.data?.domains ?? [];
+  }
+} catch (err) {
+  fetchError = true;
+  console.error('[dashboard/domains] SSR fetch failed:', err);
+}
+
+const activeDomains = domains.filter((d: any) => d.status === 'ACTIVE');
+const expiringDomains = domains.filter((d: any) => d.expiringSoon);
+const expiredDomains = domains.filter((d: any) => d.expired);
+const otherDomains = domains.filter(
+  (d: any) => !d.expired && !d.expiringSoon && d.status !== 'ACTIVE'
+);
+
+function formatDate(iso: string | undefined): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  });
+}
+---
+
+<DashboardLayout
+  title="My Domains"
+  variant="customer"
+  currentPath="/dashboard/domains"
+  userName={user.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h1 class="db-page-title">My Domains</h1>
+        <p class="db-page-subtitle">
+          {domains.length} domain{domains.length !== 1 ? 's' : ''} in your account.
+          {expiringDomains.length > 0 && (
+            <span class="expiry-warn">{expiringDomains.length} expiring within 30 days.</span>
+          )}
+        </p>
+      </div>
+      <div class="header-right">
+        <ContactPhone variant="inline" client:load />
+        <a
+          href="https://store.famtastichosting.com/domains"
+          class="db-btn db-btn--primary db-btn--sm"
+          target="_blank"
+          rel="noopener"
+        >
+          + Register Domain
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {fetchError && (
+    <div class="db-alert db-alert--warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+      <span>Unable to load domain data. Please refresh or call <a href="tel:+14806242500">(480) 624-2500</a>.</span>
+    </div>
+  )}
+
+  <!-- Expiring soon — shown first as a warning section -->
+  {expiringDomains.length > 0 && (
+    <section class="db-section" aria-labelledby="expiring-heading">
+      <h2 id="expiring-heading" class="db-section-title section-title--warn">
+        Expiring Soon ({expiringDomains.length})
+      </h2>
+      <div class="db-card db-card--flush">
+        <table class="db-table" aria-label="Expiring domains">
+          <thead>
+            <tr>
+              <th>Domain</th>
+              <th>Expires</th>
+              <th>Days Left</th>
+              <th>Auto-Renew</th>
+              <th>Nameservers</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expiringDomains.map((d: any) => (
+              <tr>
+                <td>
+                  <span class="domain-name">{d.domain}</span>
+                </td>
+                <td class="db-text-mono db-text-sm">{formatDate(d.expires)}</td>
+                <td>
+                  <span class={`db-badge ${d.daysUntilExpiry <= 7 ? 'db-badge--expired' : 'db-badge--expiring'}`}>
+                    {d.daysUntilExpiry}d
+                  </span>
+                </td>
+                <td>
+                  <span class={`db-badge ${d.renewAuto ? 'db-badge--active' : 'db-badge--neutral'}`}>
+                    {d.renewAuto ? 'On' : 'Off'}
+                  </span>
+                </td>
+                <td class="db-text-sm db-text-muted">
+                  {d.nameServers?.length > 0 ? d.nameServers.slice(0,2).join(', ') : 'Default'}
+                </td>
+                <td>
+                  <a
+                    href={`https://dcc.godaddy.com/manage/${d.domain}/dns`}
+                    class="db-btn db-btn--sm db-btn--secondary"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Manage DNS
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div class="db-alert db-alert--warning" style="margin-top:var(--db-sp-3);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>
+          Renew domains before they expire to avoid service interruption.
+          Call <a href="tel:+14806242500">(480) 624-2500</a> for help renewing.
+        </span>
+      </div>
+    </section>
+  )}
+
+  <!-- Active domains -->
+  {activeDomains.length > 0 && (
+    <section class="db-section" aria-labelledby="active-heading">
+      <h2 id="active-heading" class="db-section-title">
+        Active ({activeDomains.length})
+      </h2>
+      <div class="db-card db-card--flush">
+        <table class="db-table" aria-label="Active domains">
+          <thead>
+            <tr>
+              <th>Domain</th>
+              <th>Expires</th>
+              <th>Auto-Renew</th>
+              <th>Nameservers</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {activeDomains.map((d: any) => (
+              <tr>
+                <td>
+                  <span class="domain-name">{d.domain}</span>
+                </td>
+                <td class="db-text-mono db-text-sm">{formatDate(d.expires)}</td>
+                <td>
+                  <span class={`db-badge ${d.renewAuto ? 'db-badge--active' : 'db-badge--neutral'}`}>
+                    {d.renewAuto ? 'On' : 'Off'}
+                  </span>
+                </td>
+                <td class="db-text-sm db-text-muted">
+                  {d.nameServers?.length > 0
+                    ? d.nameServers.slice(0,2).join(', ')
+                    : 'Default'}
+                </td>
+                <td>
+                  <span class="db-badge db-badge--active">Active</span>
+                </td>
+                <td>
+                  <div class="action-row">
+                    <a
+                      href={`https://dcc.godaddy.com/manage/${d.domain}/dns`}
+                      class="db-btn db-btn--sm db-btn--secondary"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Manage DNS
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+
+  <!-- Expired domains -->
+  {expiredDomains.length > 0 && (
+    <section class="db-section" aria-labelledby="expired-heading">
+      <h2 id="expired-heading" class="db-section-title section-title--danger">
+        Expired ({expiredDomains.length})
+      </h2>
+      <div class="db-card db-card--flush">
+        <table class="db-table" aria-label="Expired domains">
+          <thead>
+            <tr>
+              <th>Domain</th>
+              <th>Expired</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expiredDomains.map((d: any) => (
+              <tr>
+                <td>
+                  <span class="domain-name domain-name--expired">{d.domain}</span>
+                </td>
+                <td class="db-text-mono db-text-sm">{formatDate(d.expires)}</td>
+                <td><span class="db-badge db-badge--expired">Expired</span></td>
+                <td>
+                  <a
+                    href="https://dcc.godaddy.com/manage/domains"
+                    class="db-btn db-btn--sm db-btn--danger"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Renew Now
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+
+  <!-- Other / pending domains -->
+  {otherDomains.length > 0 && (
+    <section class="db-section" aria-labelledby="other-heading">
+      <h2 id="other-heading" class="db-section-title">Other ({otherDomains.length})</h2>
+      <div class="db-card db-card--flush">
+        <table class="db-table" aria-label="Other domains">
+          <thead>
+            <tr>
+              <th>Domain</th>
+              <th>Status</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {otherDomains.map((d: any) => (
+              <tr>
+                <td><span class="domain-name">{d.domain}</span></td>
+                <td><span class="db-badge db-badge--neutral">{d.status}</span></td>
+                <td class="db-text-mono db-text-sm">{formatDate(d.expires)}</td>
+                <td>
+                  <a
+                    href={`https://dcc.godaddy.com/manage/${d.domain}/dns`}
+                    class="db-btn db-btn--sm db-btn--secondary"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Manage
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+
+  <!-- Empty state -->
+  {domains.length === 0 && !fetchError && (
+    <div class="empty-state">
+      <div class="empty-state__icon" aria-hidden="true">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25">
+          <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+        </svg>
+      </div>
+      <h2 class="empty-state__title">No domains yet</h2>
+      <p class="empty-state__body">
+        Register your first domain and it will appear here.
+      </p>
+      <a href="https://store.famtastichosting.com/domains" class="db-btn db-btn--primary" target="_blank" rel="noopener">
+        Register a Domain
+      </a>
+    </div>
+  )}
+
+  <!-- DNS info callout -->
+  <div class="db-alert db-alert--info" style="margin-top:var(--db-sp-6);">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span>
+      Your domains use custom nameservers (<code>ns1.famtastichosting.com</code> /
+      <code>ns2.famtastichosting.com</code>) so GoDaddy stays invisible to your visitors.
+      Need help with DNS? Call <a href="tel:+14806242500">(480) 624-2500</a>.
+    </span>
+  </div>
+</DashboardLayout>
+
+<style>
+  .expiry-warn {
+    color: var(--db-status-warning);
+    font-weight: 500;
+    margin-left: 0.5rem;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-3);
+    flex-wrap: wrap;
+  }
+
+  .domain-name {
+    font-family: var(--db-font-mono);
+    font-size: 0.875rem;
+    color: var(--db-text-primary);
+    font-weight: 500;
+  }
+
+  .domain-name--expired {
+    color: var(--db-text-muted);
+    text-decoration: line-through;
+  }
+
+  .action-row {
+    display: flex;
+    gap: var(--db-sp-2);
+    flex-wrap: wrap;
+  }
+
+  .section-title--warn {
+    color: var(--db-status-warning);
+    border-bottom-color: rgba(245, 158, 11, 0.3);
+  }
+
+  .section-title--danger {
+    color: var(--db-status-danger);
+    border-bottom-color: rgba(239, 68, 68, 0.3);
+  }
+
+  code {
+    font-family: var(--db-font-mono);
+    font-size: 0.8em;
+    background: rgba(124, 58, 237, 0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--db-violet-lighter);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: var(--db-sp-12) var(--db-sp-4);
+    border: 1px dashed var(--db-border);
+    border-radius: var(--db-radius-lg);
+  }
+
+  .empty-state__icon {
+    color: var(--db-text-muted);
+    margin-bottom: var(--db-sp-4);
+    display: flex;
+    justify-content: center;
+  }
+
+  .empty-state__title {
+    font-family: var(--db-font-heading);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--db-text-primary);
+    margin: 0 0 var(--db-sp-2);
+  }
+
+  .empty-state__body {
+    font-size: 0.9375rem;
+    color: var(--db-text-secondary);
+    margin: 0 0 var(--db-sp-6);
+  }
+
+  @media (max-width: 640px) {
+    .header-right {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

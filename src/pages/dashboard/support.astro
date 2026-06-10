@@ -1,0 +1,416 @@
+---
+/**
+ * /dashboard/support — Customer support page
+ *
+ * Large (480) 624-2500 click-to-call CTA at the top, contact form,
+ * FAMtastic Designs link, and links to common self-help resources.
+ *
+ * Phone number must be the most prominent element on this page.
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
+import ContactForm from '../../components/ContactForm.svelte';
+import { requireAuth } from '../../lib/auth/middleware.js';
+
+const user = await requireAuth(Astro.request);
+if (user instanceof Response) return user;
+---
+
+<DashboardLayout
+  title="Support"
+  variant="customer"
+  currentPath="/dashboard/support"
+  userName={user.email}
+>
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h1 class="db-page-title">Support</h1>
+        <p class="db-page-subtitle">
+          We're here 24/7. Call, send a message, or browse the resources below.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TALK TO A HUMAN — primary CTA, visually dominant -->
+  <section class="talk-to-human" aria-labelledby="phone-heading">
+    <div class="talk-to-human__inner">
+      <div class="talk-to-human__text">
+        <h2 id="phone-heading" class="talk-to-human__title">Talk to a Human</h2>
+        <p class="talk-to-human__desc">
+          Real people answer this number. No call trees, no bots.
+          Available 24 hours a day, 7 days a week.
+        </p>
+        <ul class="talk-to-human__can-help" aria-label="How we can help">
+          <li>Domain registration and transfers</li>
+          <li>Hosting setup and cPanel access</li>
+          <li>Email configuration</li>
+          <li>DNS and nameserver changes</li>
+          <li>Billing and renewals</li>
+          <li>Account questions</li>
+        </ul>
+      </div>
+      <div class="talk-to-human__phone-area">
+        <ContactPhone variant="block" client:load />
+        <p class="talk-to-human__hours">24/7 — no appointment needed</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick resources -->
+  <section class="db-section" aria-labelledby="resources-heading">
+    <h2 id="resources-heading" class="db-section-title">Quick Resources</h2>
+    <div class="resources-grid">
+      <a href="https://dcc.godaddy.com/manage/dns" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-card__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+          </svg>
+        </div>
+        <div>
+          <div class="resource-card__title">DNS Manager</div>
+          <div class="resource-card__desc">Edit DNS records for your domains</div>
+        </div>
+      </a>
+
+      <a href="https://login.secureserver.net/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-card__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="resource-card__title">Webmail</div>
+          <div class="resource-card__desc">Access your email inbox in browser</div>
+        </div>
+      </a>
+
+      <a href="https://sg1plcpnl0082.prod.sin2.secureserver.net:2083" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-card__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div>
+          <div class="resource-card__title">cPanel</div>
+          <div class="resource-card__desc">Manage your hosting environment</div>
+        </div>
+      </a>
+
+      <a href="https://account.godaddy.com/billing" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-card__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+        </div>
+        <div>
+          <div class="resource-card__title">Billing</div>
+          <div class="resource-card__desc">Update payment method, view invoices</div>
+        </div>
+      </a>
+
+      <a href="https://dcc.godaddy.com/manage/domains" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-card__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="resource-card__title">Domain Manager</div>
+          <div class="resource-card__desc">Renewals, transfers, nameservers</div>
+        </div>
+      </a>
+
+      <a href="https://famtasticdesigns.com" class="resource-card resource-card--designs" target="_blank" rel="noopener">
+        <div class="resource-card__icon resource-card__icon--accent" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <div>
+          <div class="resource-card__title">Need a Custom Site?</div>
+          <div class="resource-card__desc">Custom design from FAMtastic Designs</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Contact form section -->
+  <section class="db-section" aria-labelledby="contact-heading">
+    <h2 id="contact-heading" class="db-section-title">Send a Message</h2>
+    <div class="contact-section">
+      <div class="contact-section__left">
+        <p class="contact-section__intro">
+          Prefer to write it out? Send us a message and we'll get back to you within
+          a few hours. For urgent issues, call <a href="tel:+14806242500">(480) 624-2500</a>.
+        </p>
+        <div class="contact-section__phone-reminder">
+          <ContactPhone variant="block" client:load />
+        </div>
+      </div>
+      <div class="contact-section__form">
+        <div class="db-card">
+          <ContactForm client:load />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAMtastic Designs bridge -->
+  <section class="designs-bridge" aria-label="FAMtastic Designs">
+    <div class="designs-bridge__inner">
+      <div class="designs-bridge__text">
+        <h2 class="designs-bridge__title">Your hosting is set. What about your site?</h2>
+        <p class="designs-bridge__body">
+          A lot of our hosting clients come to us and leave with a site they're proud of.
+          FAMtastic Designs builds custom sites, brand identities, and logo packages.
+          No templates. No cookie-cutter. Starting at $300.
+        </p>
+      </div>
+      <a
+        href="https://famtasticdesigns.com"
+        class="db-btn db-btn--primary"
+        target="_blank"
+        rel="noopener"
+      >
+        See What We Build
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+</DashboardLayout>
+
+<style>
+  /* Talk to a Human section */
+  .talk-to-human {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.06) 0%, var(--db-bg-card) 60%);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: var(--db-radius-xl);
+    padding: var(--db-sp-8) var(--db-sp-8);
+    margin-bottom: var(--db-sp-8);
+  }
+
+  .talk-to-human__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--db-sp-8);
+    flex-wrap: wrap;
+  }
+
+  .talk-to-human__text {
+    flex: 1;
+    min-width: 260px;
+  }
+
+  .talk-to-human__title {
+    font-family: var(--db-font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--db-text-primary);
+    margin: 0 0 var(--db-sp-3);
+    letter-spacing: -0.02em;
+  }
+
+  .talk-to-human__desc {
+    font-size: 0.9375rem;
+    color: var(--db-text-secondary);
+    margin: 0 0 var(--db-sp-4);
+    line-height: 1.6;
+  }
+
+  .talk-to-human__can-help {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--db-sp-2);
+  }
+
+  .talk-to-human__can-help li {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-2);
+    font-size: 0.875rem;
+    color: var(--db-text-secondary);
+  }
+
+  .talk-to-human__can-help li::before {
+    content: '✓';
+    color: var(--db-status-active);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .talk-to-human__phone-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--db-sp-2);
+    flex-shrink: 0;
+  }
+
+  .talk-to-human__hours {
+    font-size: 0.8125rem;
+    color: var(--db-text-muted);
+    margin: 0;
+    font-family: var(--db-font-mono);
+    text-align: center;
+    width: 100%;
+  }
+
+  /* Resources grid */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--db-sp-3);
+  }
+
+  .resource-card {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-4);
+    background: var(--db-bg-card);
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius-lg);
+    padding: var(--db-sp-4) var(--db-sp-5);
+    text-decoration: none;
+    transition: border-color var(--db-transition-fast), background var(--db-transition-fast);
+  }
+
+  .resource-card:hover {
+    border-color: var(--db-border-light);
+    background: var(--db-bg-card-hover);
+  }
+
+  .resource-card--designs {
+    border-color: rgba(124, 58, 237, 0.2);
+  }
+
+  .resource-card--designs:hover {
+    border-color: rgba(124, 58, 237, 0.4);
+    background: rgba(124, 58, 237, 0.05);
+  }
+
+  .resource-card__icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.04);
+    border-radius: var(--db-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--db-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .resource-card__icon--accent {
+    background: var(--db-violet-dim);
+    color: var(--db-violet-light);
+  }
+
+  .resource-card__title {
+    font-family: var(--db-font-heading);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--db-text-primary);
+    margin-bottom: 2px;
+  }
+
+  .resource-card__desc {
+    font-size: 0.8125rem;
+    color: var(--db-text-muted);
+  }
+
+  /* Contact section */
+  .contact-section {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: var(--db-sp-8);
+    align-items: start;
+  }
+
+  .contact-section__intro {
+    font-size: 0.9375rem;
+    color: var(--db-text-secondary);
+    margin: 0 0 var(--db-sp-5);
+    line-height: 1.6;
+  }
+
+  .contact-section__intro a {
+    color: var(--db-violet-light);
+    text-decoration: none;
+  }
+
+  .contact-section__intro a:hover {
+    text-decoration: underline;
+  }
+
+  .contact-section__phone-reminder {
+    max-width: 320px;
+  }
+
+  /* FAMtastic Designs bridge */
+  .designs-bridge {
+    margin-top: var(--db-sp-8);
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, var(--db-bg-card) 100%);
+    border: 1px solid var(--db-border-light);
+    border-radius: var(--db-radius-xl);
+    padding: var(--db-sp-8);
+  }
+
+  .designs-bridge__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--db-sp-6);
+    flex-wrap: wrap;
+  }
+
+  .designs-bridge__text {
+    flex: 1;
+    min-width: 260px;
+  }
+
+  .designs-bridge__title {
+    font-family: var(--db-font-heading);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--db-text-primary);
+    margin: 0 0 var(--db-sp-3);
+    letter-spacing: -0.01em;
+  }
+
+  .designs-bridge__body {
+    font-size: 0.9375rem;
+    color: var(--db-text-secondary);
+    margin: 0;
+    line-height: 1.6;
+    max-width: 520px;
+  }
+
+  @media (max-width: 900px) {
+    .contact-section {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .talk-to-human {
+      padding: var(--db-sp-5) var(--db-sp-4);
+    }
+    .talk-to-human__inner {
+      flex-direction: column;
+    }
+    .designs-bridge__inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

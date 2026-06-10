@@ -1,0 +1,363 @@
+---
+/**
+ * /dashboard — Customer portal home
+ *
+ * Displays a service overview (active domains, hosting plans, email accounts,
+ * upcoming renewals), a Quick Actions row, and fetches live data from
+ * /api/customer/* API routes on load.
+ *
+ * All data fetches are server-side — the page renders with real data.
+ * Interactive components (ServiceCard) are Svelte islands.
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import ServiceCard from '../../components/dashboard/ServiceCard.svelte';
+import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
+import { requireAuth } from '../../lib/auth/middleware.js';
+
+// Auth gate — unauthenticated users redirect to /dashboard/login
+const user = await requireAuth(Astro.request);
+if (user instanceof Response) return user;
+
+// ── Fetch customer data server-side ─────────────────────────────────────────
+// Build absolute URLs from the incoming request's origin
+const origin = new URL(Astro.request.url).origin;
+
+let domains: any[] = [];
+let hostingPlans: any[] = [];
+let emailProducts: any[] = [];
+let upcomingRenewals: any[] = [];
+let fetchError = false;
+
+try {
+  const [domainsRes, hostingRes, billingRes] = await Promise.all([
+    fetch(`${origin}/api/customer/domains`, {
+      headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+    }),
+    fetch(`${origin}/api/customer/hosting`, {
+      headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+    }),
+    fetch(`${origin}/api/customer/billing?limit=25`, {
+      headers: { Cookie: Astro.request.headers.get('Cookie') ?? '' },
+    }),
+  ]);
+
+  if (domainsRes.ok) {
+    const d = await domainsRes.json();
+    domains = d?.data?.domains ?? [];
+  }
+  if (hostingRes.ok) {
+    const h = await hostingRes.json();
+    hostingPlans = h?.data?.plans ?? [];
+  }
+  if (billingRes.ok) {
+    const b = await billingRes.json();
+    upcomingRenewals = b?.data?.upcomingRenewals ?? [];
+  }
+} catch (err) {
+  fetchError = true;
+  console.error('[dashboard/index] SSR fetch failed:', err);
+}
+
+// Stats derived from fetched data
+const activeDomains = domains.filter((d: any) => d.status === 'ACTIVE').length;
+const expiringDomains = domains.filter((d: any) => d.expiringSoon).length;
+const activeHosting = hostingPlans.length;
+const renewalCount = upcomingRenewals.length;
+
+// Email products from billing (rough count)
+const emailItems = upcomingRenewals.filter((r: any) =>
+  r.label.toLowerCase().includes('email')
+).length;
+
+// Storefront URLs for upgrade links
+const STOREFRONT_BASE = 'https://store.famtastichosting.com';
+---
+
+<DashboardLayout
+  title="My Dashboard"
+  variant="customer"
+  currentPath="/dashboard"
+  userName={user.email}
+>
+  <!-- Page header -->
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h1 class="db-page-title">Welcome back</h1>
+        <p class="db-page-subtitle">
+          Here's a snapshot of your services.
+          {expiringDomains > 0 && (
+            <span class="expiry-warning">
+              {expiringDomains} domain{expiringDomains > 1 ? 's' : ''} expiring soon.
+            </span>
+          )}
+        </p>
+      </div>
+      <!-- Phone always visible in page header area on desktop -->
+      <div class="header-phone">
+        <ContactPhone variant="inline" client:load />
+      </div>
+    </div>
+  </div>
+
+  <!-- Fetch error banner -->
+  {fetchError && (
+    <div class="db-alert db-alert--warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+      <span>Could not load some service data. Please refresh the page or call <a href="tel:+14806242500">(480) 624-2500</a>.</span>
+    </div>
+  )}
+
+  <!-- Stats row -->
+  <section class="db-section" aria-labelledby="stats-heading">
+    <h2 id="stats-heading" class="db-section-title">Services at a Glance</h2>
+    <div class="db-grid db-grid--stats">
+      <div class="db-stat-card">
+        <div class="db-stat-card__label">Active Domains</div>
+        <div class="db-stat-card__value">{activeDomains}</div>
+        {expiringDomains > 0 ? (
+          <div class="db-stat-card__delta db-stat-card__delta--down">
+            {expiringDomains} expiring soon
+          </div>
+        ) : (
+          <div class="db-stat-card__delta db-stat-card__delta--up">All up to date</div>
+        )}
+      </div>
+
+      <div class="db-stat-card">
+        <div class="db-stat-card__label">Hosting Plans</div>
+        <div class="db-stat-card__value">{activeHosting}</div>
+        <div class="db-stat-card__delta db-stat-card__delta--{activeHosting > 0 ? 'up' : 'flat'}">
+          {activeHosting > 0 ? 'Active' : 'No plans found'}
+        </div>
+      </div>
+
+      <div class="db-stat-card">
+        <div class="db-stat-card__label">Email Products</div>
+        <div class="db-stat-card__value">{emailItems > 0 ? emailItems : '—'}</div>
+        <div class="db-stat-card__delta db-stat-card__delta--flat">
+          Manage via GoDaddy
+        </div>
+      </div>
+
+      <div class="db-stat-card">
+        <div class="db-stat-card__label">Upcoming Renewals</div>
+        <div class="db-stat-card__value">{renewalCount}</div>
+        <div class="db-stat-card__delta db-stat-card__delta--{renewalCount > 0 ? 'down' : 'flat'}">
+          {renewalCount > 0 ? 'Next 90 days' : 'None due soon'}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Actions -->
+  <section class="db-section" aria-labelledby="actions-heading">
+    <h2 id="actions-heading" class="db-section-title">Quick Actions</h2>
+    <div class="quick-actions">
+      <a href="https://store.famtastichosting.com/domains" class="quick-action-btn" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+        </svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        Add Domain
+      </a>
+      <a href="https://store.famtastichosting.com/hosting" class="quick-action-btn" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+        </svg>
+        Upgrade Plan
+      </a>
+      <a href="/dashboard/support" class="quick-action-btn quick-action-btn--support">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.69H6.6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.3A16 16 0 0 0 13.7 16.1l.9-.89a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.22 17a2 2 0 0 1 .78 1.54z"/>
+        </svg>
+        Contact Support
+      </a>
+    </div>
+  </section>
+
+  <!-- Domain cards -->
+  {domains.length > 0 && (
+    <section class="db-section" aria-labelledby="domains-heading">
+      <div class="db-flex-between db-mb-4">
+        <h2 id="domains-heading" class="db-section-title" style="margin-bottom:0;border-bottom:none;">
+          Your Domains
+        </h2>
+        <a href="/dashboard/domains" class="db-btn db-btn--ghost db-btn--sm">View all →</a>
+      </div>
+      <div class="db-grid db-grid--3">
+        {domains.slice(0, 6).map((domain: any) => (
+          <ServiceCard
+            client:load
+            title={domain.domain}
+            subtitle={domain.domain}
+            status={domain.expired ? 'expired' : domain.expiringSoon ? 'expiring' : 'active'}
+            renewalDate={domain.expires
+              ? new Date(domain.expires).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : ''}
+            actionLabel="Manage DNS"
+            actionHref={`/dashboard/domains`}
+            iconType="domain"
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Upcoming renewals -->
+  {upcomingRenewals.length > 0 && (
+    <section class="db-section" aria-labelledby="renewals-heading">
+      <h2 id="renewals-heading" class="db-section-title">Upcoming Renewals</h2>
+      <div class="db-card db-card--flush">
+        <table class="db-table" aria-label="Upcoming renewals">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Renewal Date</th>
+              <th>Days Away</th>
+              <th style="text-align:right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {upcomingRenewals.map((r: any) => (
+              <tr>
+                <td class="db-text-primary">{r.label}</td>
+                <td class="db-text-mono db-text-sm">
+                  {new Date(r.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </td>
+                <td>
+                  <span class={`db-badge ${r.daysUntil <= 7 ? 'db-badge--expired' : r.daysUntil <= 30 ? 'db-badge--expiring' : 'db-badge--pending'}`}>
+                    {r.daysUntil}d
+                  </span>
+                </td>
+                <td class="db-text-primary" style="text-align:right;">
+                  ${r.amountUSD.toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+
+  <!-- Support callout with phone number -->
+  <section class="support-callout" aria-label="Support">
+    <div class="support-callout__inner">
+      <div>
+        <h2 class="support-callout__title">Need help?</h2>
+        <p class="support-callout__body">
+          Our team is available 24/7. Call, chat, or send a message.
+        </p>
+      </div>
+      <div class="support-callout__actions">
+        <ContactPhone variant="block" client:load />
+        <a href="/dashboard/support" class="db-btn db-btn--secondary">Open a Ticket</a>
+      </div>
+    </div>
+  </section>
+</DashboardLayout>
+
+<style>
+  .expiry-warning {
+    color: var(--db-status-warning);
+    font-weight: 500;
+    margin-left: 0.5rem;
+  }
+
+  .header-phone {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Quick actions row */
+  .quick-actions {
+    display: flex;
+    gap: var(--db-sp-3);
+    flex-wrap: wrap;
+  }
+
+  .quick-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--db-sp-2);
+    padding: 0.625rem 1.25rem;
+    background: var(--db-bg-card);
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius);
+    color: var(--db-text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background var(--db-transition-fast), border-color var(--db-transition-fast);
+  }
+
+  .quick-action-btn:hover {
+    background: var(--db-bg-card-hover);
+    border-color: var(--db-border-light);
+  }
+
+  .quick-action-btn--support {
+    border-color: rgba(34, 197, 94, 0.25);
+    color: var(--db-status-active);
+  }
+
+  .quick-action-btn--support:hover {
+    background: var(--db-status-active-bg);
+    border-color: rgba(34, 197, 94, 0.4);
+  }
+
+  /* Support callout */
+  .support-callout {
+    margin-top: var(--db-sp-8);
+    background: var(--db-bg-card);
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius-lg);
+    padding: var(--db-sp-6);
+  }
+
+  .support-callout__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--db-sp-6);
+    flex-wrap: wrap;
+  }
+
+  .support-callout__title {
+    font-family: var(--db-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--db-text-primary);
+    margin: 0 0 var(--db-sp-2);
+  }
+
+  .support-callout__body {
+    font-size: 0.875rem;
+    color: var(--db-text-secondary);
+    margin: 0;
+  }
+
+  .support-callout__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--db-sp-3);
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 640px) {
+    .quick-actions {
+      flex-direction: column;
+    }
+    .support-callout__inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
