@@ -1,0 +1,404 @@
+---
+import WildLayout from '../layouts/WildLayout.astro'
+import DesignBridge from '../components/DesignBridge.astro'
+import FAMThoughts from '../components/FAMThoughts.astro'
+import BillingToggle from '../components/BillingToggle.astro'
+import PricingCard from '../components/PricingCard.astro'
+---
+
+<WildLayout
+  title="cPanel Web Hosting — FAMtastic Hosting"
+  description="Full cPanel access, SSD storage, and 400+ 1-click installs from $7/mo. Custom nameservers included. No GoDaddy branding."
+  canonicalPath="/hosting"
+>
+
+  <!-- ── 1. HERO ─────────────────────────────────────────────── -->
+  <section class="fam-hero-layered">
+    <div class="fam-hero-layer fam-hero-layer--bg"></div>
+
+    <!-- FX layer: perspective grid + floating orbs -->
+    <div class="fam-hero-layer fam-hero-layer--fx">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="grid-fade-h" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(124,58,237,0)" />
+            <stop offset="60%" stop-color="rgba(124,58,237,0.18)" />
+            <stop offset="100%" stop-color="rgba(124,58,237,0.06)" />
+          </linearGradient>
+        </defs>
+        <g class="grid-lines-group">
+          <!-- horizontal lines -->
+          <line x1="0" y1="500" x2="1440" y2="500" stroke="rgba(124,58,237,0.15)" stroke-width="0.5" />
+          <line x1="0" y1="560" x2="1440" y2="560" stroke="rgba(124,58,237,0.10)" stroke-width="0.5" />
+          <line x1="0" y1="620" x2="1440" y2="620" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="0" y1="680" x2="1440" y2="680" stroke="rgba(124,58,237,0.06)" stroke-width="0.5" />
+          <line x1="0" y1="740" x2="1440" y2="740" stroke="rgba(124,58,237,0.04)" stroke-width="0.5" />
+          <line x1="0" y1="800" x2="1440" y2="800" stroke="rgba(124,58,237,0.03)" stroke-width="0.5" />
+          <!-- vertical lines -->
+          <line x1="200"  y1="400" x2="200"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="400"  y1="400" x2="400"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="600"  y1="400" x2="600"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="800"  y1="400" x2="800"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1000" y1="400" x2="1000" y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1200" y1="400" x2="1200" y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1400" y1="400" x2="1400" y2="900" stroke="rgba(124,58,237,0.06)" stroke-width="0.5" />
+          <!-- scan line -->
+          <line class="grid-scan-line" x1="0" y1="560" x2="1440" y2="560" stroke="rgba(132,204,22,0.35)" stroke-width="1" />
+        </g>
+      </svg>
+      <div class="hero-orb hero-orb--a"></div>
+      <div class="hero-orb hero-orb--b"></div>
+    </div>
+
+    <!-- CHARACTER layer: server rack silhouette -->
+    <div class="fam-hero-layer fam-hero-layer--character" aria-hidden="true">cPanel</div>
+
+    <!-- CONTENT layer -->
+    <div class="fam-hero-layer fam-hero-layer--content">
+      <div class="hero-prompt">// cpanel web hosting<span class="cursor"></span></div>
+      <h1 class="hero-headline">
+        Real hosting.<br/>Real control.<br/><span class="hl-invisible">$7/mo.</span>
+      </h1>
+      <p class="hero-sub">Full cPanel access, SSD storage, and 400+ one-click app installs. Custom nameservers from day one.</p>
+      <div class="hero-actions">
+        <a href="#plans" class="btn-primary">See Hosting Plans</a>
+        <a href="mailto:hello@famtastichosting.com" class="btn-outline">Talk to a Human</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. TICKER STRIP ─────────────────────────────────────── -->
+  <div class="ticker-strip" aria-hidden="true">
+    <div class="ticker-inner">
+      <!-- Set A -->
+      <span class="ticker-item">cPanel control panel<span class="ticker-dot"></span></span>
+      <span class="ticker-item">50GB+ SSD storage<span class="ticker-dot"></span></span>
+      <span class="ticker-item">400+ 1-click apps<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Softaculous installer<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Free SSL certificate<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 white-label support<span class="ticker-dot"></span></span>
+      <!-- Set B (duplicate for seamless loop) -->
+      <span class="ticker-item">cPanel control panel<span class="ticker-dot"></span></span>
+      <span class="ticker-item">50GB+ SSD storage<span class="ticker-dot"></span></span>
+      <span class="ticker-item">400+ 1-click apps<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Softaculous installer<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Custom nameservers<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Free SSL certificate<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 white-label support<span class="ticker-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- ── 3. STATS SECTION ────────────────────────────────────── -->
+  <section class="stats-section" aria-label="Key statistics">
+    <div class="stats-grid">
+      <div class="stat-row">
+        <div class="stat-number accent-lime">400+</div>
+        <div>
+          <div class="stat-label">one-click app installs via Softaculous</div>
+          <div class="stat-detail">WordPress, Joomla, Drupal, Magento &amp; more</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-number accent-violet">50GB</div>
+        <div>
+          <div class="stat-label">SSD storage on Starter plan</div>
+          <div class="stat-detail">Unlimited on Ultimate</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-number">$7</div>
+        <div>
+          <div class="stat-label">per month — no hidden renewal surprise</div>
+          <div class="stat-detail">Price stays the same on renewal</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 4. FEATURES SECTION ────────────────────────────────── -->
+  <section class="features-section" aria-labelledby="features-headline">
+    <div class="features-label">// what you get</div>
+    <h2 class="section-headline" id="features-headline">cPanel. The industry standard. Yours to own.</h2>
+
+    <div class="features-layout">
+
+      <!-- Left column: 4 feature items -->
+      <div class="features-left">
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 14 14" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="2" width="12" height="5" rx="1" />
+                <rect x="1" y="8" width="12" height="4" rx="1" />
+                <circle cx="3.5" cy="4.5" r="0.75" fill="currentColor" stroke="none" />
+                <circle cx="3.5" cy="10" r="0.75" fill="currentColor" stroke="none" />
+              </svg>
+            </div>
+            <div class="feature-title">Full cPanel Access</div>
+          </div>
+          <p class="feature-desc">The industry-standard control panel. Manage files, databases, email accounts, DNS records, and more from one dashboard — no developer required.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 14 14" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 7 L7 2 L12 7" />
+                <path d="M4 10 L7 4 L10 10" />
+                <line x1="7" y1="2" x2="7" y2="13" />
+              </svg>
+            </div>
+            <div class="feature-title">SSD Storage, Not Spinning Disk</div>
+          </div>
+          <p class="feature-desc">Every hosting account runs on SSD. Faster reads, faster page loads, faster everything. The Starter plan ships with 50GB. Ultimate is unlimited.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 14 14" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="7" cy="7" r="5.5" />
+                <path d="M5 7 L6.5 8.5 L9.5 5.5" />
+              </svg>
+            </div>
+            <div class="feature-title">1-Click App Installs</div>
+          </div>
+          <p class="feature-desc">Softaculous gives you 400+ applications — WordPress, Joomla, Drupal, Magento, PrestaShop, Ghost — installed in 60 seconds with one click.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 14 14" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="7" cy="7" r="5.5" />
+                <ellipse cx="7" cy="7" rx="2.5" ry="5.5" />
+                <line x1="1.5" y1="5" x2="12.5" y2="5" />
+                <line x1="1.5" y1="9" x2="12.5" y2="9" />
+              </svg>
+            </div>
+            <div class="feature-title">Custom Nameservers</div>
+          </div>
+          <p class="feature-desc">ns1.famtastichosting.com and ns2.famtastichosting.com on every account. Your clients see your brand in their DNS, not a third-party name.</p>
+        </div>
+
+      </div>
+
+      <!-- Right column: 3 feature items + spec block -->
+      <div class="features-right">
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 14 14" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1.5" y="4" width="11" height="8" rx="1" />
+                <path d="M4.5 4 L4.5 3 C4.5 1.9 5.4 1 6.5 1 L7.5 1 C8.6 1 9.5 1.9 9.5 3 L9.5 4" />
+                <circle cx="7" cy="8" r="1.2" fill="currentColor" stroke="none" />
+              </svg>
+            </div>
+            <div class="feature-title">Free SSL Certificate</div>
+          </div>
+          <p class="feature-desc">SSL provisioned for every domain on your account. HTTPS from day one, auto-renewed so it never lapses.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 14 14" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="3" width="12" height="8" rx="1" />
+                <line x1="1" y1="6" x2="13" y2="6" />
+                <line x1="5" y1="3" x2="5" y2="11" />
+              </svg>
+            </div>
+            <div class="feature-title">Email Hosting Included</div>
+          </div>
+          <p class="feature-desc">Professional email addresses at your domain, webmail access, spam filtering, and IMAP/POP3 — included in every plan.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-row">
+            <div class="feature-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 14 14" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 1 L12.5 3.5 L12.5 7 C12.5 10 10 12.5 7 13.5 C4 12.5 1.5 10 1.5 7 L1.5 3.5 Z" />
+                <path d="M4.5 7 L6 8.5 L9.5 5" />
+              </svg>
+            </div>
+            <div class="feature-title">Malware Scanning (Ultimate)</div>
+          </div>
+          <p class="feature-desc">Active malware scanning on the Ultimate plan. We detect and flag malicious code before your visitors do.</p>
+        </div>
+
+        <!-- Spec block -->
+        <div style="margin-top:2rem;padding:2rem;background:var(--surface);border:1px solid var(--border);">
+          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--lime);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1.2rem;">// technical specs</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <tbody>
+              {[
+                ["Control panel", "cPanel + Softaculous"],
+                ["PHP", "8.1+ (selector available)"],
+                ["Database", "MySQL 8.0, unlimited (Ultimate)"],
+                ["Storage", "50GB SSD (Starter) / Unlimited (Ultimate)"],
+                ["Sites", "1 (Starter) / Unlimited (Ultimate)"],
+                ["Email accounts", "1 (Starter) / Unlimited (Ultimate)"],
+              ].map(([key, val]) => (
+                <tr style="border-bottom:1px solid rgba(245,245,240,0.05);">
+                  <td style="font-family:var(--font-mono);font-size:0.65rem;color:rgba(245,245,240,0.35);letter-spacing:0.06em;padding:0.5rem 1rem 0.5rem 0;white-space:nowrap;">{key}</td>
+                  <td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text);padding:0.5rem 0;">{val}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 5. PRICING SECTION ─────────────────────────────────── -->
+  <section class="pricing-section" id="plans" aria-labelledby="pricing-headline">
+    <div class="pricing-label">// hosting plans</div>
+    <h2 class="pricing-headline" id="pricing-headline">Simple pricing. Nothing hidden.</h2>
+    <p style="font-family:var(--font-body);font-style:italic;font-size:1rem;color:rgba(245,245,240,0.45);max-width:580px;margin-bottom:2.5rem;line-height:1.7;">
+      Both plans include cPanel, custom nameservers, free SSL, and 24/7 support. Renewal prices never jump on you.
+    </p>
+
+    <BillingToggle />
+
+    <div class="card-deck">
+      <PricingCard
+        name="cPanel Starter"
+        price="$7"
+        period="/mo"
+        annualPrice="$5.60"
+        annualPeriod="/mo (billed annually)"
+        position="left"
+        features={[
+          "1 website",
+          "50GB SSD storage",
+          "cPanel control panel",
+          "1-click app installs",
+          "1 email account",
+          "Custom nameservers ns1/ns2",
+          "Free SSL certificate",
+          "24/7 white-label support",
+        ]}
+        ctaText="Start for $7/mo"
+        ctaHref="mailto:hello@famtastichosting.com"
+      />
+
+      <PricingCard
+        name="cPanel Ultimate"
+        price="$31"
+        period="/mo"
+        annualPrice="$24.80"
+        annualPeriod="/mo (billed annually)"
+        badge="Best Value"
+        position="center"
+        featured={true}
+        features={[
+          "Unlimited websites",
+          "Unlimited SSD storage",
+          "cPanel + Softaculous",
+          "400+ 1-click app installs",
+          "Unlimited email accounts",
+          "Malware scanning",
+          "Custom nameservers ns1/ns2",
+          "Free SSL certificate",
+          "Priority white-label support",
+        ]}
+        ctaText="Go Ultimate"
+        ctaHref="mailto:hello@famtastichosting.com"
+      />
+
+      <!-- Right: Add-ons callout -->
+      <div class="plan-card plan-card--right">
+        <div class="plan-badge" style="display:inline-block;">Add-ons</div>
+        <div class="plan-name">Extras Available</div>
+        <ul class="plan-features">
+          <li><span class="feat-dot"></span>Professional email — from $3/mo</li>
+          <li><span class="feat-dot"></span>Microsoft 365 — $9/mo</li>
+          <li><span class="feat-dot"></span>SSL Standard — $79/yr</li>
+          <li><span class="feat-dot"></span>Website Security — included on Ultimate</li>
+        </ul>
+        <a href="mailto:hello@famtastichosting.com" class="plan-cta">Ask About Add-ons</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 6. CPANEL VS WORDPRESS MANAGED ─────────────────────── -->
+  <section class="crossroads-section" aria-labelledby="crossroads-headline">
+    <div class="section-label-sm">// which hosting type?</div>
+    <h2 class="section-headline" id="crossroads-headline">Not sure which type you need?</h2>
+
+    <div class="crossroads-grid">
+      <div class="crossroads-card">
+        <div class="crossroads-eyebrow">cPanel Hosting</div>
+        <div class="crossroads-card-title">Full control. Any app. Any stack.</div>
+        <p class="crossroads-body">Best for: Multiple sites, full control, PHP apps beyond WordPress, custom server configurations. You manage WordPress (or any app) yourself. More flexible, more power.</p>
+      </div>
+      <div class="crossroads-card crossroads-card--design">
+        <div class="crossroads-eyebrow">Managed WordPress</div>
+        <div class="crossroads-card-title">Hands-off. We handle the admin.</div>
+        <p class="crossroads-body">Best for: One or a few WordPress sites, hands-off management, staging, WP-CLI. We handle updates, backups, and malware scanning. Less control, less work.</p>
+      </div>
+    </div>
+
+    <div class="crossroads-bottom">
+      <p>Not sure? Call <a href="tel:+14806242500" style="color:var(--lime);">(480) 624-2500</a> — we'll recommend the right fit.</p>
+    </div>
+  </section>
+
+  <!-- ── 7. FAQ ──────────────────────────────────────────────── -->
+  <section class="faq-section" aria-labelledby="faq-headline">
+    <div class="faq-label">// faq</div>
+    <h2 class="faq-headline" id="faq-headline">Common questions.</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What's the difference between Starter and Ultimate?
+      </div>
+      <div class="faq-a">
+        Starter is one website with 50GB SSD storage. Ultimate is unlimited websites with unlimited storage, plus malware scanning and priority support. If you're managing one site, start with Starter. If you're managing multiple sites or client sites, Ultimate pays for itself.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        Do you offer a money-back guarantee?
+      </div>
+      <div class="faq-a">
+        Our hosting is backed by a 30-day money-back guarantee. If it's not the right fit, reach out within 30 days for a full refund — no questions asked.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        Can I host multiple domains on one account?
+      </div>
+      <div class="faq-a">
+        Yes. The Ultimate plan supports unlimited websites and unlimited domains on a single cPanel account. The Starter plan supports one primary domain with unlimited subdomains.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+        What does "white-label support" mean in practice?
+      </div>
+      <div class="faq-a">
+        When your clients call for hosting support, they reach a team that answers under the FAMtastic Hosting name. The infrastructure is powered by enterprise-grade hosting — the brand they interact with is yours.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 8. DESIGN BRIDGE ───────────────────────────────────── -->
+  <DesignBridge variant="default" />
+
+  <!-- ── 9. FAM THOUGHTS ────────────────────────────────────── -->
+  <FAMThoughts
+    headline="Speed, uptime, and SEO — how hosting choices affect your rankings."
+    cta="Read FAMtastic Thoughts"
+    href="https://famtasticthoughts.com"
+  />
+
+</WildLayout>
