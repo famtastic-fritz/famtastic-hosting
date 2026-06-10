@@ -1,0 +1,357 @@
+---
+import WildLayout from '../layouts/WildLayout.astro'
+import DesignBridge from '../components/DesignBridge.astro'
+import FAMThoughts from '../components/FAMThoughts.astro'
+import BillingToggle from '../components/BillingToggle.astro'
+import PricingCard from '../components/PricingCard.astro'
+---
+
+<WildLayout
+  title="Website Builder — FAMtastic Hosting"
+  description="Drag-and-drop website builder from $12/mo, or get a custom-designed site from FAMtasticDesigns.com. Same team. Two paths."
+  canonicalPath="/builder"
+>
+
+  <!-- ── 1. HERO ──────────────────────────────────────────────── -->
+  <section class="fam-hero-layered">
+    <div class="fam-hero-layer fam-hero-layer--bg"></div>
+
+    <!-- FX layer: perspective grid + floating orbs -->
+    <div class="fam-hero-layer fam-hero-layer--fx">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="grid-fade-b" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(124,58,237,0)" />
+            <stop offset="60%" stop-color="rgba(124,58,237,0.18)" />
+            <stop offset="100%" stop-color="rgba(124,58,237,0.06)" />
+          </linearGradient>
+        </defs>
+        <g class="grid-lines-group">
+          <line x1="0" y1="500" x2="1440" y2="500" stroke="rgba(124,58,237,0.15)" stroke-width="0.5" />
+          <line x1="0" y1="560" x2="1440" y2="560" stroke="rgba(124,58,237,0.10)" stroke-width="0.5" />
+          <line x1="0" y1="620" x2="1440" y2="620" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="0" y1="680" x2="1440" y2="680" stroke="rgba(124,58,237,0.06)" stroke-width="0.5" />
+          <line x1="0" y1="740" x2="1440" y2="740" stroke="rgba(124,58,237,0.04)" stroke-width="0.5" />
+          <line x1="0" y1="800" x2="1440" y2="800" stroke="rgba(124,58,237,0.03)" stroke-width="0.5" />
+          <line x1="200"  y1="400" x2="200"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="400"  y1="400" x2="400"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="600"  y1="400" x2="600"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="800"  y1="400" x2="800"  y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1000" y1="400" x2="1000" y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1200" y1="400" x2="1200" y2="900" stroke="rgba(124,58,237,0.08)" stroke-width="0.5" />
+          <line x1="1400" y1="400" x2="1400" y2="900" stroke="rgba(124,58,237,0.06)" stroke-width="0.5" />
+          <line class="grid-scan-line" x1="0" y1="560" x2="1440" y2="560" stroke="rgba(132,204,22,0.35)" stroke-width="1" />
+        </g>
+      </svg>
+      <div class="hero-orb hero-orb--a"></div>
+      <div class="hero-orb hero-orb--b"></div>
+    </div>
+
+    <!-- CHARACTER layer: orbital ring SVG -->
+    <div class="fam-hero-layer fam-hero-layer--character" aria-hidden="true">
+      <svg width="480" height="480" viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.13;">
+        <circle cx="240" cy="240" r="220" stroke="rgba(124,58,237,0.6)" stroke-width="1" stroke-dasharray="8 6" />
+        <circle cx="240" cy="240" r="180" stroke="rgba(124,58,237,0.4)" stroke-width="0.75" />
+        <circle cx="240" cy="240" r="140" stroke="rgba(132,204,22,0.25)" stroke-width="0.5" stroke-dasharray="4 8" />
+        <circle cx="240" cy="14" r="6" fill="rgba(132,204,22,0.7)" />
+        <circle cx="460" cy="280" r="4" fill="rgba(124,58,237,0.6)" />
+        <circle cx="60" cy="340" r="3" fill="rgba(124,58,237,0.4)" />
+      </svg>
+    </div>
+
+    <!-- CONTENT layer -->
+    <div class="fam-hero-layer fam-hero-layer--content">
+      <div class="hero-prompt">// website builder + custom design<span class="cursor"></span></div>
+      <h1 class="hero-headline">
+        Build it yourself.<br/><span class="hl-invisible">Or we'll build it for you.</span>
+      </h1>
+      <p class="hero-sub">Drag-and-drop website builder from $12/mo. Or get a custom-designed site from FAMtasticDesigns.com. Same team. Different paths.</p>
+      <div class="hero-actions">
+        <a href="#plans" class="btn-primary">See Builder Plans</a>
+        <a href="https://famtasticdesigns.com" class="btn-outline" rel="noopener">Get It Custom-Built</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. TICKER STRIP ─────────────────────────────────────── -->
+  <div class="ticker-strip" aria-hidden="true">
+    <div class="ticker-inner">
+      <!-- Set A -->
+      <span class="ticker-item">Mobile-optimized templates<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Free domain — year one<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Drag-and-drop editor<span class="ticker-dot"></span></span>
+      <span class="ticker-item">SSL included<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Online store available<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Marketing suite<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 support<span class="ticker-dot"></span></span>
+      <!-- Set B (duplicate for seamless loop) -->
+      <span class="ticker-item">Mobile-optimized templates<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Free domain — year one<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Drag-and-drop editor<span class="ticker-dot"></span></span>
+      <span class="ticker-item">SSL included<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Online store available<span class="ticker-dot"></span></span>
+      <span class="ticker-item">Marketing suite<span class="ticker-dot"></span></span>
+      <span class="ticker-item">24/7 support<span class="ticker-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- ── 3. CROSSROADS ──────────────────────────────────────── -->
+  <section class="crossroads-section" aria-labelledby="crossroads-headline">
+    <div class="section-label-sm">// two paths to a live site</div>
+    <h2 class="section-headline" id="crossroads-headline">Not everyone builds the same way.</h2>
+
+    <div class="crossroads-grid">
+
+      <!-- DIY Builder -->
+      <div class="crossroads-card">
+        <div class="crossroads-eyebrow">Do it yourself</div>
+        <div class="crossroads-card-title">Website Builder</div>
+        <p class="crossroads-body">A visual drag-and-drop editor. Pick a template, add your content, and go live. No code required. Includes hosting, SSL, domain (year one), and basic marketing tools.</p>
+        <div class="crossroads-pricing">From $12/mo &middot; Essential plan</div>
+        <ul class="crossroads-bullets">
+          <li>Mobile-optimized templates</li>
+          <li>Integrated SSL</li>
+          <li>Marketing &amp; SEO suite</li>
+          <li>Social media integration</li>
+          <li>E-commerce on Commerce plan</li>
+        </ul>
+        <a href="#plans" class="btn-primary">See Builder Plans &rarr;</a>
+      </div>
+
+      <!-- Design service -->
+      <div class="crossroads-card crossroads-card--design">
+        <div class="crossroads-eyebrow">Have it built for you</div>
+        <div class="crossroads-card-title">FAMtastic Designs</div>
+        <p class="crossroads-body">A custom site built by our design team. Brand strategy, visual identity, and a site that looks like nothing else. Starting at $800 for a full refresh.</p>
+        <div class="crossroads-pricing">
+          Logo pack from $300<br/>
+          Brand refresh from $800<br/>
+          Full site from $1,500
+        </div>
+        <ul class="crossroads-bullets">
+          <li>Custom site design</li>
+          <li>Brand identity package</li>
+          <li>Fonts, colors, and assets delivered</li>
+          <li>Mobile-first, launch-ready</li>
+          <li>Option to bundle with hosting</li>
+        </ul>
+        <a href="https://famtasticdesigns.com" class="btn-hot" rel="noopener">Visit FAMtasticDesigns.com &rarr;</a>
+      </div>
+
+    </div>
+
+    <!-- Bottom callout -->
+    <div class="crossroads-bottom">
+      <p>Can&rsquo;t decide? Both paths are compatible &mdash; start with the builder, upgrade to a custom design whenever you&rsquo;re ready. Call (480) 624-2500.</p>
+    </div>
+  </section>
+
+  <!-- ── 4. DESIGNS SHOWCASE ────────────────────────────────── -->
+  <section class="designs-showcase" aria-labelledby="designs-headline">
+    <div class="section-label-sm">// famtasticdesigns.com tiers</div>
+    <h2 class="section-headline" id="designs-headline">What custom design actually costs.</h2>
+
+    <div class="designs-tiers">
+      <div class="designs-tier">
+        <div class="designs-tier-name">Logo Package</div>
+        <div class="designs-tier-price">$300</div>
+        <p style="font-family:var(--font-body);font-size:0.875rem;color:var(--muted);line-height:1.65;margin-top:0.75rem;">Wordmark or icon mark, brand color palette, font selection, and logo files delivered.</p>
+      </div>
+      <div class="designs-tier">
+        <div class="designs-tier-name">Brand Refresh</div>
+        <div class="designs-tier-price">$800</div>
+        <p style="font-family:var(--font-body);font-size:0.875rem;color:var(--muted);line-height:1.65;margin-top:0.75rem;">Full visual identity &mdash; logo, colors, typography, social kit, and style guide.</p>
+      </div>
+      <div class="designs-tier">
+        <div class="designs-tier-name">Full Site</div>
+        <div class="designs-tier-price">from $1,500</div>
+        <p style="font-family:var(--font-body);font-size:0.875rem;color:var(--muted);line-height:1.65;margin-top:0.75rem;">Custom site design, responsive across all breakpoints, launch-ready Webflow or WordPress build.</p>
+      </div>
+    </div>
+
+    <p style="font-family:var(--font-body);font-style:italic;font-size:0.9rem;color:var(--muted);line-height:1.7;max-width:600px;margin-top:1.5rem;">
+      Pricing is indicative. Every project is scoped before we invoice.
+      <a href="https://famtasticdesigns.com" rel="noopener" style="color:var(--violet);text-decoration:underline;text-underline-offset:3px;">Visit FAMtasticDesigns.com</a> for the full process.
+    </p>
+  </section>
+
+  <!-- ── 5. FEATURES ───────────────────────────────────────── -->
+  <section class="builder-features-section" aria-labelledby="features-headline">
+    <div class="section-label-sm">// builder features</div>
+    <h2 class="section-headline" id="features-headline">The builder. What it actually includes.</h2>
+
+    <div class="builder-features-grid">
+
+      <!-- Left column -->
+      <div class="builder-feature">
+        <div class="builder-feature-title">Mobile-Optimized Templates</div>
+        <p class="builder-feature-desc">Every template is responsive before you touch it. Pick your template knowing it already works on a phone.</p>
+      </div>
+      <div class="builder-feature">
+        <div class="builder-feature-title">Free Domain &mdash; Year One</div>
+        <p class="builder-feature-desc">Register any available .com, .net, or .org domain free for the first year with any Builder plan. Renews at standard rates.</p>
+      </div>
+      <div class="builder-feature">
+        <div class="builder-feature-title">SSL Certificate Included</div>
+        <p class="builder-feature-desc">HTTPS on your site automatically. No setup, no cost, auto-renewed.</p>
+      </div>
+
+      <!-- Right column -->
+      <div class="builder-feature">
+        <div class="builder-feature-title">Online Store (Commerce Plan)</div>
+        <p class="builder-feature-desc">Add a full e-commerce store &mdash; product listings, checkout, payment processing, shipping label generation, and abandoned cart recovery.</p>
+      </div>
+      <div class="builder-feature">
+        <div class="builder-feature-title">Marketing Suite</div>
+        <p class="builder-feature-desc">SEO tools, Google Analytics integration, social media publishing, and email marketing basics &mdash; included on both plans.</p>
+      </div>
+      <div class="builder-feature">
+        <div class="builder-feature-title">24/7 Support</div>
+        <p class="builder-feature-desc">The same white-label 24/7 support that comes with every FAMtastic plan. Call (480) 624-2500 anytime.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── 6. PRICING ────────────────────────────────────────── -->
+  <section class="pricing-section" id="plans" aria-labelledby="plans-headline">
+    <div class="pricing-label">// builder plans</div>
+    <h2 class="pricing-headline" id="plans-headline">Pick the plan that fits where you are.</h2>
+    <p style="font-family:var(--font-body);font-style:italic;font-size:1rem;color:rgba(245,245,240,0.45);max-width:560px;margin-bottom:2.5rem;line-height:1.7;">
+      Both plans include hosting, SSL, and a custom domain for year one.
+    </p>
+
+    <BillingToggle />
+
+    <div class="card-deck">
+
+      <PricingCard
+        name="Builder Essential"
+        price="$12"
+        period="/mo"
+        annualPrice="$9.60"
+        annualPeriod="/mo (billed annually)"
+        position="left"
+        features={[
+          "1 website",
+          "Free domain (year 1)",
+          "Mobile-optimized templates",
+          "SSL included",
+          "Basic marketing suite",
+          "Social media integration",
+          "24/7 white-label support"
+        ]}
+        ctaText="Start Building"
+        ctaHref="mailto:hello@famtastichosting.com"
+      />
+
+      <PricingCard
+        name="Builder Commerce"
+        price="$30"
+        period="/mo"
+        annualPrice="$24"
+        annualPeriod="/mo (billed annually)"
+        badge="Sell Online"
+        position="center"
+        featured={true}
+        features={[
+          "Online store",
+          "Unlimited products",
+          "Payment processing",
+          "Shipping label generation",
+          "Abandoned cart recovery",
+          "Full marketing suite",
+          "Free domain (year 1)",
+          "SSL included",
+          "Priority 24/7 support"
+        ]}
+        ctaText="Launch Your Store"
+        ctaHref="mailto:hello@famtastichosting.com"
+      />
+
+      <!-- Designs upsell card -->
+      <div class="plan-card plan-card--right" style="background:#1a0d3a;border-color:var(--hot);">
+        <div class="plan-badge" style="background:rgba(255,0,122,0.15);color:var(--hot);">Custom Design</div>
+        <div class="plan-name">Skip the Template</div>
+        <p style="font-family:var(--font-body);font-size:0.9rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem;">Let our design team build a site from scratch. No templates. Just yours.</p>
+        <ul class="plan-features">
+          <li><span class="feat-dot" style="background:var(--hot);"></span>Logo from $300</li>
+          <li><span class="feat-dot" style="background:var(--hot);"></span>Brand refresh from $800</li>
+          <li><span class="feat-dot" style="background:var(--hot);"></span>Full site from $1,500</li>
+        </ul>
+        <a href="https://famtasticdesigns.com" class="plan-cta" style="background:var(--hot);color:#fff;" rel="noopener">Visit FAMtasticDesigns.com</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── 7. DESIGN BRIDGE ──────────────────────────────────── -->
+  <DesignBridge variant="builder" />
+
+  <!-- ── 8. FAM THOUGHTS ───────────────────────────────────── -->
+  <FAMThoughts
+    headline="How to choose between a website builder and a custom site."
+    cta="Read FAMtastic Thoughts"
+    href="https://famtasticthoughts.com"
+  />
+
+</WildLayout>
+
+<style>
+/* ── BUILDER FEATURES SECTION ─────────────────────────────── */
+.builder-features-section {
+  padding: 6rem 3rem;
+  background: var(--surface);
+}
+
+.builder-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 3rem;
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+}
+
+.builder-feature {
+  padding: 2.25rem 2.5rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.builder-feature:hover {
+  background: var(--surface-alt);
+}
+
+.builder-feature-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+
+.builder-feature-title::before {
+  content: '\2192\00a0';
+  color: var(--lime);
+  font-size: 0.9rem;
+}
+
+.builder-feature-desc {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+@media (max-width: 900px) {
+  .builder-features-section {
+    padding: 4rem 1.5rem;
+  }
+
+  .builder-features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
