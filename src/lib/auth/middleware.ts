@@ -1,98 +1,139 @@
 /**
- * Auth middleware helpers for Astro API routes.
+ * Auth middleware for Astro API routes and server-rendered pages.
  *
- * Placeholder implementation for Track 2 (GoDaddy API layer).
- * Full auth will be wired in Track 1 (Supabase Auth).
+ * Three exported functions:
+ *   requireAuth(request)   — extracts Supabase session from cookie, returns
+ *                            user or redirects to /dashboard/login
+ *   requireAdmin(request)  — same as requireAuth but also checks role=admin,
+ *                            redirects to /admin/login if not admin
+ *   getSession(request)    — returns session without redirecting (optional auth)
  *
- * These stubs allow Track 2 routes to compile and run without blocking
- * on Track 1. Replace the placeholder implementations when Track 1 ships.
+ * Session flow:
+ *   1. Client sends the `fam_session` httpOnly cookie with every request.
+ *   2. We extract the raw JSON token, call supabase.auth.setSession() to
+ *      validate and refresh it if needed, then look up the user's role in
+ *      public.users.
+ *   3. On success we return an AuthUser. On failure we redirect or return null.
  */
 
-import type { APIContext } from 'astro';
+import { supabaseAdmin } from '../supabase/client.js';
+import type { UserRow } from '../supabase/types.js';
 
-export interface AuthSession {
-  userId: string;
+// ─── Session cookie name ──────────────────────────────────────────────────────
+
+export const SESSION_COOKIE = 'fam_session';
+
+// ─── Public types ─────────────────────────────────────────────────────────────
+
+export interface AuthUser {
+  id: string;
   email: string;
-  role: 'customer' | 'admin';
+  role: UserRow['role'];
 }
 
-/**
- * Verify that the request has a valid session.
- * PLACEHOLDER: Currently checks for a session cookie or Authorization header.
- * Replace with real Supabase session verification in Track 1.
- */
-export async function requireAuth(
-  context: APIContext
-): Promise<AuthSession | null> {
-  // Check for Authorization header (for programmatic API access)
-  const authHeader = context.request.headers.get('Authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
-    // TODO (Track 1): Verify JWT with Supabase
-    // For now, return null to block unauthenticated requests
-    void token;
+// ─── Internal: extract & validate session from cookie ────────────────────────
+
+async function extractSession(request: Request): Promise<AuthUser | null> {
+  const cookieHeader = request.headers.get('Cookie') ?? '';
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]+)`));
+  if (!match) return null;
+
+  let sessionData: { access_token?: string; refresh_token?: string };
+  try {
+    sessionData = JSON.parse(decodeURIComponent(match[1]));
+  } catch {
     return null;
   }
 
-  // Check for session cookie
-  const cookies = context.request.headers.get('Cookie') ?? '';
-  const sessionMatch = cookies.match(/fam_session=([^;]+)/);
-  if (sessionMatch) {
-    // TODO (Track 1): Verify session cookie with Supabase
-    void sessionMatch;
-    return null;
-  }
+  if (!sessionData.access_token || !sessionData.refresh_token) return null;
 
-  return null;
+  // Validate the session tokens with Supabase
+  const { data, error } = await supabaseAdmin.auth.setSession({
+    access_token: sessionData.access_token,
+    refresh_token: sessionData.refresh_token,
+  });
+
+  if (error || !data.user) return null;
+
+  // Look up role from our public.users table (Supabase auth doesn't store role)
+  const { data: userRow, error: userError } = await supabaseAdmin
+    .from('users')
+    .select('id, email, role')
+    .eq('id', data.user.id)
+    .single();
+
+  if (userError || !userRow) return null;
+
+  return {
+    id: userRow.id,
+    email: userRow.email,
+    role: userRow.role,
+  };
 }
 
+// ─── requireAuth ─────────────────────────────────────────────────────────────
+
 /**
- * Verify that the request has a valid admin session.
- * PLACEHOLDER: Returns null (unauthorized) until Track 1 is wired.
+ * Extracts the Supabase session from the request cookie and validates it.
+ * Returns an AuthUser if authenticated, or a redirect Response to /dashboard/login.
  *
- * In development/testing, set BYPASS_ADMIN_AUTH=true in .env to allow
- * unauthenticated admin API access locally.
+ * Usage in an Astro API route:
+ *   const authResult = await requireAuth(Astro.request);
+ *   if (authResult instanceof Response) return authResult;
+ *   // authResult is AuthUser
  */
-export async function requireAdminAuth(
-  context: APIContext
-): Promise<AuthSession | null> {
-  // Development bypass (local testing only — never enable in production)
-  if (import.meta.env.BYPASS_ADMIN_AUTH === 'true' && import.meta.env.MODE !== 'production') {
-    return {
-      userId: 'dev-admin',
-      email: 'fritz@famtastichosting.com',
-      role: 'admin',
-    };
+export async function requireAuth(request: Request): Promise<AuthUser | Response> {
+  const user = await extractSession(request);
+  if (!user) {
+    return Response.redirect(new URL('/dashboard/login', request.url), 302);
   }
-
-  const session = await requireAuth(context);
-  if (!session) return null;
-  if (session.role !== 'admin') return null;
-  return session;
+  return user;
 }
 
-/**
- * Build a standard JSON error response for auth failures.
- */
-export function unauthorizedResponse(message = 'Unauthorized'): Response {
-  return new Response(
-    JSON.stringify({ error: message, code: 'UNAUTHORIZED' }),
-    {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
-}
+// ─── requireAdmin ─────────────────────────────────────────────────────────────
 
 /**
- * Build a standard JSON error response for permission failures.
+ * Same as requireAuth but additionally enforces role === 'admin'.
+ * Redirects to /admin/login if the user is not authenticated or not an admin.
+ *
+ * Usage:
+ *   const authResult = await requireAdmin(Astro.request);
+ *   if (authResult instanceof Response) return authResult;
+ *   // authResult is AuthUser with role 'admin'
  */
-export function forbiddenResponse(message = 'Forbidden'): Response {
-  return new Response(
-    JSON.stringify({ error: message, code: 'FORBIDDEN' }),
-    {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
+export async function requireAdmin(request: Request): Promise<AuthUser | Response> {
+  const user = await extractSession(request);
+  if (!user) {
+    return Response.redirect(new URL('/admin/login', request.url), 302);
+  }
+  if (user.role !== 'admin') {
+    return Response.redirect(new URL('/admin/login', request.url), 302);
+  }
+  return user;
+}
+
+// ─── getSession ───────────────────────────────────────────────────────────────
+
+/**
+ * Returns the AuthUser if a valid session exists, or null if not authenticated.
+ * Does NOT redirect — use this for optional auth (e.g. homepage personalization).
+ *
+ * Usage:
+ *   const user = await getSession(Astro.request);
+ *   if (user) { /* show logged-in UI *\/ }
+ */
+export async function getSession(request: Request): Promise<AuthUser | null> {
+  return extractSession(request);
+}
+
+// ─── Re-export backward-compatible names used by Track 2 GoDaddy routes ───────
+
+export { AuthUser as AuthSession };
+
+/**
+ * Backward-compatible wrapper used by existing GoDaddy API route stubs.
+ * Returns AuthUser or null (no redirect).
+ */
+export async function requireAuthOrNull(request: Request): Promise<AuthUser | null> {
+  return extractSession(request);
 }
