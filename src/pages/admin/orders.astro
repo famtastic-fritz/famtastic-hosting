@@ -59,7 +59,7 @@ const origin = new URL(Astro.request.url).origin;
 const cookieHdr = { Cookie: Astro.request.headers.get('Cookie') ?? '' };
 
 try {
-  const res = await fetch(`${origin}/api/admin/local-orders?status=paid`, { headers: cookieHdr });
+  const res = await fetch(`${origin}/api/admin/local-orders?status=processing`, { headers: cookieHdr });
   if (res.ok) {
     const json = await res.json();
     localOrders = json.data.orders;
@@ -67,8 +67,9 @@ try {
 } catch { /* non-blocking */ }
 
 try {
-  const qs = initialSearch ? `?search=${encodeURIComponent(initialSearch)}` : '';
-  const res = await fetch(`${origin}/api/admin/orders${qs}&limit=50`, {
+  const gdParams = new URLSearchParams({ limit: '50' });
+  if (initialSearch) gdParams.set('search', initialSearch);
+  const res = await fetch(`${origin}/api/admin/orders?${gdParams.toString()}`, {
     headers: cookieHdr,
   });
   if (res.ok) {
@@ -116,7 +117,7 @@ try {
           Fulfillment Queue
           <span class="queue-badge">{localOrders.length}</span>
         </h3>
-        <p class="db-text-muted db-text-sm">Paid orders pending provisioning — provision in GoDaddy, then mark fulfilled here.</p>
+        <p class="db-text-muted db-text-sm">Orders received — provision in GoDaddy, then mark active here.</p>
       </div>
       <div class="table-scroll">
         <table class="db-table" id="local-orders-table" aria-label="Fulfillment queue">
@@ -289,7 +290,7 @@ try {
       const res = await fetch('/api/admin/local-orders', {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ orderId, status: 'fulfilled' }),
+        body:    JSON.stringify({ orderId, status: 'active' }),
       });
       if (res.ok) {
         const row = btn.closest('tr') as HTMLTableRowElement;

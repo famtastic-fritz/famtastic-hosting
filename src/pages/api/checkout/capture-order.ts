@@ -31,7 +31,7 @@ interface SnapshotRow extends RowDataPacket {
 
 interface SnapshotItem {
   id: number;
-  product_id?: number;
+  product_id: number | null;
   name: string;
   retail_price_cents: number;
   quantity: number;
@@ -113,11 +113,11 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ error: 'Payment amount mismatch — contact support' }, 409);
   }
 
-  // Resolve optional authenticated user
-  let userId: string | null = null;
+  // Resolve optional authenticated user — NULL means guest checkout
+  let userId: number | null = null;
   try {
     const authUser = await getSession(request);
-    if (authUser) userId = authUser.id;
+    if (authUser) userId = Number(authUser.id);
   } catch { /* auth is optional */ }
 
   const godaddyBase = `PAYPAL-${paypalOrderId}`;
@@ -145,10 +145,11 @@ export const POST: APIRoute = async ({ request }) => {
         const amountCents = item.retail_price_cents * item.quantity;
         const rowRef    = items.length === 1 ? godaddyBase : `${godaddyBase}-${i}`;
 
+        const productId = item.product_id ?? null;
         const [result] = await conn.execute(
           `INSERT INTO orders (user_id, product_id, amount_cents, status, godaddy_order_id)
-           VALUES (?, ?, ?, 'paid', ?)`,
-          [userId, item.id, amountCents, rowRef],
+           VALUES (?, ?, ?, 'processing', ?)`,
+          [userId, productId, amountCents, rowRef],
         );
         const res = result as { insertId: number };
         if (!firstInsertId) firstInsertId = String(res.insertId);

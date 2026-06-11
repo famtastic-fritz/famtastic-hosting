@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ request }) => {
   if (auth instanceof Response) return auth;
 
   const url    = new URL(request.url);
-  const status = url.searchParams.get('status') ?? 'paid';
+  const status = url.searchParams.get('status') ?? 'processing';
 
   const [rows] = await query<OrderRow[]>(
     `SELECT
@@ -74,7 +74,7 @@ export const PUT: APIRoute = async ({ request }) => {
   const orderId = Number(body.orderId);
   const status  = String(body.status ?? '').trim();
 
-  if (!orderId || !['fulfilled', 'cancelled'].includes(status)) {
+  if (!orderId || !['active', 'cancelled'].includes(status)) {
     return json({ error: 'orderId and valid status required' }, 400);
   }
 
