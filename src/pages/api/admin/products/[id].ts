@@ -175,7 +175,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
 
   if ('billing_period' in body) {
     const bp = body.billing_period;
-    if (bp !== null && !['monthly', 'annual', 'biennial', 'one-time'].includes(String(bp))) {
+    if (bp !== null && !['monthly', 'annual'].includes(String(bp))) {
       return apiError('Invalid billing_period value.', 'INVALID_FIELD', 400);
     }
     updates.billing_period = bp;

@@ -35,12 +35,9 @@ export const cols = {
   },
 
   sessions: {
-    id: 'id',
-    user_id: 'user_id',
-    ip_address: 'ip_address',
-    user_agent: 'user_agent',
-    expires_at: 'expires_at',
-    created_at: 'created_at',
+    session_id: 'session_id',
+    expires: 'expires',
+    data: 'data',
   },
 
   products: {

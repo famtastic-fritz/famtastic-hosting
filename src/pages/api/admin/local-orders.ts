@@ -7,7 +7,7 @@ import type { RowDataPacket } from 'mysql2';
 
 // ─── GET /api/admin/local-orders ─────────────────────────────────────────────
 // Returns orders from local DB (PayPal-backed, not GoDaddy).
-// Supports ?status= filter (default: 'paid').
+// Supports ?status= filter (default: 'processing').
 
 interface OrderRow extends RowDataPacket {
   id: number;

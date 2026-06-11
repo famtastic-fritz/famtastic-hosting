@@ -91,7 +91,7 @@ function mapProvisioningStatus(godaddyStatus?: string): string {
   const s = godaddyStatus.toUpperCase();
   if (s.includes('COMPLETE') || s === 'ACTIVE') return 'active';
   if (s.includes('FAILED') || s.includes('ERROR')) return 'failed';
-  if (s.includes('PENDING') || s.includes('PROVISION')) return 'provisioning';
+  if (s.includes('PENDING') || s.includes('PROVISION')) return 'processing';
   if (s.includes('CANCEL') || s.includes('SUSPEND')) return 'cancelled';
   return s.toLowerCase();
 }
