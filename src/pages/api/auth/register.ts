@@ -1,10 +1,29 @@
 export const prerender = false;
 
+/**
+ * POST /api/auth/register
+ *
+ * Register a new customer account.
+ * Request body: { email, password, confirmPassword }
+ * Response: { success: true } or { success: false, error }
+ *
+ * On success:
+ *   1. Validates input
+ *   2. Checks rate limit
+ *   3. Hashes password with bcrypt
+ *   4. INSERTs user row into the database
+ *   5. Creates a GoDaddy shopper sub-account (non-blocking — registration
+ *      succeeds even if the GoDaddy call fails)
+ *   6. If shopperId returned, UPDATEs users.godaddy_shopper_id
+ *   7. Issues a session cookie
+ */
+
 import type { APIRoute } from 'astro';
 import { query } from '../../../lib/db/pool.js';
 import { hashPassword } from '../../../lib/auth/password.js';
 import { createSession } from '../../../lib/auth/session.js';
 import { buildSetCookieHeader, hashRateLimit, clearRateLimit, getClientIP } from '../../../lib/auth/helpers.js';
+import { createShopper } from '../../../lib/godaddy/shoppers.js';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -13,6 +32,8 @@ export const POST: APIRoute = async ({ request }) => {
       password?: string;
       confirmPassword?: string;
     };
+
+    // ── Input validation ────────────────────────────────────────────────────
 
     if (!body.email || !body.password || !body.confirmPassword) {
       return new Response(
@@ -54,6 +75,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
+    // ── DB INSERT ───────────────────────────────────────────────────────────
     const passwordHash = await hashPassword(body.password);
 
     const [result] = await query<any>(
@@ -62,6 +84,29 @@ export const POST: APIRoute = async ({ request }) => {
     );
     const userId = (result as any).insertId;
 
+    // ── GoDaddy shopper creation (non-blocking) ─────────────────────────────
+    // Fire-and-forget: registration succeeds regardless of outcome.
+    createShopper(email)
+      .then((shopperId) => {
+        if (shopperId) {
+          return query(
+            'UPDATE users SET godaddy_shopper_id = ? WHERE id = ?',
+            [shopperId, userId]
+          ).then(() => {
+            console.info('[register] GoDaddy shopper linked', { userId, shopperId });
+          });
+        } else {
+          console.warn('[register] GoDaddy shopper creation failed — continuing without shopperId', {
+            userId,
+            email,
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn('[register] GoDaddy shopper error (non-fatal):', err);
+      });
+
+    // ── Session ─────────────────────────────────────────────────────────────
     const session = await createSession(userId);
     clearRateLimit(ip, 'register');
 
