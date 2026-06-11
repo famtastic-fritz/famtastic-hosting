@@ -7,10 +7,22 @@ const BASE = import.meta.env.PAYPAL_ENV === 'live'
   ? 'https://api-m.paypal.com'
   : 'https://api-m.sandbox.paypal.com'
 
+// ─── PayPal order ID format ────────────────────────────────────────────────────
+// PayPal order IDs are uppercase alphanumeric, 1–40 chars.
+// Validating before interpolating into outbound URLs prevents injection.
+
+const PAYPAL_ID_RE = /^[A-Z0-9]{1,40}$/
+
+export function assertValidPayPalOrderId(id: string): void {
+  if (!PAYPAL_ID_RE.test(id)) {
+    throw new Error(`Invalid PayPal order ID format: "${id}"`)
+  }
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 async function getAccessToken(): Promise<string> {
-  const id = import.meta.env.PAYPAL_CLIENT_ID
+  const id     = import.meta.env.PAYPAL_CLIENT_ID
   const secret = import.meta.env.PAYPAL_SECRET
   const credentials = Buffer.from(`${id}:${secret}`).toString('base64')
 
@@ -52,6 +64,8 @@ export async function createPayPalOrder(totalCents: number): Promise<string> {
             value,
           },
           description: 'FAMtastic Hosting — services purchase',
+          // custom_id carries the locked subtotal for amount verification at capture
+          custom_id: String(totalCents),
         },
       ],
     }),
@@ -75,15 +89,21 @@ export interface CaptureResult {
 }
 
 export async function capturePayPalOrder(paypalOrderId: string): Promise<CaptureResult> {
+  // Fix 3: validate format before interpolating into URL
+  assertValidPayPalOrderId(paypalOrderId)
+
   const token = await getAccessToken()
 
-  const res = await fetch(`${BASE}/v2/checkout/orders/${paypalOrderId}/capture`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+  const res = await fetch(
+    `${BASE}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     },
-  })
+  )
 
   if (!res.ok) {
     throw new Error(`PayPal capture failed: ${res.status} ${await res.text()}`)
