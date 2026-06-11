@@ -70,24 +70,25 @@
    - Port: 3001 (127.0.0.1 only, Apache proxies via proxy.php)
    - Start script: `/home/nineoo/public_html/famtastichosting.com/start.sh`
    - Log: `/tmp/famhosting-node.log`
-   - **IMPORTANT:** After every new build deploy, patch entry.mjs paths (hardcoded to local machine):
-     ```bash
-     DIST=/home/nineoo/public_html/famtastichosting.com/site/dist
-     sed -i "s|file:///Users/famtasticfritz/.*/dist/client/|file://${DIST}/client/|g" ${DIST}/server/entry.mjs
-     sed -i "s|file:///Users/famtasticfritz/.*/dist/server/|file://${DIST}/server/|g" ${DIST}/server/entry.mjs
-     ```
+   - Deploy contract is now SSR-aware:
+     - `deploy.sh` syncs `dist/client/` to the Apache docroot
+     - `deploy.sh` syncs the full `dist/` bundle to `/site/dist/`
+     - `deploy.sh` syncs `package.json` + `package-lock.json` to `/site/`
+     - `deploy.sh` runs `npm ci --omit=dev` server-side
+     - `deploy.sh` rewrites all built `file://` paths under `/site/dist/server/*.mjs`
+     - `deploy.sh` restarts Node via `start.sh`
 
 ## Known Gaps / Not Yet Done
 
 - `godaddy_order_id` in orders is a placeholder `FAM-<uuid>` — real GoDaddy order creation not wired
 - `godaddy_shopper_id` on users: wiring is code-complete but GoDaddy API creds not on server — shopper creation will fail silently (non-blocking); billing/domains/hosting still return empty
 - **GoDaddy API credentials (`GODADDY_API_KEY`, `GODADDY_API_SECRET`) NOT set on server** — Fritz action required: add to start.sh or server env
-- PayPal webhook wiring not started — no payment provider connected to checkout
+- PayPal checkout now has `create-order` + `capture-order` server routes, but the sandbox purchase flow still needs live browser verification after the guest-checkout migration
+- PayPal webhook reconciliation is still not implemented; the current flow relies on client-driven create/capture plus DB-side orphan payment recovery
 - Stripe wiring not started
 - No email verification on register
 - No cron/supervisor for Node restart on crash — manual restart only (via start.sh)
 - Admin CMS pages not tested in browser (API tested; UI untested)
-- Cart checkout flow incomplete — cart accumulates items but no payment/order creation path from cart yet
 - Svelte dashboard components not tested with real auth in browser
 
 ## Key Technical Details
@@ -95,8 +96,8 @@
 - **cPanel server:** `p3plzcpnl506112.prod.phx3.secureserver.net` (user: `nineoo`)
 - **SSH key:** `~/.ssh/id_ed25519`
 - **Server dist path:** `/home/nineoo/public_html/famtastichosting.com/site/dist/`
-- **Build:** `npm run build` (local), then rsync `dist/` + patch `entry.mjs`
-- **Astro SSR note:** `entry.mjs` hardcodes build-machine absolute paths — must patch on every deploy
+- **Build:** `npm run build`, then run `./deploy.sh`
+- **Astro SSR note:** local builds still hardcode the build-machine absolute path; `deploy.sh` now rewrites every server-side `.mjs` artifact after sync so cPanel resolves correctly
 
 ## Smoke Tests (2026-06-11 — post cart+admin+GoDaddy deploy)
 
