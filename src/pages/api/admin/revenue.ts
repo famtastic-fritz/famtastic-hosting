@@ -69,14 +69,14 @@ export const GET: APIRoute = async ({ request }) => {
       const productIds = [...new Set(subRows.map(s => s.product_id))];
       if (productIds.length > 0) {
         const placeholders = productIds.map(() => '?').join(',');
-        const [products] = await pool.execute<Array<{ id: string; retail_price: number; category: string }>>(
-          `SELECT id, retail_price, category FROM products WHERE id IN (${placeholders})`,
+        const [products] = await pool.execute<Array<{ id: string; retail_price_cents: number; category: string }>>(
+          `SELECT id, retail_price_cents, category FROM products WHERE id IN (${placeholders})`,
           productIds
         );
-        const priceMap = new Map(products.map(p => [p.id, p.retail_price]));
+        const priceMap = new Map(products.map(p => [p.id, p.retail_price_cents]));
         for (const sub of subRows) {
           const price = priceMap.get(sub.product_id) ?? 0;
-          mrrEstimate += price / 100; // retail_price is in cents
+          mrrEstimate += price / 100;
         }
       }
     }
