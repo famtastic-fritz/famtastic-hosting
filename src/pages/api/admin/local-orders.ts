@@ -58,7 +58,7 @@ export const GET: APIRoute = async ({ request }) => {
 };
 
 // ─── PUT /api/admin/local-orders ─────────────────────────────────────────────
-// Body: { orderId: number, status: 'fulfilled' | 'cancelled' }
+// Body: { orderId: number, status: 'active' | 'cancelled' }
 
 export const PUT: APIRoute = async ({ request }) => {
   const auth = await requireAdmin(request);
