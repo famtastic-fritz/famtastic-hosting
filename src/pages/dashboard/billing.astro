@@ -69,6 +69,7 @@ const totalSpent = orders.reduce((sum: number, o: any) => sum + o.totalUSD, 0);
   variant="customer"
   currentPath="/dashboard/billing"
   userName={user.email}
+  userId={Number(user.id)}
 >
   <div class="db-page-header">
     <div class="db-page-header__row">
@@ -82,12 +83,10 @@ const totalSpent = orders.reduce((sum: number, o: any) => sum + o.totalUSD, 0);
       <div class="header-right">
         <ContactPhone variant="inline" client:load />
         <a
-          href="https://account.godaddy.com/billing"
+          href="/dashboard/support"
           class="db-btn db-btn--secondary db-btn--sm"
-          target="_blank"
-          rel="noopener"
         >
-          Manage Payment Method
+          Billing Support
         </a>
       </div>
     </div>
@@ -169,7 +168,7 @@ const totalSpent = orders.reduce((sum: number, o: any) => sum + o.totalUSD, 0);
         <span>
           Renewal amounts shown are estimates based on original purchase price.
           Actual renewal amounts are set by your plan.
-          <a href="https://account.godaddy.com/billing" target="_blank" rel="noopener">Manage auto-renew settings →</a>
+          <a href="/dashboard/support">Contact support to manage auto-renew →</a>
         </span>
       </div>
     </section>
@@ -206,19 +205,17 @@ const totalSpent = orders.reduce((sum: number, o: any) => sum + o.totalUSD, 0);
       <div>
         <h3 class="payment-info__title">Payment Methods</h3>
         <p class="payment-info__body">
-          All payments are processed securely by GoDaddy.
+          Payments are processed securely through our billing portal.
           We never store your payment information.
-          To update your card or billing address, visit GoDaddy's account portal.
+          To update your card or billing address, contact our support team.
         </p>
       </div>
       <div class="payment-info__actions">
         <a
-          href="https://account.godaddy.com/billing"
+          href="/dashboard/support"
           class="db-btn db-btn--secondary"
-          target="_blank"
-          rel="noopener"
         >
-          Manage on GoDaddy
+          Contact Billing Support
         </a>
       </div>
     </div>

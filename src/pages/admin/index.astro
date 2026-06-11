@@ -67,6 +67,7 @@ const mtdLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric
   variant="admin"
   currentPath="/admin"
   userName={auth.email}
+  userId={Number(auth.id)}
 >
   <!-- Page header -->
   <div class="db-page-header">

@@ -51,6 +51,7 @@ function formatDate(iso: string): string {
   variant="customer"
   currentPath="/dashboard/email"
   userName={user.email}
+  userId={Number(user.id)}
 >
   <div class="db-page-header">
     <div class="db-page-header__row">
@@ -186,9 +187,8 @@ function formatDate(iso: string): string {
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
     <span>
-      Individual mailbox details and quota usage are managed directly through
-      GoDaddy's Workspace interface. Click "Manage Accounts" above or call
-      <a href="tel:+14806242500">(480) 624-2500</a> for setup assistance.
+      Individual mailbox details and quota usage are managed through the email control panel.
+      Click "Manage Accounts" above or <a href="/dashboard/support">contact support</a> for setup assistance.
     </span>
   </div>
 

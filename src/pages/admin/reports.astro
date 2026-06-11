@@ -25,6 +25,7 @@ const currentMonth = now.toLocaleDateString('en-US', { month: 'long', year: 'num
   variant="admin"
   currentPath="/admin/reports"
   userName={auth.email}
+  userId={Number(auth.id)}
 >
   <div class="db-page-header">
     <div class="db-page-header__row">

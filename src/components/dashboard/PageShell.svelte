@@ -7,6 +7,7 @@
   export let currentPath: string = '/dashboard';
   export let pageTitle: string = '';
   export let userName: string = '';
+  export let userId: number = 0;
 
   let sidebarOpen = false;
 
@@ -38,7 +39,7 @@
 
   <!-- Sidebar nav (wired with open state for mobile) -->
   <div class="db-sidebar-slot {sidebarOpen ? 'db-sidebar-slot--open' : ''}" role="presentation">
-    <DashboardNav {variant} {currentPath} {userName} />
+    <DashboardNav {variant} {currentPath} {userName} {userId} />
   </div>
 
   <!-- Main content area -->
@@ -66,13 +67,15 @@
         {/if}
       </div>
       <div class="db-topbar-actions">
-        <div class="topbar-phone">
-          <ContactPhone variant="inline" />
-        </div>
         <slot name="topbar-actions" />
         {#if userName}
-          <div class="db-topbar-avatar" aria-label="User: {userName}" title={userName}>
-            {userName.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+          <div class="topbar-user-chip">
+            {#if userId > 0}
+              <span class="topbar-customer-id">#{String(userId).padStart(5, '0')}</span>
+            {/if}
+            <div class="db-topbar-avatar" aria-label="User: {userName}" title={userName}>
+              {userName.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+            </div>
           </div>
         {/if}
       </div>
@@ -86,9 +89,6 @@
 </div>
 
 <style>
-  /* PageShell manages the sidebar open state via class since
-     DashboardNav's sidebar is position:fixed; we use a wrapper
-     div to relay the open class without modifying DashboardNav internals */
   :global(.db-sidebar-slot .db-shell__sidebar) {
     transform: translateX(-100%);
   }
@@ -97,15 +97,30 @@
     :global(.db-sidebar-slot .db-shell__sidebar) {
       transform: translateX(0) !important;
     }
-    .topbar-phone { display: flex; }
   }
 
   @media (max-width: 767px) {
-    .topbar-phone { display: none; }
-
     :global(.db-sidebar-slot--open .db-shell__sidebar) {
       transform: translateX(0) !important;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     }
+  }
+
+  .topbar-user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .topbar-customer-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
   }
 </style>

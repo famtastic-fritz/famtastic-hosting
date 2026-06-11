@@ -51,6 +51,7 @@ function planIcon(label: string): 'hosting' | 'domain' | 'email' | 'ssl' | 'buil
   variant="customer"
   currentPath="/dashboard/hosting"
   userName={user.email}
+  userId={Number(user.id)}
 >
   <div class="db-page-header">
     <div class="db-page-header__row">

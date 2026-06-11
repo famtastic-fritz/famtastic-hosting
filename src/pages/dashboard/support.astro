@@ -22,6 +22,7 @@ const user = Astro.locals.user as { id: string; email: string; role: string };
   variant="customer"
   currentPath="/dashboard/support"
   userName={user.email}
+  userId={Number(user.id)}
 >
   <div class="db-page-header">
     <div class="db-page-header__row">

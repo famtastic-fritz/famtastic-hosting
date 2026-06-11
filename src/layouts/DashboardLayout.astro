@@ -30,6 +30,7 @@ interface Props {
   variant?: DashboardVariant
   currentPath?: string
   userName?: string
+  userId?: number
   canonicalPath?: string
 }
 
@@ -39,6 +40,7 @@ const {
   variant = 'customer',
   currentPath = '/dashboard',
   userName = '',
+  userId = 0,
   canonicalPath = '',
 } = Astro.props
 
@@ -75,6 +77,7 @@ const bodyBg    = '#0a0a0f'
     {currentPath}
     pageTitle={title}
     {userName}
+    {userId}
   >
     <slot />
   </PageShell>

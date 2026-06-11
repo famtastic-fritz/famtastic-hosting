@@ -6,6 +6,19 @@
   export let variant: NavVariant = 'customer';
   export let currentPath: string = '/dashboard';
   export let userName: string = '';
+  export let userId: number = 0;
+
+  let loggingOut = false;
+
+  async function handleLogout() {
+    loggingOut = true;
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // continue regardless
+    }
+    window.location.href = '/dashboard/login';
+  }
 
   interface NavItem {
     label: string;
@@ -175,19 +188,34 @@
     {/each}
   </div>
 
-  <!-- Footer: user info + support phone -->
+  <!-- Footer: user info + logout -->
   <div class="db-sidebar-footer">
     {#if userName}
       <div class="sidebar-user">
         <div class="db-topbar-avatar" aria-hidden="true">{initials}</div>
         <div class="sidebar-user__info">
           <div class="sidebar-user__name db-truncate">{userName}</div>
-          <div class="sidebar-user__role">{variant === 'admin' ? 'Administrator' : 'Customer'}</div>
+          <div class="sidebar-user__role">
+            {variant === 'admin' ? 'Administrator' : 'Customer'}
+            {#if userId > 0}
+              <span class="sidebar-user__id">#{String(userId).padStart(5, '0')}</span>
+            {/if}
+          </div>
         </div>
       </div>
       <div style="height: 8px;"></div>
     {/if}
-    <ContactPhone variant="sidebar" />
+    <button
+      class="sidebar-logout-btn"
+      on:click={handleLogout}
+      disabled={loggingOut}
+      aria-label="Sign out"
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+      {loggingOut ? 'Signing out…' : 'Sign out'}
+    </button>
   </div>
 </nav>
 
@@ -229,5 +257,44 @@
     color: var(--db-text-muted);
     font-family: 'JetBrains Mono', monospace;
     text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sidebar-user__id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #7c3aed;
+    font-weight: 600;
+    text-transform: none;
+  }
+
+  .sidebar-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    padding: 8px 10px;
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    color: #f87171;
+    font-size: 0.8125rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    text-align: left;
+  }
+
+  .sidebar-logout-btn:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  .sidebar-logout-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>
