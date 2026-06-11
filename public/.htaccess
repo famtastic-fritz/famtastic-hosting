@@ -22,6 +22,12 @@ RewriteRule ^logout$ proxy.php [L,QSA]
 # ─── Thank-you page → proxy.php ─────────────────────────────────────────────
 RewriteRule ^thank-you$ proxy.php [L,QSA]
 
+# ─── Checkout → proxy.php ────────────────────────────────────────────────────
+RewriteRule ^checkout$ proxy.php [L,QSA]
+
+# ─── Order confirmation → proxy.php ──────────────────────────────────────────
+RewriteRule ^order-confirmation$ proxy.php [L,QSA]
+
 # ─── Static pages served by Apache ───────────────────────────────────────────
 # / (index.html), /wordpress, /hosting, /builder, /servers,
 # /domains, /bundles, /contact all have pre-rendered HTML in docroot.

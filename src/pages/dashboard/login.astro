@@ -9,7 +9,7 @@
  */
 export const prerender = false;
 
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import AuthLayout from '../../layouts/AuthLayout.astro';
 import LoginForm from '../../components/auth/LoginForm.svelte';
 import { getSession } from '../../lib/auth/middleware.js';
 
@@ -23,7 +23,7 @@ const title = 'Sign In';
 const description = 'Sign in to your FAMtastic Hosting customer portal to manage your domains, hosting, and email.';
 ---
 
-<DashboardLayout {title} {description} variant="customer" currentPath="/dashboard/login">
+<AuthLayout {title} {description}>
   <div class="auth-page">
     <div class="auth-card">
       <!-- Brand -->
@@ -46,14 +46,12 @@ const description = 'Sign in to your FAMtastic Hosting customer portal to manage
       <!-- Support callout -->
       <div class="auth-support">
         <p>
-          Need help?
-          <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
-          — 24/7 support.
+          Need help? <a href="/contact" class="support-link">Contact support</a>
         </p>
       </div>
     </div>
   </div>
-</DashboardLayout>
+</AuthLayout>
 
 <style>
   /* ── Auth page layout ───────────────────────────────────────── */

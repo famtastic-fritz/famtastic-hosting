@@ -1,10 +1,10 @@
 /**
- * Storefront URL helpers for FAMtastic Hosting
+ * Product CTA URL helpers for FAMtastic Hosting
  *
- * All "Buy" buttons on the hosting site redirect to store.famtastichosting.com
- * (GoDaddy storefront). GoDaddy handles all payment processing — we never touch
- * PCI data. This module provides the mapping from our product slugs to the
- * correct storefront product page URLs.
+ * Maps product slugs to destination URLs for "Buy Now" / "Get Started" CTAs.
+ * store.famtastichosting.com is suspended — all slugs currently map to local
+ * product pages (see storefront-urls.json). Once per-product Add to Cart is
+ * wired, update each slug's URL to /api/cart/add?productId=<id>.
  */
 
 import storefrontUrls from '../data/storefront-urls.json';
@@ -13,7 +13,7 @@ import storefrontUrls from '../data/storefront-urls.json';
 type StorefrontMap = Omit<typeof storefrontUrls, '_note'>;
 type ProductSlug = keyof StorefrontMap;
 
-const BASE_STOREFRONT = 'https://store.famtastichosting.com';
+const BASE_STOREFRONT = '/contact';
 
 /**
  * Returns the storefront URL for a given product slug.
@@ -36,14 +36,9 @@ export function getStorefrontURL(productSlug: string): string {
  * buildCheckoutURL('wordpress-basic', 'LAUNCH20')
  * // → "https://store.famtastichosting.com/hosting/wordpress-hosting?isc=LAUNCH20"
  */
-export function buildCheckoutURL(productSlug: string, promoCode?: string): string {
-  const base = getStorefrontURL(productSlug);
-  if (!promoCode) return base;
-
-  // Append isc (Internet Service Code) — GoDaddy's promo/tracking param
-  const url = new URL(base);
-  url.searchParams.set('isc', promoCode);
-  return url.toString();
+export function buildCheckoutURL(productSlug: string, _promoCode?: string): string {
+  // Promo codes were GoDaddy ISC params — not applicable to local routing.
+  return getStorefrontURL(productSlug);
 }
 
 /**

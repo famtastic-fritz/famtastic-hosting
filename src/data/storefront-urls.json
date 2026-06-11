@@ -1,34 +1,34 @@
 {
-  "_note": "GoDaddy storefront product URLs for store.famtastichosting.com. Update these slugs once the storefront is activated and product pages are live. Pattern: https://store.famtastichosting.com/<category>/<product-slug>",
+  "_note": "Product CTA destinations. store.famtastichosting.com storefront is suspended — routes point to local pages while the native checkout cart is built. Update each to a cart/add URL once per-product Add to Cart is wired.",
 
-  "wordpress-basic": "https://store.famtastichosting.com/hosting/wordpress-hosting",
-  "wordpress-ultimate": "https://store.famtastichosting.com/hosting/wordpress-hosting-ultimate",
+  "wordpress-basic": "/wordpress",
+  "wordpress-ultimate": "/wordpress",
 
-  "hosting-starter": "https://store.famtastichosting.com/hosting/web-hosting",
-  "hosting-ultimate": "https://store.famtastichosting.com/hosting/web-hosting-ultimate",
+  "hosting-starter": "/hosting",
+  "hosting-ultimate": "/hosting",
 
-  "builder-essential": "https://store.famtastichosting.com/websites/website-builder",
-  "builder-commerce": "https://store.famtastichosting.com/websites/website-builder-commerce",
+  "builder-essential": "/builder",
+  "builder-commerce": "/builder",
 
-  "servers-launch": "https://store.famtastichosting.com/hosting/web-hosting-plus",
-  "servers-expand": "https://store.famtastichosting.com/hosting/web-hosting-plus-expand",
+  "servers-launch": "/servers",
+  "servers-expand": "/servers",
 
-  "domain-com": "https://store.famtastichosting.com/domains/domain-transfer",
-  "domain-net": "https://store.famtastichosting.com/domains/domain-transfer",
-  "domain-org": "https://store.famtastichosting.com/domains/domain-transfer",
-  "domain-co": "https://store.famtastichosting.com/domains/domain-transfer",
-  "domain-search": "https://store.famtastichosting.com/domains/domain-search",
+  "domain-com": "/domains",
+  "domain-net": "/domains",
+  "domain-org": "/domains",
+  "domain-co": "/domains",
+  "domain-search": "/domains",
 
-  "email-pro": "https://store.famtastichosting.com/email/professional-email",
-  "email-group": "https://store.famtastichosting.com/email/email-hosting",
-  "email-m365": "https://store.famtastichosting.com/email/microsoft365",
+  "email-pro": "/contact",
+  "email-group": "/contact",
+  "email-m365": "/contact",
 
-  "ssl-standard": "https://store.famtastichosting.com/security/ssl-certificates",
+  "ssl-standard": "/contact",
 
-  "bundle-small-biz-starter": "https://store.famtastichosting.com/bundles/small-business-starter",
-  "bundle-wordpress-launch": "https://store.famtastichosting.com/bundles/wordpress-launch",
-  "bundle-growth-hosting": "https://store.famtastichosting.com/bundles/growth-hosting",
+  "bundle-small-biz-starter": "/bundles",
+  "bundle-wordpress-launch": "/bundles",
+  "bundle-growth-hosting": "/bundles",
 
-  "security-standard": "https://store.famtastichosting.com/security/website-security",
-  "security-premium": "https://store.famtastichosting.com/security/website-security-deluxe"
+  "security-standard": "/contact",
+  "security-premium": "/contact"
 }

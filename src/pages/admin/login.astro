@@ -9,7 +9,7 @@
  */
 export const prerender = false;
 
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import AuthLayout from '../../layouts/AuthLayout.astro';
 import { getSession } from '../../lib/auth/middleware.js';
 
 const user = await getSession(Astro.request);
@@ -20,7 +20,7 @@ if (user && user.role === 'admin') {
 const title = 'Admin Sign In';
 ---
 
-<DashboardLayout {title} variant="admin" currentPath="/admin/login">
+<AuthLayout {title}>
   <div class="auth-page">
     <div class="auth-card">
       <!-- Brand -->
@@ -78,13 +78,11 @@ const title = 'Admin Sign In';
         <p>
           Customer portal?
           <a href="/dashboard/login" class="support-link">Sign in here</a>
-          &nbsp;·&nbsp; Support:
-          <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
         </p>
       </div>
     </div>
   </div>
-</DashboardLayout>
+</AuthLayout>
 
 <script>
   const form = document.getElementById('admin-login-form') as HTMLFormElement;

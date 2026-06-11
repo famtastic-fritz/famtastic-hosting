@@ -13,7 +13,7 @@
  */
 export const prerender = false;
 
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import AuthLayout from '../../layouts/AuthLayout.astro';
 import RegisterForm from '../../components/auth/RegisterForm.svelte';
 import { getSession } from '../../lib/auth/middleware.js';
 
@@ -27,7 +27,7 @@ const title = 'Create Account';
 const description = 'Create a FAMtastic Hosting customer portal account to manage your domains, hosting, and email.';
 ---
 
-<DashboardLayout {title} {description} variant="customer" currentPath="/dashboard/register">
+<AuthLayout {title} {description}>
   <div class="auth-page">
     <div class="auth-card">
       <!-- Brand -->
@@ -58,7 +58,7 @@ const description = 'Create a FAMtastic Hosting customer portal account to manag
         </div>
         <div class="trust-item">
           <span class="trust-icon" aria-hidden="true">✓</span>
-          <span>24/7 support at (480) 624-2500</span>
+          <span>24/7 support — real humans, not bots</span>
         </div>
       </div>
 
@@ -69,13 +69,12 @@ const description = 'Create a FAMtastic Hosting customer portal account to manag
       <div class="auth-support">
         <p>
           Questions before you start?
-          <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
-          — 24/7 support.
+          <a href="/contact" class="support-link">Contact support</a>
         </p>
       </div>
     </div>
   </div>
-</DashboardLayout>
+</AuthLayout>
 
 <style>
   /* ── Auth page layout ───────────────────────────────────────── */
