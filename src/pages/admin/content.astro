@@ -1,0 +1,346 @@
+---
+/**
+ * /admin/content — Page content editor
+ *
+ * Dropdown selects which page to edit (index, hosting, domains,
+ * wordpress, servers, bundles). On selection, fetches
+ * GET /api/admin/content?page=X and renders editable fields
+ * grouped by section. Each field has a Save button that calls
+ * PUT /api/admin/content with page/section/key/value.
+ *
+ * Auth: requireAdmin()
+ */
+export const prerender = false;
+
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../lib/auth/middleware.js';
+
+const auth = await requireAdmin(Astro.request);
+if (auth instanceof Response) return auth;
+
+const pages = ['index', 'hosting', 'domains', 'wordpress', 'servers', 'bundles'];
+---
+
+<DashboardLayout
+  title="Content Editor"
+  variant="admin"
+  currentPath="/admin/content"
+  userName={auth.email}
+>
+  <!-- Page header -->
+  <div class="db-page-header">
+    <div class="db-page-header__row">
+      <div>
+        <h2 class="db-page-title">Page Content Editor</h2>
+        <p class="db-page-subtitle">Edit site copy stored in the database — changes are live immediately</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="save-toast" id="save-toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Page selector -->
+  <div class="db-card page-selector-card">
+    <label class="field-label" for="page-select">Select page to edit</label>
+    <div class="selector-row">
+      <select id="page-select" class="db-input page-select">
+        <option value="">— choose a page —</option>
+        {pages.map(p => <option value={p}>{p}</option>)}
+      </select>
+      <span id="load-status" class="load-status" hidden></span>
+    </div>
+  </div>
+
+  <!-- Content fields (rendered by JS) -->
+  <div id="content-area">
+    <div class="db-card empty-hint" id="empty-hint">
+      <p class="db-text-muted db-text-sm">Select a page above to load its editable content fields.</p>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+  const pageSelect  = document.getElementById('page-select')  as HTMLSelectElement;
+  const contentArea = document.getElementById('content-area') as HTMLDivElement;
+  const emptyHint   = document.getElementById('empty-hint')   as HTMLDivElement;
+  const loadStatus  = document.getElementById('load-status')  as HTMLSpanElement;
+  const toast       = document.getElementById('save-toast')   as HTMLDivElement;
+
+  function showToast(msg: string, type: 'success' | 'error' = 'success') {
+    toast.textContent = msg;
+    toast.className = `save-toast save-toast--${type}`;
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, 3500);
+  }
+
+  // Build the HTML for a single content field
+  function buildField(page: string, section: string, key: string, value: string | null) {
+    const id = `field-${section.replace(/\W/g, '_')}-${key.replace(/\W/g, '_')}`;
+    const isLong = (value?.length ?? 0) > 80 || key.toLowerCase().includes('desc') || key.toLowerCase().includes('body');
+
+    const inputHtml = isLong
+      ? `<textarea id="${id}" class="db-input field-textarea" data-section="${section}" data-key="${key}" rows="3">${escHtml(value ?? '')}</textarea>`
+      : `<input id="${id}" type="text" class="db-input" data-section="${section}" data-key="${key}" value="${escAttr(value ?? '')}" />`;
+
+    return `
+      <div class="content-field" data-section="${section}" data-key="${key}">
+        <label class="field-label" for="${id}">${escHtml(key)}</label>
+        <div class="field-row">
+          ${inputHtml}
+          <button class="db-btn db-btn--sm db-btn--primary save-field-btn" data-section="${section}" data-key="${key}" data-page="${page}">Save</button>
+          <span class="field-feedback feedback-msg" hidden></span>
+        </div>
+      </div>
+    `;
+  }
+
+  function escHtml(str: string) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function escAttr(str: string) {
+    return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  }
+
+  // Render all sections for a page
+  function renderContent(page: string, content: Record<string, Record<string, string | null>>) {
+    const sections = Object.keys(content);
+
+    if (sections.length === 0) {
+      return `
+        <div class="db-card db-mt-4">
+          <p class="db-text-muted db-text-sm">
+            No content rows exist yet for <strong>${escHtml(page)}</strong>.
+            Save a field to create the first entry, or seed content via the database.
+          </p>
+        </div>
+      `;
+    }
+
+    return sections.map(section => {
+      const keys = Object.keys(content[section]);
+      const fields = keys.map(key => buildField(page, section, key, content[section][key])).join('');
+      return `
+        <div class="db-section db-mt-4">
+          <h3 class="section-heading">${escHtml(section)}</h3>
+          <div class="db-card fields-card">
+            <div class="fields-list">
+              ${fields}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Load content for a selected page
+  async function loadPage(page: string) {
+    emptyHint.hidden = true;
+    loadStatus.textContent = 'Loading…';
+    loadStatus.hidden = false;
+
+    try {
+      const res = await fetch(`/api/admin/content?page=${encodeURIComponent(page)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Load failed');
+
+      contentArea.innerHTML = renderContent(page, json.data.content);
+      attachSaveHandlers(page);
+      loadStatus.hidden = true;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Load failed';
+      contentArea.innerHTML = `<div class="db-alert db-alert--danger db-mt-4"><span>${escHtml(msg)}</span></div>`;
+      loadStatus.hidden = true;
+    }
+  }
+
+  // Attach save-button handlers after rendering
+  function attachSaveHandlers(page: string) {
+    contentArea.querySelectorAll<HTMLButtonElement>('.save-field-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const section  = btn.dataset.section!;
+        const key      = btn.dataset.key!;
+        const feedback = btn.nextElementSibling as HTMLSpanElement;
+
+        // Find the input/textarea for this field
+        const fieldEl = contentArea.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+          `[data-section="${CSS.escape(section)}"][data-key="${CSS.escape(key)}"]`
+        );
+        if (!fieldEl) return;
+
+        const value = fieldEl.value;
+        btn.disabled = true;
+        btn.textContent = '…';
+
+        try {
+          const res = await fetch('/api/admin/content', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page, section, key, value }),
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error ?? 'Save failed');
+
+          feedback.textContent = 'Saved';
+          feedback.className = 'field-feedback feedback-msg feedback-msg--success';
+          feedback.hidden = false;
+          setTimeout(() => { feedback.hidden = true; }, 3000);
+          showToast(`${section} / ${key} saved`);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Save failed';
+          feedback.textContent = msg;
+          feedback.className = 'field-feedback feedback-msg feedback-msg--error';
+          feedback.hidden = false;
+          setTimeout(() => { feedback.hidden = true; }, 4000);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Save';
+        }
+      });
+    });
+  }
+
+  pageSelect.addEventListener('change', () => {
+    const page = pageSelect.value;
+    if (!page) {
+      contentArea.innerHTML = '';
+      contentArea.appendChild(emptyHint);
+      emptyHint.hidden = false;
+      return;
+    }
+    loadPage(page);
+  });
+</script>
+
+<style>
+  .page-selector-card {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .selector-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .page-select {
+    max-width: 260px;
+  }
+
+  .load-status {
+    font-size: 0.8125rem;
+    color: var(--db-text-muted);
+  }
+
+  /* Section heading */
+  .section-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--db-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .fields-card {
+    padding: 1rem 1.25rem;
+  }
+
+  .fields-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .content-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--db-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+  }
+
+  .field-row .db-input {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .field-textarea {
+    resize: vertical;
+    min-height: 70px;
+    font-family: var(--db-font-mono, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  .empty-hint {
+    margin-top: 1rem;
+  }
+
+  /* DB input reset (matches products.astro) */
+  .db-input {
+    background: var(--db-bg-input);
+    border: 1px solid var(--db-border-input);
+    border-radius: var(--db-radius-sm);
+    color: var(--db-text-primary);
+    font-size: 0.875rem;
+    padding: 0.4rem 0.625rem;
+    outline: none;
+    transition: border-color 0.12s ease;
+  }
+
+  .db-input:focus {
+    border-color: var(--db-violet);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  }
+
+  .feedback-msg {
+    font-size: 0.8125rem;
+    align-self: center;
+  }
+
+  .feedback-msg--success { color: var(--db-status-active); }
+  .feedback-msg--error   { color: var(--db-status-danger); }
+
+  /* Toast */
+  .save-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.625rem 1.125rem;
+    border-radius: var(--db-radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: var(--db-shadow-lg);
+  }
+
+  .save-toast--success {
+    background: var(--db-status-active-bg);
+    border: 1px solid var(--db-status-active);
+    color: var(--db-status-active);
+  }
+
+  .save-toast--error {
+    background: var(--db-status-danger-bg);
+    border: 1px solid var(--db-status-danger);
+    color: var(--db-status-danger);
+  }
+</style>

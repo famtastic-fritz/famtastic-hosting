@@ -2,12 +2,10 @@
 /**
  * /admin/products — Product catalog management
  *
- * Lists all products with wholesale price, retail price, markup %.
- * Inline editing: click the retail price to update via
- *   PATCH /api/admin/products/:id
- * Toggle active/inactive per product.
- *
- * Data source: MySQL products table (seeded by db/seed.sql).
+ * - Table of all products with inline Edit forms (PUT /api/admin/products/:id)
+ * - Deactivate button per row (DELETE /api/admin/products/:id — soft delete)
+ * - Add Product form at top (POST /api/admin/products)
+ * - Dark theme, Tailwind utility classes + db-* design system classes
  *
  * Auth: requireAdmin()
  */
@@ -28,6 +26,7 @@ interface ProductRow {
   retailPriceUSD: string;
   markupPct: number;
   active: boolean;
+  billing_period: string | null;
   updated_at: string;
 }
 
@@ -49,18 +48,7 @@ try {
   loadError = 'Unable to connect to data service.';
 }
 
-// Group products by category
-const byCategory = products.reduce<Record<string, ProductRow[]>>((acc, p) => {
-  if (!acc[p.category]) acc[p.category] = [];
-  acc[p.category].push(p);
-  return acc;
-}, {});
-
 const categoryOrder = ['hosting', 'wordpress', 'builder', 'server', 'domain', 'email', 'ssl', 'security', 'bundle'];
-const sortedCategories = [
-  ...categoryOrder.filter(c => byCategory[c]),
-  ...Object.keys(byCategory).filter(c => !categoryOrder.includes(c)),
-];
 ---
 
 <DashboardLayout
@@ -69,214 +57,343 @@ const sortedCategories = [
   currentPath="/admin/products"
   userName={auth.email}
 >
+  <!-- Page header -->
   <div class="db-page-header">
     <div class="db-page-header__row">
       <div>
         <h2 class="db-page-title">Product Catalog</h2>
-        <p class="db-page-subtitle">
-          {products.length} product{products.length !== 1 ? 's' : ''} — click a retail price to edit markup inline
-        </p>
+        <p class="db-page-subtitle">{products.length} product{products.length !== 1 ? 's' : ''} — manage pricing, status, and add new products</p>
       </div>
+      <button id="toggle-add-form" class="db-btn db-btn--primary db-btn--sm">+ Add Product</button>
     </div>
   </div>
 
   {loadError && (
-    <div class="db-alert db-alert--danger" role="alert">
-      <span>{loadError}</span>
-    </div>
+    <div class="db-alert db-alert--danger" role="alert"><span>{loadError}</span></div>
   )}
 
-  <!-- Save feedback toast -->
+  <!-- Toast -->
   <div class="save-toast" id="save-toast" role="status" aria-live="polite" hidden></div>
 
-  {sortedCategories.map(category => (
-    <div class="db-section">
-      <h3 class="db-section-title">{category}</h3>
-      <div class="db-card db-card--flush">
-        <table class="db-table" aria-label={`${category} products`}>
-          <thead>
-            <tr>
-              <th scope="col">Product</th>
-              <th scope="col">Wholesale</th>
-              <th scope="col">Retail Price</th>
-              <th scope="col">Markup</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {byCategory[category].map(product => (
-              <tr class="product-row" data-id={product.id} data-active={product.active}>
-                <td>
-                  <div class="product-name-cell">
-                    <span class="product-name">{product.name}</span>
-                    {product.godaddy_product_id && (
-                      <span class="db-text-mono db-text-xs db-text-muted">GD#{product.godaddy_product_id}</span>
-                    )}
-                  </div>
-                </td>
-                <td>
-                  <span class="db-text-mono db-text-sm db-text-muted">${product.wholesalePriceUSD}</span>
-                </td>
-                <td>
-                  <div class="retail-cell">
-                    <span
-                      class="retail-price"
-                      contenteditable="true"
-                      role="textbox"
-                      aria-label={`Retail price for ${product.name}`}
-                      data-original={product.retailPriceUSD}
-                      title="Click to edit"
-                    >${product.retailPriceUSD}</span>
-                    <button class="save-price-btn db-btn db-btn--sm db-btn--primary" hidden>Save</button>
-                    <button class="cancel-price-btn db-btn db-btn--sm db-btn--ghost" hidden>✕</button>
-                  </div>
-                </td>
-                <td>
-                  <span class={`db-badge ${product.markupPct >= 150 ? 'db-badge--active' : product.markupPct >= 100 ? 'db-badge--pending' : 'db-badge--expiring'} markup-badge`}>
-                    {product.markupPct}%
-                  </span>
-                </td>
-                <td>
-                  <button
-                    class={`db-btn db-btn--sm ${product.active ? 'db-btn--danger' : 'db-btn--secondary'} toggle-btn`}
-                    aria-label={product.active ? `Deactivate ${product.name}` : `Activate ${product.name}`}
-                    title={product.active ? 'Click to deactivate' : 'Click to activate'}
-                  >
-                    {product.active ? 'Active' : 'Inactive'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  <!-- ── Add Product Form ────────────────────────────────────────────────── -->
+  <div id="add-product-form" class="db-card add-form" hidden>
+    <h3 class="db-card__title" style="margin-bottom:1rem;">New Product</h3>
+    <div class="form-grid">
+      <div class="field-group">
+        <label class="field-label" for="new-name">Name *</label>
+        <input id="new-name" type="text" class="db-input" placeholder="e.g. Shared Hosting — Starter" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="new-category">Category *</label>
+        <input id="new-category" type="text" class="db-input" placeholder="hosting, domain, email…" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="new-gd-id">GoDaddy Product ID</label>
+        <input id="new-gd-id" type="text" class="db-input" placeholder="optional" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="new-wholesale">Wholesale Price (¢)</label>
+        <input id="new-wholesale" type="number" min="0" step="1" class="db-input" placeholder="cents, e.g. 299" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="new-retail">Retail Price (¢)</label>
+        <input id="new-retail" type="number" min="0" step="1" class="db-input" placeholder="cents, e.g. 599" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="new-billing">Billing Period</label>
+        <select id="new-billing" class="db-input">
+          <option value="">— select —</option>
+          <option value="monthly">monthly</option>
+          <option value="annual">annual</option>
+          <option value="biennial">biennial</option>
+          <option value="one-time">one-time</option>
+        </select>
       </div>
     </div>
-  ))}
-
-  {products.length === 0 && !loadError && (
-    <div class="db-card">
-      <p class="db-text-muted db-text-sm">
-        No products in the catalog yet. Run db/setup.sh to populate products from BUILD-SPEC.md pricing.
-      </p>
+    <div class="form-actions">
+      <button id="submit-add-product" class="db-btn db-btn--primary db-btn--sm">Create Product</button>
+      <button id="cancel-add-form" class="db-btn db-btn--ghost db-btn--sm">Cancel</button>
+      <span id="add-feedback" class="feedback-msg" hidden></span>
     </div>
-  )}
-
-  <!-- Support footer -->
-  <div class="support-footer db-mt-6">
-    <span class="db-text-muted db-text-xs">
-      Need help with pricing? Call:
-      <a href="tel:+14806242500" class="support-link">(480) 624-2500</a>
-    </span>
   </div>
+
+  <!-- ── Products Table ─────────────────────────────────────────────────── -->
+  {products.length > 0 ? (
+    <div class="db-card db-card--flush db-mt-4">
+      <table class="db-table" aria-label="Product catalog">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Wholesale</th>
+            <th>Retail</th>
+            <th>Markup</th>
+            <th>Billing</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="products-tbody">
+          {products.map(product => (
+            <tr
+              class="product-row"
+              data-id={product.id}
+              data-name={product.name}
+              data-category={product.category}
+              data-retail={Math.round(parseFloat(product.retailPriceUSD) * 100)}
+              data-wholesale={Math.round(parseFloat(product.wholesalePriceUSD) * 100)}
+              data-markup={product.markupPct}
+              data-active={product.active}
+              data-billing={product.billing_period ?? ''}
+            >
+              <td>
+                <div class="product-name-cell">
+                  <span class="product-name">{product.name}</span>
+                  {product.godaddy_product_id && (
+                    <span class="db-text-mono db-text-xs db-text-muted">GD#{product.godaddy_product_id}</span>
+                  )}
+                </div>
+              </td>
+              <td><span class="db-text-sm db-text-muted">{product.category}</span></td>
+              <td><span class="db-text-mono db-text-sm db-text-muted">${product.wholesalePriceUSD}</span></td>
+              <td><span class="db-text-mono db-text-sm retail-display">${product.retailPriceUSD}</span></td>
+              <td>
+                <span class={`db-badge ${product.markupPct >= 150 ? 'db-badge--active' : product.markupPct >= 100 ? 'db-badge--pending' : 'db-badge--expiring'} markup-badge`}>
+                  {product.markupPct}%
+                </span>
+              </td>
+              <td><span class="db-text-sm db-text-muted billing-display">{product.billing_period ?? '—'}</span></td>
+              <td>
+                <span class={`db-badge ${product.active ? 'db-badge--active' : 'db-badge--expiring'} status-badge`}>
+                  {product.active ? 'Active' : 'Inactive'}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button class="db-btn db-btn--sm db-btn--secondary edit-btn">Edit</button>
+                  <button class="db-btn db-btn--sm db-btn--danger deactivate-btn" aria-label={`Deactivate ${product.name}`}>
+                    Deactivate
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Inline edit form row (hidden by default) -->
+            <tr class="edit-row" data-edit-for={product.id} hidden>
+              <td colspan="8">
+                <div class="inline-edit-form">
+                  <div class="form-grid">
+                    <div class="field-group">
+                      <label class="field-label">Name</label>
+                      <input type="text" class="db-input edit-name" value={product.name} />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Retail Price (¢)</label>
+                      <input type="number" min="0" step="1" class="db-input edit-retail" value={Math.round(parseFloat(product.retailPriceUSD) * 100)} />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Billing Period</label>
+                      <select class="db-input edit-billing">
+                        <option value="">— select —</option>
+                        <option value="monthly" selected={product.billing_period === 'monthly'}>monthly</option>
+                        <option value="annual" selected={product.billing_period === 'annual'}>annual</option>
+                        <option value="biennial" selected={product.billing_period === 'biennial'}>biennial</option>
+                        <option value="one-time" selected={product.billing_period === 'one-time'}>one-time</option>
+                      </select>
+                    </div>
+                    <div class="field-group field-group--checkbox">
+                      <label class="field-label checkbox-label">
+                        <input type="checkbox" class="edit-active" checked={product.active} />
+                        Active
+                      </label>
+                    </div>
+                  </div>
+                  <div class="form-actions">
+                    <button class="db-btn db-btn--primary db-btn--sm save-edit-btn">Save Changes</button>
+                    <button class="db-btn db-btn--ghost db-btn--sm cancel-edit-btn">Cancel</button>
+                    <span class="edit-feedback feedback-msg" hidden></span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    !loadError && (
+      <div class="db-card db-mt-4">
+        <p class="db-text-muted db-text-sm">No products in the catalog yet. Use the Add Product form above to get started.</p>
+      </div>
+    )
+  )}
 </DashboardLayout>
 
 <script>
-  // Inline retail price editing
-  // Save = PATCH /api/admin/products/:id { retail_price: cents }
-  // Toggle = PATCH /api/admin/products/:id { active: bool }
-
   const toast = document.getElementById('save-toast') as HTMLDivElement;
 
   function showToast(msg: string, type: 'success' | 'error' = 'success') {
     toast.textContent = msg;
     toast.className = `save-toast save-toast--${type}`;
     toast.hidden = false;
-    setTimeout(() => { toast.hidden = true; }, 3000);
+    setTimeout(() => { toast.hidden = true; }, 3500);
   }
 
-  async function patchProduct(id: string, payload: Record<string, unknown>) {
-    const res = await fetch(`/api/admin/products/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const json = await res.json();
-      throw new Error(json.error ?? 'Update failed');
-    }
-    return res.json();
+  function showFeedback(el: HTMLElement, msg: string, type: 'success' | 'error') {
+    el.textContent = msg;
+    el.className = `feedback-msg feedback-msg--${type}`;
+    el.hidden = false;
+    setTimeout(() => { el.hidden = true; }, 3500);
   }
+
+  // ── Add Product form toggle ────────────────────────────────────────────────
+
+  const addFormEl = document.getElementById('add-product-form') as HTMLDivElement;
+  document.getElementById('toggle-add-form')?.addEventListener('click', () => {
+    addFormEl.hidden = !addFormEl.hidden;
+  });
+  document.getElementById('cancel-add-form')?.addEventListener('click', () => {
+    addFormEl.hidden = true;
+  });
+
+  document.getElementById('submit-add-product')?.addEventListener('click', async () => {
+    const nameEl      = document.getElementById('new-name')      as HTMLInputElement;
+    const categoryEl  = document.getElementById('new-category')  as HTMLInputElement;
+    const gdIdEl      = document.getElementById('new-gd-id')     as HTMLInputElement;
+    const wholesaleEl = document.getElementById('new-wholesale')  as HTMLInputElement;
+    const retailEl    = document.getElementById('new-retail')    as HTMLInputElement;
+    const billingEl   = document.getElementById('new-billing')   as HTMLSelectElement;
+    const feedback    = document.getElementById('add-feedback')  as HTMLSpanElement;
+    const btn         = document.getElementById('submit-add-product') as HTMLButtonElement;
+
+    const name     = nameEl.value.trim();
+    const category = categoryEl.value.trim();
+
+    if (!name || !category) {
+      showFeedback(feedback, 'Name and Category are required.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          category,
+          godaddy_product_id: gdIdEl.value.trim() || null,
+          wholesale_price_cents: parseInt(wholesaleEl.value || '0', 10),
+          retail_price_cents:    parseInt(retailEl.value    || '0', 10),
+          billing_period: billingEl.value || null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Create failed');
+      showToast(`Product "${json.data.product.name}" created`);
+      addFormEl.hidden = true;
+      // Reload to show the new row
+      window.location.reload();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Create failed';
+      showFeedback(feedback, msg, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Create Product';
+    }
+  });
+
+  // ── Per-row edit / deactivate ──────────────────────────────────────────────
 
   document.querySelectorAll<HTMLTableRowElement>('.product-row').forEach(row => {
     const id = row.dataset.id!;
-    const retailSpan = row.querySelector<HTMLSpanElement>('.retail-price')!;
-    const saveBtn = row.querySelector<HTMLButtonElement>('.save-price-btn')!;
-    const cancelBtn = row.querySelector<HTMLButtonElement>('.cancel-price-btn')!;
-    const toggleBtn = row.querySelector<HTMLButtonElement>('.toggle-btn')!;
-    const markupBadge = row.querySelector<HTMLSpanElement>('.markup-badge')!;
+    const editRow = document.querySelector<HTMLTableRowElement>(`tr[data-edit-for="${id}"]`);
 
-    // Show save/cancel when editing price
-    retailSpan.addEventListener('focus', () => {
-      saveBtn.hidden = false;
-      cancelBtn.hidden = false;
+    // Toggle edit row
+    row.querySelector('.edit-btn')?.addEventListener('click', () => {
+      if (!editRow) return;
+      editRow.hidden = !editRow.hidden;
     });
 
-    cancelBtn.addEventListener('click', () => {
-      retailSpan.textContent = `$${retailSpan.dataset.original}`;
-      saveBtn.hidden = true;
-      cancelBtn.hidden = true;
-      retailSpan.blur();
+    editRow?.querySelector('.cancel-edit-btn')?.addEventListener('click', () => {
+      if (editRow) editRow.hidden = true;
     });
 
-    saveBtn.addEventListener('click', async () => {
-      const raw = retailSpan.textContent?.replace(/[$,]/g, '').trim() ?? '';
-      const dollars = parseFloat(raw);
-      if (isNaN(dollars) || dollars < 0) {
-        showToast('Invalid price — enter a number like 12.99', 'error');
-        return;
-      }
+    // Save edits via PUT
+    editRow?.querySelector('.save-edit-btn')?.addEventListener('click', async () => {
+      const nameInput    = editRow.querySelector<HTMLInputElement>('.edit-name')!;
+      const retailInput  = editRow.querySelector<HTMLInputElement>('.edit-retail')!;
+      const billingInput = editRow.querySelector<HTMLSelectElement>('.edit-billing')!;
+      const activeInput  = editRow.querySelector<HTMLInputElement>('.edit-active')!;
+      const feedback     = editRow.querySelector<HTMLSpanElement>('.edit-feedback')!;
+      const saveBtn      = editRow.querySelector<HTMLButtonElement>('.save-edit-btn')!;
 
-      const cents = Math.round(dollars * 100);
       saveBtn.disabled = true;
-      saveBtn.textContent = '…';
+      saveBtn.textContent = 'Saving…';
 
       try {
-        const json = await patchProduct(id, { retail_price: cents });
+        const res = await fetch(`/api/admin/products/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: nameInput.value.trim(),
+            retail_price_cents: parseInt(retailInput.value || '0', 10),
+            billing_period: billingInput.value || null,
+            active: activeInput.checked,
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? 'Update failed');
+
         const updated = json.data.product;
 
-        retailSpan.dataset.original = updated.retailPriceUSD;
-        retailSpan.textContent = `$${updated.retailPriceUSD}`;
+        // Reflect changes in the display row
+        row.querySelector('.product-name')!.textContent = updated.name;
+        row.querySelector<HTMLSpanElement>('.retail-display')!.textContent = `$${updated.retailPriceUSD}`;
+        const markupBadge = row.querySelector<HTMLSpanElement>('.markup-badge')!;
         markupBadge.textContent = `${updated.markupPct}%`;
-        showToast(`Price updated to $${updated.retailPriceUSD}`);
+        markupBadge.className = `db-badge ${updated.markupPct >= 150 ? 'db-badge--active' : updated.markupPct >= 100 ? 'db-badge--pending' : 'db-badge--expiring'} markup-badge`;
+        row.querySelector<HTMLSpanElement>('.billing-display')!.textContent = updated.billing_period ?? '—';
+        const statusBadge = row.querySelector<HTMLSpanElement>('.status-badge')!;
+        statusBadge.textContent = updated.active ? 'Active' : 'Inactive';
+        statusBadge.className = `db-badge ${updated.active ? 'db-badge--active' : 'db-badge--expiring'} status-badge`;
+
+        showToast(`${updated.name} updated`);
+        editRow!.hidden = true;
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Update failed';
-        showToast(msg, 'error');
-        retailSpan.textContent = `$${retailSpan.dataset.original}`;
+        showFeedback(feedback, msg, 'error');
       } finally {
         saveBtn.disabled = false;
-        saveBtn.textContent = 'Save';
-        saveBtn.hidden = true;
-        cancelBtn.hidden = true;
+        saveBtn.textContent = 'Save Changes';
       }
     });
 
-    // Handle Enter/Escape in editable span
-    retailSpan.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); saveBtn.click(); }
-      if (e.key === 'Escape') { cancelBtn.click(); }
-    });
+    // Deactivate via DELETE (soft delete)
+    row.querySelector('.deactivate-btn')?.addEventListener('click', async () => {
+      const deactivateBtn = row.querySelector<HTMLButtonElement>('.deactivate-btn')!;
+      if (!confirm(`Deactivate this product? It will be hidden from the catalog.`)) return;
 
-    // Toggle active/inactive
-    let isActive = row.dataset.active === 'true';
-
-    toggleBtn.addEventListener('click', async () => {
-      toggleBtn.disabled = true;
-      const next = !isActive;
+      deactivateBtn.disabled = true;
+      deactivateBtn.textContent = '…';
 
       try {
-        const json = await patchProduct(id, { active: next });
-        const updated = json.data.product;
+        const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? 'Deactivate failed');
 
-        isActive = updated.active;
-        row.dataset.active = String(isActive);
-        toggleBtn.textContent = isActive ? 'Active' : 'Inactive';
-        toggleBtn.className = `db-btn db-btn--sm ${isActive ? 'db-btn--danger' : 'db-btn--secondary'} toggle-btn`;
-        showToast(`Product ${isActive ? 'activated' : 'deactivated'}`);
+        const statusBadge = row.querySelector<HTMLSpanElement>('.status-badge')!;
+        statusBadge.textContent = 'Inactive';
+        statusBadge.className = 'db-badge db-badge--expiring status-badge';
+        deactivateBtn.hidden = true;
+        showToast('Product deactivated');
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Toggle failed';
+        const msg = err instanceof Error ? err.message : 'Deactivate failed';
         showToast(msg, 'error');
       } finally {
-        toggleBtn.disabled = false;
+        deactivateBtn.disabled = false;
+        deactivateBtn.textContent = 'Deactivate';
       }
     });
   });
@@ -295,39 +412,97 @@ const sortedCategories = [
     color: var(--db-text-primary);
   }
 
-  /* Inline retail price editing */
-  .retail-cell {
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── Add / inline edit forms ── */
+  .add-form {
+    margin-top: 1rem;
+    padding: 1.25rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field-group--checkbox {
+    justify-content: flex-end;
+    padding-bottom: 4px;
+  }
+
+  .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-  }
-
-  .retail-price {
-    font-family: var(--db-font-mono);
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--db-text-primary);
-    border-radius: var(--db-radius-sm);
-    padding: 2px 6px;
+    gap: 6px;
     cursor: pointer;
-    border: 1px solid transparent;
+    font-size: 0.875rem;
+    color: var(--db-text-secondary);
+    user-select: none;
+  }
+
+  .field-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--db-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .db-input {
+    background: var(--db-bg-input);
+    border: 1px solid var(--db-border-input);
+    border-radius: var(--db-radius-sm);
+    color: var(--db-text-primary);
+    font-size: 0.875rem;
+    padding: 0.4rem 0.625rem;
     outline: none;
-    min-width: 60px;
-    transition: border-color 0.12s ease, background 0.12s ease;
+    transition: border-color 0.12s ease;
   }
 
-  .retail-price:hover {
-    border-color: var(--db-border-input);
-    background: var(--db-bg-input);
-  }
-
-  .retail-price:focus {
+  .db-input:focus {
     border-color: var(--db-violet);
-    background: var(--db-bg-input);
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
   }
 
-  /* Toast notification */
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .inline-edit-form {
+    padding: 1rem 1.25rem;
+    background: var(--db-bg-card-alt, rgba(255,255,255,0.03));
+    border-top: 1px solid var(--db-border);
+    border-bottom: 1px solid var(--db-border);
+  }
+
+  .feedback-msg {
+    font-size: 0.8125rem;
+  }
+
+  .feedback-msg--success {
+    color: var(--db-status-active);
+  }
+
+  .feedback-msg--error {
+    color: var(--db-status-danger);
+  }
+
+  /* Toast */
   .save-toast {
     position: fixed;
     bottom: 1.5rem;
@@ -351,18 +526,4 @@ const sortedCategories = [
     border: 1px solid var(--db-status-danger);
     color: var(--db-status-danger);
   }
-
-  .support-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  .support-link {
-    color: var(--db-violet-light);
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .support-link:hover { text-decoration: underline; }
 </style>
