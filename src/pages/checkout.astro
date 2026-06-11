@@ -1,0 +1,285 @@
+---
+export const prerender = false;
+
+import WildLayout from '../layouts/WildLayout.astro';
+import { buildCartSummary } from '../lib/cart/index.js';
+import { getCartSession } from '../lib/cart/cookie.js';
+
+const sessionId = getCartSession(Astro.request);
+let items: { id: number; name: string; retail_price_cents: number; quantity: number }[] = [];
+let subtotalCents = 0;
+
+if (sessionId) {
+  const summary = await buildCartSummary(sessionId);
+  items = summary.items;
+  subtotalCents = summary.subtotalCents;
+}
+
+const subtotalUSD = (subtotalCents / 100).toFixed(2);
+const clientId = import.meta.env.PAYPAL_CLIENT_ID ?? '';
+const paypalEnv = import.meta.env.PAYPAL_ENV ?? 'sandbox';
+---
+
+<WildLayout title="Checkout — FAMtastic Hosting" description="Complete your purchase securely.">
+  <main class="checkout-page">
+    <div class="checkout-container">
+      <h1 class="checkout-title">Checkout</h1>
+
+      {items.length === 0 ? (
+        <div class="checkout-empty">
+          <p>Your cart is empty.</p>
+          <a href="/hosting" class="btn-primary">Browse Hosting Plans</a>
+        </div>
+      ) : (
+        <div class="checkout-layout">
+          <!-- Order summary -->
+          <section class="order-summary" aria-label="Order summary">
+            <h2>Order Summary</h2>
+            <ul class="summary-items">
+              {items.map(item => (
+                <li class="summary-item">
+                  <span class="summary-item__name">{item.name}</span>
+                  {item.quantity > 1 && (
+                    <span class="summary-item__qty">×{item.quantity}</span>
+                  )}
+                  <span class="summary-item__price">
+                    ${((item.retail_price_cents * item.quantity) / 100).toFixed(2)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div class="summary-total">
+              <span>Total</span>
+              <strong>${subtotalUSD}</strong>
+            </div>
+          </section>
+
+          <!-- PayPal payment -->
+          <section class="payment-section" aria-label="Payment">
+            <h2>Pay with PayPal</h2>
+            <p class="payment-note">
+              You'll be redirected to PayPal to complete your payment securely.
+            </p>
+            <div id="paypal-button-container"></div>
+            <div id="checkout-status" class="checkout-status" hidden></div>
+          </section>
+        </div>
+      )}
+    </div>
+  </main>
+
+  {items.length > 0 && (
+    <script
+      is:inline
+      src={`https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD`}
+    ></script>
+  )}
+
+  {items.length > 0 && (
+    <script is:inline define:vars={{ subtotalUSD }}>
+      window.paypal.Buttons({
+        style: {
+          layout: 'vertical',
+          color:  'gold',
+          shape:  'rect',
+          label:  'paypal',
+        },
+
+        createOrder: async function () {
+          const res = await fetch('/api/checkout/create-order', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({}),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.paypalOrderId) {
+            showStatus('error', data.error || 'Could not start checkout. Please try again.');
+            throw new Error(data.error || 'create-order failed');
+          }
+          return data.paypalOrderId;
+        },
+
+        onApprove: async function (data) {
+          showStatus('info', 'Processing payment…');
+          const res = await fetch('/api/checkout/capture-order', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ paypalOrderId: data.orderID }),
+          });
+          const result = await res.json();
+          if (!res.ok || !result.success) {
+            showStatus('error', result.error || 'Payment failed. Contact support.');
+            return;
+          }
+          const qs = new URLSearchParams({
+            orderId:   result.orderId   || '',
+            amount:    result.amountCaptured || subtotalUSD,
+            paypal:    result.paypalOrderId || data.orderID,
+          });
+          window.location.href = '/order-confirmation?' + qs.toString();
+        },
+
+        onError: function (err) {
+          console.error('PayPal error:', err);
+          showStatus('error', 'PayPal encountered an error. Please try again.');
+        },
+
+        onCancel: function () {
+          showStatus('info', 'Payment cancelled. Your cart is still saved.');
+        },
+      }).render('#paypal-button-container');
+
+      function showStatus(type, message) {
+        var el = document.getElementById('checkout-status');
+        el.hidden = false;
+        el.className = 'checkout-status checkout-status--' + type;
+        el.textContent = message;
+      }
+    </script>
+  )}
+</WildLayout>
+
+<style>
+  .checkout-page {
+    min-height: 70vh;
+    padding: 4rem 1.5rem;
+    background: #07070f;
+  }
+
+  .checkout-container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .checkout-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin-bottom: 2rem;
+    letter-spacing: -0.02em;
+  }
+
+  .checkout-empty {
+    text-align: center;
+    padding: 4rem 0;
+    color: #8e8ea0;
+  }
+
+  .checkout-empty p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background: #7c3aed;
+    color: #fff;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  .btn-primary:hover { background: #6d28d9; }
+
+  .checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 640px) {
+    .checkout-layout { grid-template-columns: 1fr; }
+  }
+
+  .order-summary,
+  .payment-section {
+    background: #12121e;
+    border: 1px solid #1e1e2e;
+    border-radius: 12px;
+    padding: 1.75rem;
+  }
+
+  .order-summary h2,
+  .payment-section h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f5f5f7;
+    margin-bottom: 1.25rem;
+  }
+
+  .summary-items {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.25rem;
+  }
+
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #1e1e2e;
+    font-size: 0.9rem;
+  }
+
+  .summary-item:last-child { border-bottom: none; }
+
+  .summary-item__name {
+    flex: 1;
+    color: #c4c4d4;
+  }
+
+  .summary-item__qty {
+    color: #8e8ea0;
+    font-size: 0.8rem;
+  }
+
+  .summary-item__price {
+    font-weight: 600;
+    color: #f5f5f7;
+  }
+
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    font-size: 1rem;
+    color: #f5f5f7;
+    font-weight: 700;
+  }
+
+  .payment-note {
+    font-size: 0.85rem;
+    color: #8e8ea0;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+
+  #paypal-button-container {
+    min-height: 48px;
+  }
+
+  .checkout-status {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .checkout-status--error {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .checkout-status--info {
+    background: rgba(99, 102, 241, 0.12);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+  }
+</style>
