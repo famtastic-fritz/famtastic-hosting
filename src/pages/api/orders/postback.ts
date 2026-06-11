@@ -1,3 +1,5 @@
+export const prerender = false;
+
 /**
  * GoDaddy Order Postback Webhook Handler
  *

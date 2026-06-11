@@ -1,3 +1,5 @@
+export const prerender = false;
+
 /**
  * GET /api/customer/products
  * 

@@ -1,5 +1,5 @@
 # FAMtastic Hosting — Deploy State Capture
-**Updated:** 2026-06-10 (phases 1-8 complete)
+**Updated:** 2026-06-11 (cart + admin CMS + GoDaddy shopper stream deployed)
 
 ## What's DONE
 
@@ -38,16 +38,33 @@
 
 7. **Admin APIs LIVE**
    - `GET /api/admin/products` — full product catalog (wholesale + retail pricing)
+   - `POST /api/admin/products` — insert new product (godaddy_product_id, name, category, prices, billing_period)
    - `GET /api/admin/customers` — customer list with order count + total spend
    - `GET /api/admin/orders` — orders via GoDaddy API
    - `POST /api/orders/postback` — GoDaddy webhook receiver (validates secret, updates DB)
+   - Admin CMS product + content editor pages live (browser-facing UI not smoke-tested)
 
-8. **Admin user seeded**
+8. **Shopping cart LIVE** (guest session persistence)
+   - `GET /api/cart` — current cart (items, count, subtotalUSD) — returns `{"items":[],"count":0,"subtotalUSD":"$0.00"}` for new guest
+   - `POST /api/cart/add` — add item by product id + quantity
+   - `POST /api/cart/update` — update item quantity
+   - `POST /api/cart/clear` — empty the cart
+   - Guest session token via cookie; cart stored server-side
+   - `CartButton.svelte` + `CartDrawer.svelte` components wired into Nav
+   - Pricing pages (hosting, domains, servers, wordpress) have Add to Cart UI
+
+9. **GoDaddy shopper integration WIRED** (non-blocking)
+   - `POST /api/auth/register` now fires `createShopper(email)` after DB INSERT
+   - On success: `UPDATE users SET godaddy_shopper_id = ?` — links shopper to user
+   - On failure: logs warning, registration succeeds regardless
+   - GoDaddy order APIs (`src/lib/godaddy/orders.ts`) in place for provisioning hookup
+
+10. **Admin user seeded**
    - Email: `admin@famtastichosting.com`
    - Password: stored in cPanel MySQL (not in repo)
    - Role: `admin`
 
-9. **Node.js server**
+11. **Node.js server**
    - Binary: `/home/nineoo/.nvm/versions/node/v20.20.2/bin/node`
    - Serves from: `/home/nineoo/public_html/famtastichosting.com/site/dist/server/entry.mjs`
    - Port: 3001 (127.0.0.1 only, Apache proxies via proxy.php)
@@ -63,11 +80,14 @@
 ## Known Gaps / Not Yet Done
 
 - `godaddy_order_id` in orders is a placeholder `FAM-<uuid>` — real GoDaddy order creation not wired
-- `godaddy_shopper_id` on users is null — billing/domains/hosting return empty for all customers
-- GoDaddy API credentials (`GODADDY_API_KEY`, `GODADDY_API_SECRET`) not set on server env
+- `godaddy_shopper_id` on users: wiring is code-complete but GoDaddy API creds not on server — shopper creation will fail silently (non-blocking); billing/domains/hosting still return empty
+- **GoDaddy API credentials (`GODADDY_API_KEY`, `GODADDY_API_SECRET`) NOT set on server** — Fritz action required: add to start.sh or server env
+- PayPal webhook wiring not started — no payment provider connected to checkout
+- Stripe wiring not started
 - No email verification on register
-- No cron/supervisor for Node restart on crash (server requires manual restart)
-- Admin pages not tested in browser (only API tested)
+- No cron/supervisor for Node restart on crash — manual restart only (via start.sh)
+- Admin CMS pages not tested in browser (API tested; UI untested)
+- Cart checkout flow incomplete — cart accumulates items but no payment/order creation path from cart yet
 - Svelte dashboard components not tested with real auth in browser
 
 ## Key Technical Details
@@ -77,6 +97,12 @@
 - **Server dist path:** `/home/nineoo/public_html/famtastichosting.com/site/dist/`
 - **Build:** `npm run build` (local), then rsync `dist/` + patch `entry.mjs`
 - **Astro SSR note:** `entry.mjs` hardcodes build-machine absolute paths — must patch on every deploy
+
+## Smoke Tests (2026-06-11 — post cart+admin+GoDaddy deploy)
+
+- `GET https://famtastichosting.com/` — **200 OK**
+- `GET https://famtastichosting.com/api/cart` — **200 OK**, `{"items":[],"count":0,"subtotalUSD":"$0.00"}`
+- `GET https://famtastichosting.com/api/customer/products` — **302 → login** (correct: auth-gated)
 
 ## E2E Test Results (2026-06-10)
 

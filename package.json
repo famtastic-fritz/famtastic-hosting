@@ -14,9 +14,11 @@
     "astro": "^4.16.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
+    "cookie": "^1.1.1",
+    "dotenv": "^17.4.2",
     "express-mysql-session": "^3.0.0",
     "express-session": "^1.18.0",
-    "mysql2": "^3.9.0",
+    "mysql2": "^3.22.5",
     "svelte": "^4.2.20",
     "typescript": "^5.9.3"
   }

@@ -6,7 +6,7 @@
  *   verifyPassword(plain, hash) — constant-time comparison
  */
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const BCRYPT_COST = 10;
 

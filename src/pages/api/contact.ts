@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { pool } from '../../lib/db/pool.js';
 
+export const prerender = false;
+
 // ─── Rate limiting ────────────────────────────────────────────────────────────
 // In-memory store. Capped at MAX_ENTRIES to prevent unbounded memory growth.
 // Oldest entries are evicted when the cap is hit.

@@ -13,7 +13,7 @@ export default defineConfig({
   vite: {
     build: {
       rollupOptions: {
-        external: ['bcryptjs'],
+        external: [],
       },
     },
   },
