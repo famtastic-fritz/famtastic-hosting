@@ -19,6 +19,7 @@
 
 import type { APIRoute } from 'astro';
 import { pool } from '../../../../lib/db/pool.js';
+import { verifyPassword } from '../../../../lib/auth/password.js';
 import {
   hashRateLimit,
   clearRateLimit,
@@ -81,8 +82,7 @@ export const POST: APIRoute = async ({ request }) => {
   const user = rows[0];
 
   // ── Verify password (bcrypt) ──────────────────────────────────────────────
-  const bcrypt = await import('bcryptjs');
-  const passwordMatch = await bcrypt.compare(password, user.password_hash);
+  const passwordMatch = await verifyPassword(password, user.password_hash);
 
   if (!passwordMatch) {
     return json(
@@ -100,16 +100,12 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // ── Create session ───────────────────────────────────────────────────────
-  const sessionId = crypto.randomUUID();
-  const sessionToken = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
+  const sessionToken = crypto.randomBytes(64).toString('hex');
+  const expiresUnix = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
 
   await pool.execute(
-    'INSERT INTO sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
-    [sessionId, user.id, sessionToken, expiresAt]
+    'INSERT INTO sessions (session_id, expires, data) VALUES (?, ?, ?)',
+    [sessionToken, expiresUnix, JSON.stringify({ user_id: parseInt(user.id, 10) })]
   );
 
   // ── Clear rate limit on success ───────────────────────────────────────────
