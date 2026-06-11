@@ -19,6 +19,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/'
     {links.map(l => (
       <a href={l.href} class={`nav-link${currentPath === l.href ? ' nav-link--active' : ''}`}>{l.label}</a>
     ))}
+    <a href="/dashboard/login" class="nav-link nav-link--account">Sign In</a>
     <a href="/contact" class="nav-cta">Talk to a Human</a>
     <CartButton client:load />
   </div>
@@ -26,6 +27,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/'
 </nav>
 <div class="mobile-nav" id="mobileNav">
   {links.map(l => <a href={l.href} class="nav-link">{l.label}</a>)}
+  <a href="/dashboard/login" class="nav-link">Sign In</a>
   <a href="/contact" class="nav-cta" style="margin-top:0.5rem;display:inline-block;">Talk to a Human</a>
 </div>
 <script>
