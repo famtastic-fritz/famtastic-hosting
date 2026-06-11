@@ -12,6 +12,7 @@ interface Props {
   ctaHref?: string
   featured?: boolean
   position?: 'left' | 'center' | 'right'
+  productId?: number
 }
 const {
   name, price, period = '/mo',
@@ -19,7 +20,8 @@ const {
   badge, tagline, features,
   ctaText, ctaHref = 'mailto:hello@famtastichosting.com',
   featured = false,
-  position = 'center'
+  position = 'center',
+  productId,
 } = Astro.props
 const posClass = { left: 'plan-card--left', center: 'plan-card--center', right: 'plan-card--right' }[position]
 ---
@@ -40,4 +42,48 @@ const posClass = { left: 'plan-card--left', center: 'plan-card--center', right: 
     {features.map(f => <li><span class="feat-dot"></span>{f}</li>)}
   </ul>
   <a href={ctaHref} class="plan-cta">{ctaText}</a>
+  {productId && (
+    <button
+      class="plan-add-to-cart"
+      data-product-id={productId}
+      type="button"
+    >
+      + Add to Cart
+    </button>
+  )}
 </div>
+
+{productId && (
+  <script>
+    document.querySelectorAll('.plan-add-to-cart').forEach(btn => {
+      btn.addEventListener('click', async function(this: HTMLButtonElement) {
+        const productId = Number(this.dataset.productId);
+        if (!productId) return;
+        this.disabled = true;
+        this.textContent = 'Adding…';
+        try {
+          const res = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, quantity: 1 }),
+          });
+          if (res.ok) {
+            this.textContent = '✓ Added!';
+            // Dispatch event so CartButton badge can update
+            window.dispatchEvent(new CustomEvent('fam:cart:updated'));
+            setTimeout(() => {
+              this.textContent = '+ Add to Cart';
+              this.disabled = false;
+            }, 2000);
+          } else {
+            this.textContent = 'Error — try again';
+            this.disabled = false;
+          }
+        } catch {
+          this.textContent = 'Error — try again';
+          this.disabled = false;
+        }
+      });
+    });
+  </script>
+)}

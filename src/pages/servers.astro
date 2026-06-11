@@ -159,6 +159,7 @@ import { getStorefrontURL } from '../lib/storefront'
             <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ 24/7 white-label support</li>
           </ul>
           <a href={getStorefrontURL('servers-launch')} style="margin-top:auto;font-family:var(--font-term);border:1px solid var(--green);color:var(--green);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">./launch --plan=launch</a>
+          <button class="srv-add-to-cart" data-product-id="7" type="button" style="font-family:var(--font-term);background:none;border:1px solid rgba(0,255,65,0.3);color:rgba(0,255,65,0.6);padding:0.6rem 1.5rem;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;text-align:center;width:100%;transition:all 0.15s;">+ Add to Cart</button>
         </div>
 
         <!-- Expand plan (highlighted) -->
@@ -178,6 +179,7 @@ import { getStorefrontURL } from '../lib/storefront'
             <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Priority white-label support</li>
           </ul>
           <a href={getStorefrontURL('servers-expand')} style="margin-top:auto;font-family:var(--font-term);background:var(--green);color:var(--black);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">./launch --plan=expand</a>
+          <button class="srv-add-to-cart" data-product-id="8" type="button" style="font-family:var(--font-term);background:none;border:1px solid rgba(0,255,65,0.5);color:rgba(0,255,65,0.8);padding:0.6rem 1.5rem;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;text-align:center;width:100%;transition:all 0.15s;">+ Add to Cart</button>
         </div>
 
       </div>
@@ -242,5 +244,38 @@ import { getStorefrontURL } from '../lib/storefront'
     </div>
     <a href="https://famtasticthoughts.com" style="font-family:var(--font-term);font-size:0.72rem;color:var(--green);border:1px solid var(--green);padding:0.6rem 1.5rem;letter-spacing:0.06em;white-space:nowrap;display:inline-block;" rel="noopener">Read FAMtastic Thoughts →</a>
   </div>
+
+
+  <script>
+    document.querySelectorAll('.srv-add-to-cart').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const productId = Number(this.dataset.productId);
+        if (!productId) return;
+        this.disabled = true;
+        this.textContent = 'Adding…';
+        try {
+          const res = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, quantity: 1 }),
+          });
+          if (res.ok) {
+            this.textContent = '✓ Added!';
+            window.dispatchEvent(new CustomEvent('fam:cart:updated'));
+            setTimeout(() => {
+              this.textContent = '+ Add to Cart';
+              this.disabled = false;
+            }, 2000);
+          } else {
+            this.textContent = 'Error — try again';
+            this.disabled = false;
+          }
+        } catch {
+          this.textContent = 'Error — try again';
+          this.disabled = false;
+        }
+      });
+    });
+  </script>
 
 </ExtremeLayout>
