@@ -98,21 +98,25 @@ import { getStorefrontURL } from '../lib/storefront'
         <div class="tld-ext">.com</div>
         <div class="tld-price">$20/yr</div>
         <div class="tld-desc">The standard. Most recognized domain extension.</div>
+        <button class="dom-add-to-cart" data-product-id="9" type="button">+ Add to Cart</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.net</div>
         <div class="tld-price">$25/yr</div>
         <div class="tld-desc">For networks, tech projects, and infrastructure.</div>
+        <button class="dom-add-to-cart" data-product-id="10" type="button">+ Add to Cart</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.org</div>
         <div class="tld-price">$22/yr</div>
         <div class="tld-desc">Non-profits, communities, and purpose-driven brands.</div>
+        <button class="dom-add-to-cart" data-product-id="11" type="button">+ Add to Cart</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.co</div>
         <div class="tld-price">$35/yr</div>
         <div class="tld-desc">Short, brandable. Popular startup alternative to .com.</div>
+        <button class="dom-add-to-cart" data-product-id="12" type="button">+ Add to Cart</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.info</div>
@@ -304,6 +308,38 @@ import { getStorefrontURL } from '../lib/storefront'
     cta="Read FAMtastic Thoughts"
     href="https://famtasticthoughts.com"
   />
+
+  <script>
+    document.querySelectorAll('.dom-add-to-cart').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const productId = Number(this.dataset.productId);
+        if (!productId) return;
+        this.disabled = true;
+        this.textContent = 'Adding…';
+        try {
+          const res = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, quantity: 1 }),
+          });
+          if (res.ok) {
+            this.textContent = '✓ Added!';
+            window.dispatchEvent(new CustomEvent('fam:cart:updated'));
+            setTimeout(() => {
+              this.textContent = '+ Add to Cart';
+              this.disabled = false;
+            }, 2000);
+          } else {
+            this.textContent = 'Error — retry';
+            this.disabled = false;
+          }
+        } catch {
+          this.textContent = 'Error — retry';
+          this.disabled = false;
+        }
+      });
+    });
+  </script>
 
 </WildLayout>
 
@@ -529,5 +565,30 @@ import { getStorefrontURL } from '../lib/storefront'
     .email-callout-section {
       padding: 3rem 1.25rem;
     }
+  }
+
+  /* ── Add-to-Cart buttons on TLD cards ─────────────────────── */
+  .dom-add-to-cart {
+    margin-top: 0.75rem;
+    width: 100%;
+    background: none;
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    color: rgba(124, 58, 237, 0.8);
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .dom-add-to-cart:hover:not(:disabled) {
+    border-color: var(--violet);
+    color: var(--violet);
+    background: rgba(124, 58, 237, 0.06);
+  }
+  .dom-add-to-cart:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
 </style>

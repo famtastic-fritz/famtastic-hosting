@@ -1,4 +1,6 @@
 ---
+import CartButton from './CartButton.svelte'
+
 const links = [
   { label: 'WordPress', href: '/wordpress' },
   { label: 'Hosting', href: '/hosting' },
@@ -18,6 +20,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/'
       <a href={l.href} class={`nav-link${currentPath === l.href ? ' nav-link--active' : ''}`}>{l.label}</a>
     ))}
     <a href="/contact" class="nav-cta">Talk to a Human</a>
+    <CartButton client:load />
   </div>
   <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
 </nav>

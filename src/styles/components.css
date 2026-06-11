@@ -109,3 +109,29 @@
   .product-grid { grid-template-columns: 1fr; }
   .tld-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ─── ADD-TO-CART BUTTON (plan cards) ───────────────────────── */
+.plan-add-to-cart {
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  background: none;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  color: rgba(124, 58, 237, 0.8);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.plan-add-to-cart:hover:not(:disabled) {
+  border-color: var(--violet);
+  color: var(--violet);
+  background: rgba(124, 58, 237, 0.06);
+}
+.plan-add-to-cart:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
