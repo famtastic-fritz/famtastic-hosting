@@ -24,9 +24,9 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     const [products] = await pool.execute<
-      Array<{ id: string; name: string; category: string; godaddy_product_id: string | null; wholesale_price: number; retail_price: number; markup_pct: number; active: number; billing_period: string | null; created_at: string; updated_at: string }>
+      Array<{ id: string; name: string; category: string; godaddy_product_id: string | null; wholesale_price_cents: number; retail_price_cents: number; markup_pct: number; active: number; billing_period: string | null; created_at: string; updated_at: string }>
     >(
-      'SELECT id, name, category, godaddy_product_id, wholesale_price, retail_price, markup_pct, active, billing_period, created_at, updated_at FROM products ORDER BY category ASC, name ASC'
+      'SELECT id, name, category, godaddy_product_id, wholesale_price_cents, retail_price_cents, markup_pct, active, billing_period, created_at, updated_at FROM products ORDER BY category ASC, name ASC'
     );
 
     return apiOk({
@@ -35,8 +35,8 @@ export const GET: APIRoute = async ({ request }) => {
         name: p.name,
         category: p.category,
         godaddy_product_id: p.godaddy_product_id,
-        wholesalePriceUSD: (p.wholesale_price / 100).toFixed(2),
-        retailPriceUSD: (p.retail_price / 100).toFixed(2),
+        wholesalePriceUSD: (p.wholesale_price_cents / 100).toFixed(2),
+        retailPriceUSD: (p.retail_price_cents / 100).toFixed(2),
         markupPct: p.markup_pct,
         active: !!p.active,
         billing_period: p.billing_period ?? null,
@@ -92,7 +92,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const [result] = await pool.execute(
       `INSERT INTO products
-         (godaddy_product_id, name, category, wholesale_price, retail_price, markup_pct, billing_period, active)
+         (godaddy_product_id, name, category, wholesale_price_cents, retail_price_cents, markup_pct, billing_period, active)
        VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
       [godaddyProductId, name, category, wholesaleCents, retailCents, markupPct, billingPeriod]
     );
@@ -100,9 +100,9 @@ export const POST: APIRoute = async ({ request }) => {
     const insertResult = result as { insertId: number };
 
     const [rows] = await pool.execute<
-      Array<{ id: string; name: string; category: string; godaddy_product_id: string | null; wholesale_price: number; retail_price: number; markup_pct: number; active: number; billing_period: string | null; created_at: string; updated_at: string }>
+      Array<{ id: string; name: string; category: string; godaddy_product_id: string | null; wholesale_price_cents: number; retail_price_cents: number; markup_pct: number; active: number; billing_period: string | null; created_at: string; updated_at: string }>
     >(
-      'SELECT id, name, category, godaddy_product_id, wholesale_price, retail_price, markup_pct, active, billing_period, created_at, updated_at FROM products WHERE id = ?',
+      'SELECT id, name, category, godaddy_product_id, wholesale_price_cents, retail_price_cents, markup_pct, active, billing_period, created_at, updated_at FROM products WHERE id = ?',
       [insertResult.insertId]
     );
 
@@ -118,8 +118,8 @@ export const POST: APIRoute = async ({ request }) => {
           name: p.name,
           category: p.category,
           godaddy_product_id: p.godaddy_product_id,
-          wholesalePriceUSD: (p.wholesale_price / 100).toFixed(2),
-          retailPriceUSD: (p.retail_price / 100).toFixed(2),
+          wholesalePriceUSD: (p.wholesale_price_cents / 100).toFixed(2),
+          retailPriceUSD: (p.retail_price_cents / 100).toFixed(2),
           markupPct: p.markup_pct,
           active: !!p.active,
           billing_period: p.billing_period,

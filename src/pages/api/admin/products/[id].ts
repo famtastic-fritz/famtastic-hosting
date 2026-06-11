@@ -32,15 +32,15 @@ async function fetchProduct(id: string) {
       id: string;
       name: string;
       category: string;
-      wholesale_price: number;
-      retail_price: number;
+      wholesale_price_cents: number;
+      retail_price_cents: number;
       markup_pct: number;
       active: number;
       billing_period: string | null;
       updated_at: string;
     }>
   >(
-    'SELECT id, name, category, wholesale_price, retail_price, markup_pct, active, billing_period, updated_at FROM products WHERE id = ?',
+    'SELECT id, name, category, wholesale_price_cents, retail_price_cents, markup_pct, active, billing_period, updated_at FROM products WHERE id = ?',
     [id]
   );
   if (rows.length === 0) return null;
@@ -49,8 +49,8 @@ async function fetchProduct(id: string) {
     id: p.id,
     name: p.name,
     category: p.category,
-    wholesalePriceUSD: (p.wholesale_price / 100).toFixed(2),
-    retailPriceUSD: (p.retail_price / 100).toFixed(2),
+    wholesalePriceUSD: (p.wholesale_price_cents / 100).toFixed(2),
+    retailPriceUSD: (p.retail_price_cents / 100).toFixed(2),
     markupPct: p.markup_pct,
     active: !!p.active,
     billing_period: p.billing_period,
@@ -85,21 +85,21 @@ export const PATCH: APIRoute = async ({ request, params }) => {
     updates.active = body.active;
   }
 
-  if ('retail_price' in body) {
-    const rp = Number(body.retail_price);
+  if ('retail_price_cents' in body) {
+    const rp = Number(body.retail_price_cents);
     if (!Number.isInteger(rp) || rp < 0) {
-      return apiError('retail_price must be a non-negative integer (cents).', 'INVALID_FIELD', 400);
+      return apiError('retail_price_cents must be a non-negative integer.', 'INVALID_FIELD', 400);
     }
-    updates.retail_price = rp;
+    updates.retail_price_cents = rp;
 
-    const [currentRows] = await pool.execute<Array<{ wholesale_price: number }>>(
-      'SELECT wholesale_price FROM products WHERE id = ?',
+    const [currentRows] = await pool.execute<Array<{ wholesale_price_cents: number }>>(
+      'SELECT wholesale_price_cents FROM products WHERE id = ?',
       [id]
     );
     if (currentRows.length === 0) {
       return apiError('Product not found.', 'NOT_FOUND', 404);
     }
-    const wholesale = currentRows[0].wholesale_price;
+    const wholesale = currentRows[0].wholesale_price_cents;
     updates.markup_pct = wholesale > 0 ? Math.round((rp / wholesale) * 100) : 0;
   }
 
@@ -156,16 +156,16 @@ export const PUT: APIRoute = async ({ request, params }) => {
     if (!Number.isInteger(rp) || rp < 0) {
       return apiError('retail_price_cents must be a non-negative integer.', 'INVALID_FIELD', 400);
     }
-    updates.retail_price = rp;
+    updates.retail_price_cents = rp;
 
-    const [currentRows] = await pool.execute<Array<{ wholesale_price: number }>>(
-      'SELECT wholesale_price FROM products WHERE id = ?',
+    const [currentRows] = await pool.execute<Array<{ wholesale_price_cents: number }>>(
+      'SELECT wholesale_price_cents FROM products WHERE id = ?',
       [id]
     );
     if (currentRows.length === 0) {
       return apiError('Product not found.', 'NOT_FOUND', 404);
     }
-    const wholesale = currentRows[0].wholesale_price;
+    const wholesale = currentRows[0].wholesale_price_cents;
     updates.markup_pct = wholesale > 0 ? Math.round((rp / wholesale) * 100) : 0;
   }
 
