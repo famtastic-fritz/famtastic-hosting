@@ -178,6 +178,66 @@ export async function getRevenueStats(
   };
 }
 
+// ─── Create Order ─────────────────────────────────────────────────────────────
+
+export interface OrderItem {
+  /** GoDaddy numeric product ID */
+  productId: number;
+  /** Number of units to purchase */
+  quantity: number;
+}
+
+interface CreateOrderResponse {
+  orderId: string | number;
+}
+
+/**
+ * Create a new order on GoDaddy under the specified shopper sub-account.
+ *
+ * @param shopperId  The GoDaddy shopperId to bill the order to.
+ * @param items      Array of { productId, quantity } pairs.
+ * @returns          The orderId as a string on success, or null on any failure.
+ *
+ * This function NEVER throws — errors are logged and null is returned so the
+ * caller can handle partial failures gracefully.
+ */
+export async function createGoDaddyOrder(
+  shopperId: string,
+  items: OrderItem[]
+): Promise<string | null> {
+  try {
+    const response = await godaddyFetch<CreateOrderResponse>('/orders', {
+      method: 'POST',
+      body: {
+        shopperId,
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      },
+    });
+
+    const orderId = response?.orderId;
+
+    if (orderId === undefined || orderId === null) {
+      console.error('[orders] createGoDaddyOrder: response missing orderId', {
+        shopperId,
+        response,
+      });
+      return null;
+    }
+
+    return String(orderId);
+  } catch (err) {
+    console.error('[orders] createGoDaddyOrder failed:', {
+      shopperId,
+      itemCount: items.length,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
+}
+
 // ─── Normalization ────────────────────────────────────────────────────────────
 
 /**
