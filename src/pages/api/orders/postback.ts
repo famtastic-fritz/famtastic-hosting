@@ -162,16 +162,15 @@ export const POST: APIRoute = async ({ request }) => {
       }
 
       // Update the existing, verified order row
-      const provisionedAt = internalStatus === 'active' ? timestamp.slice(0, 19).replace('T', ' ') : null;
       const updatedAt = timestamp.slice(0, 19).replace('T', ' ');
 
       await pool.execute(
-        'UPDATE orders SET status = ?, provisioning_status = ?, provisioned_at = COALESCE(?, provisioned_at), updated_at = ?, raw_postback = ? WHERE godaddy_order_id = ?',
-        [internalStatus, payload.status ?? null, provisionedAt, updatedAt, JSON.stringify(payload), payload.orderId]
+        'UPDATE orders SET status = ?, updated_at = ? WHERE godaddy_order_id = ?',
+        [internalStatus, updatedAt, payload.orderId]
       );
 
       console.log(
-        `[postback] Order ${payload.orderId} updated to: ${internalStatus}`
+        `[postback] Order ${payload.orderId} → ${internalStatus} (GoDaddy: ${payload.status ?? 'unknown'})`
       );
     } catch (dbError) {
       console.error('[postback] Database error:', dbError);
