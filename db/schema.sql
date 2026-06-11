@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `products` (
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `orders` (
   `id`                INT AUTO_INCREMENT PRIMARY KEY,
-  `user_id`           INT NOT NULL,
+  `user_id`           INT DEFAULT NULL COMMENT 'NULL = guest checkout (no account required)',
   `product_id`        INT DEFAULT NULL,
   `godaddy_order_id`  VARCHAR(64) NOT NULL,
   `status`            ENUM('pending','active','cancelled','expired','processing','failed') NOT NULL DEFAULT 'pending',
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   KEY `idx_orders_user_id` (`user_id`),
   KEY `idx_orders_status` (`status`),
   KEY `idx_orders_created_at` (`created_at`),
-  CONSTRAINT `fk_orders_user_id`    FOREIGN KEY (`user_id`)    REFERENCES `users`    (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_orders_user_id`    FOREIGN KEY (`user_id`)    REFERENCES `users`    (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_orders_product_id` FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -193,5 +193,72 @@ CREATE TABLE IF NOT EXISTS `godaddy_available_reports` (
   `generated_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY `idx_godaddy_reports_type_period` (`report_type`, `period_start`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- cart_items
+-- Session-keyed shopping cart. product_id FK → products.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cart_items` (
+  `id`          INT AUTO_INCREMENT PRIMARY KEY,
+  `session_id`  VARCHAR(128) NOT NULL,
+  `product_id`  INT NOT NULL,
+  `quantity`    INT NOT NULL DEFAULT 1,
+  `user_id`     INT DEFAULT NULL,
+  `created_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_cart_session_product` (`session_id`, `product_id`),
+  KEY `idx_cart_items_session_id` (`session_id`),
+  KEY `idx_cart_items_user_id` (`user_id`),
+  CONSTRAINT `fk_cart_items_product_id` FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cart_items_user_id`    FOREIGN KEY (`user_id`)    REFERENCES `users`(`id`)    ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- checkout_snapshots
+-- Locks cart state at PayPal order creation time to prevent TOCTOU attacks.
+-- status: pending → captured (after successful PayPal capture).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `checkout_snapshots` (
+  `id`              INT AUTO_INCREMENT PRIMARY KEY,
+  `paypal_order_id` VARCHAR(64) NOT NULL,
+  `session_id`      VARCHAR(128) NOT NULL,
+  `subtotal_cents`  INT NOT NULL,
+  `items_json`      JSON NOT NULL,
+  `status`          ENUM('pending','captured','expired') NOT NULL DEFAULT 'pending',
+  `created_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_checkout_snapshots_paypal_order_id` (`paypal_order_id`),
+  KEY `idx_checkout_snapshots_session_id` (`session_id`),
+  KEY `idx_checkout_snapshots_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- orphan_payments
+-- Safety net: if DB write fails after a successful PayPal capture, this table
+-- holds the payment record so no money is silently lost. Admin resolves manually.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `orphan_payments` (
+  `id`                INT AUTO_INCREMENT PRIMARY KEY,
+  `paypal_order_id`   VARCHAR(64) NOT NULL,
+  `session_id`        VARCHAR(128) DEFAULT NULL,
+  `amount_captured`   DECIMAL(10,2) NOT NULL,
+  `payer_email`       VARCHAR(255) DEFAULT NULL,
+  `items_json`        JSON DEFAULT NULL,
+  `error_msg`         TEXT DEFAULT NULL,
+  `resolved`          BOOLEAN NOT NULL DEFAULT FALSE,
+  `created_at`        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_orphan_payments_paypal_order_id` (`paypal_order_id`),
+  KEY `idx_orphan_payments_resolved` (`resolved`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- Migration notes (run these on an existing database):
+--   ALTER TABLE `orders` MODIFY COLUMN `user_id` INT DEFAULT NULL;
+--   ALTER TABLE `orders` DROP FOREIGN KEY `fk_orders_user_id`;
+--   ALTER TABLE `orders` ADD CONSTRAINT `fk_orders_user_id`
+--     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL;
+-- Then CREATE TABLE IF NOT EXISTS for cart_items, checkout_snapshots, orphan_payments above.
+-- ---------------------------------------------------------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;

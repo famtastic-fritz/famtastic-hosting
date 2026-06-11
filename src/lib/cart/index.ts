@@ -14,6 +14,7 @@ import type { RowDataPacket } from 'mysql2';
 
 export interface CartItem {
   id: number;
+  product_id: number;
   name: string;
   retail_price_cents: number;
   quantity: number;
@@ -32,7 +33,7 @@ export interface CartSummary {
  */
 export async function getCart(sessionId: string): Promise<CartItem[]> {
   const [rows] = await query<(CartItem & RowDataPacket)[]>(
-    `SELECT ci.id, p.name, p.retail_price_cents, ci.quantity
+    `SELECT ci.id, ci.product_id, p.name, p.retail_price_cents, ci.quantity
      FROM cart_items ci
      JOIN products p ON p.id = ci.product_id
      WHERE ci.session_id = ?

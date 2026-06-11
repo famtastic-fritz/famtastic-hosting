@@ -12,29 +12,29 @@
 export type UserRole = 'customer' | 'admin';
 
 export type ProductCategory =
-  | 'domain'
-  | 'hosting'
   | 'wordpress'
+  | 'hosting'
   | 'builder'
+  | 'servers'
+  | 'domains'
   | 'email'
   | 'ssl'
-  | 'security'
-  | 'server'
-  | 'bundle';
+  | 'security';
 
 export type OrderStatus =
   | 'pending'
   | 'active'
   | 'cancelled'
   | 'expired'
-  | 'refunded';
+  | 'processing'
+  | 'failed';
 
 export type SubscriptionStatus =
   | 'active'
-  | 'expiring_soon'
-  | 'expired'
+  | 'paused'
   | 'cancelled'
-  | 'pending';
+  | 'expired'
+  | 'grace_period';
 
 // ─── Row types (what SELECT returns) ─────────────────────────────────────────
 
@@ -49,12 +49,9 @@ export interface User {
 }
 
 export interface Session {
-  id: number;
-  user_id: number;
-  ip_address: string | null;
-  user_agent: string | null;
-  expires_at: string; // ISO 8601
-  created_at: string; // ISO 8601
+  session_id: string;
+  expires: number;   // Unix timestamp (seconds)
+  data: string | null;
 }
 
 export interface Product {
@@ -62,9 +59,10 @@ export interface Product {
   godaddy_product_id: string | null;
   name: string;
   category: ProductCategory;
-  wholesale_price: number; // in cents
-  retail_price: number;    // in cents
-  markup_pct: number;      // e.g. 175 = 175%
+  wholesale_price_cents: number;
+  retail_price_cents: number;
+  markup_pct: number;       // e.g. 75.00 = 75%
+  billing_period: 'monthly' | 'annual' | null;
   active: boolean;
   created_at: string;
   updated_at: string;
@@ -72,12 +70,14 @@ export interface Product {
 
 export interface Order {
   id: number;
-  user_id: number;
+  user_id: number | null;  // NULL = guest checkout
   godaddy_order_id: string | null;
   product_id: number | null;
   status: OrderStatus;
-  amount_cents: number; // retail price in cents
+  amount_cents: number;
+  description: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Subscription {
@@ -109,29 +109,32 @@ export interface AdminSetting {
 
 export interface GodaddyRenewal {
   id: number;
-  subscription_id: number;
-  godaddy_order_id: string | null;
-  status: 'pending' | 'success' | 'failed';
-  attempted_at: string; // ISO 8601
-  completed_at: string | null; // ISO 8601
+  user_id: number;
+  godaddy_order_id: string;
+  domain: string;
+  product_type: string;
+  renewal_date: string; // ISO 8601
+  auto_renew: boolean;
+  notified: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // ─── Insert types (what you pass to INSERT) ──────────────────────────────────
 
 export type UserInsert = Omit<User, 'id' | 'created_at' | 'updated_at'>;
-export type SessionInsert = Omit<Session, 'id' | 'created_at'>;
 export type ProductInsert = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
-export type OrderInsert = Omit<Order, 'id' | 'created_at'>;
+export type OrderInsert = Omit<Order, 'id' | 'created_at' | 'updated_at'>;
 export type SubscriptionInsert = Omit<Subscription, 'id' | 'created_at' | 'updated_at'>;
 export type ContactSubmissionInsert = Omit<ContactSubmission, 'id' | 'created_at'>;
 export type AdminSettingInsert = AdminSetting;
-export type GodaddyRenewalInsert = Omit<GodaddyRenewal, 'id'>;
+export type GodaddyRenewalInsert = Omit<GodaddyRenewal, 'id' | 'created_at' | 'updated_at'>;
 
 // ─── Update types (partial, for PATCH/UPDATE) ────────────────────────────────
 
 export type UserUpdate = Partial<Pick<User, 'email' | 'password_hash' | 'role' | 'godaddy_shopper_id' | 'updated_at'>>;
-export type ProductUpdate = Partial<Pick<Product, 'name' | 'retail_price' | 'markup_pct' | 'active' | 'updated_at'>>;
-export type OrderUpdate = Partial<Pick<Order, 'status'>>;
+export type ProductUpdate = Partial<Pick<Product, 'name' | 'retail_price_cents' | 'markup_pct' | 'active' | 'updated_at'>>;
+export type OrderUpdate = Partial<Pick<Order, 'status' | 'updated_at'>>;
 export type SubscriptionUpdate = Partial<Pick<Subscription, 'status' | 'auto_renew' | 'current_period_end' | 'updated_at'>>;
 export type ContactSubmissionUpdate = Partial<Pick<ContactSubmission, 'resolved'>>;
 export type AdminSettingUpdate = Partial<Pick<AdminSetting, 'value'>>;
