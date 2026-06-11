@@ -1,5 +1,32 @@
 # FAMtastic Hosting — Deploy State Capture
-**Updated:** 2026-06-11 (cart + admin CMS + GoDaddy shopper stream deployed)
+**Updated:** 2026-06-11 (cart + admin CMS + GoDaddy shopper stream deployed; git/deploy contract clarified)
+
+## Source of Truth + Preflight
+
+- **Canonical GitHub repo:** `git@github.com:famtastic-fritz/famtastic-hosting.git`
+- **Canonical local checkout:** `~/famtastic/famtastic-sites/famtastic-hosting/`
+- **Known duplicate checkout:** `~/famtastic/famtastic-hosting/` — do not use this as deploy truth unless you intentionally resync it first
+
+Preflight before any GoDaddy deploy:
+
+```bash
+cd ~/famtastic/famtastic-sites/famtastic-hosting
+git status --short --branch
+git fetch origin
+git rev-list --left-right --count origin/main...HEAD
+```
+
+Expected state before deploy:
+- correct checkout path
+- branch `main`
+- remote `origin`
+- ahead/behind `0 0` unless you intentionally have new local commits to push
+- clean working tree
+
+Lesson captured 2026-06-11:
+- this project had two local checkouts; one stale checkout had no remote configured and created deployment confusion
+- the canonical repo under `famtastic-sites/` was clean and fully synced to GitHub
+- future GoDaddy deploys should always start by verifying the checkout path and git sync state before touching the server
 
 ## What's DONE
 
@@ -98,6 +125,7 @@
 - **Server dist path:** `/home/nineoo/public_html/famtastichosting.com/site/dist/`
 - **Build:** `npm run build`, then run `./deploy.sh`
 - **Astro SSR note:** local builds still hardcode the build-machine absolute path; `deploy.sh` now rewrites every server-side `.mjs` artifact after sync so cPanel resolves correctly
+- **Git lesson:** deploy from the canonical repo checkout only; duplicate local clones are drift traps
 
 ## Smoke Tests (2026-06-11 — post cart+admin+GoDaddy deploy)
 
