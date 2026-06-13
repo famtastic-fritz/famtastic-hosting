@@ -9,7 +9,7 @@ Git remote:
 - git@github.com:famtastic-fritz/famtastic-hosting.git
 
 Canonical local checkout:
-- `~/famtastic/famtastic-sites/famtastic-hosting`
+- `~/famtastic/sites/site-famtastic-hosting`
 
 Important:
 - There is also a duplicate local checkout at `~/famtastic/famtastic-hosting`.
@@ -20,7 +20,7 @@ Important:
 
 For this project, truth order is:
 1. GitHub `famtastic-fritz/famtastic-hosting`
-2. Canonical local checkout at `~/famtastic/famtastic-sites/famtastic-hosting`
+2. Canonical local checkout at `~/famtastic/sites/site-famtastic-hosting`
 3. Live GoDaddy server state
 
 Server hotfixes are an emergency path only. If something is changed on the server, the repo must be updated immediately so the next deploy does not wipe it out.
@@ -30,7 +30,7 @@ Server hotfixes are an emergency path only. If something is changed on the serve
 Run this before every deployment:
 
 ```bash
-cd ~/famtastic/famtastic-sites/famtastic-hosting
+cd ~/famtastic/sites/site-famtastic-hosting
 git status --short --branch
 git fetch origin
 git rev-list --left-right --count origin/main...HEAD
@@ -48,7 +48,7 @@ If you are not clean, stop and resolve git state first. Do not deploy from an am
 ## Deploy
 
 ```bash
-cd ~/famtastic/famtastic-sites/famtastic-hosting
+cd ~/famtastic/sites/site-famtastic-hosting
 ./deploy.sh
 ```
 

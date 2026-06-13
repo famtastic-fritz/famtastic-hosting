@@ -4,13 +4,13 @@
 ## Source of Truth + Preflight
 
 - **Canonical GitHub repo:** `git@github.com:famtastic-fritz/famtastic-hosting.git`
-- **Canonical local checkout:** `~/famtastic/famtastic-sites/famtastic-hosting/`
+- **Canonical local checkout:** `~/famtastic/sites/site-famtastic-hosting/`
 - **Known duplicate checkout:** `~/famtastic/famtastic-hosting/` — do not use this as deploy truth unless you intentionally resync it first
 
 Preflight before any GoDaddy deploy:
 
 ```bash
-cd ~/famtastic/famtastic-sites/famtastic-hosting
+cd ~/famtastic/sites/site-famtastic-hosting
 git status --short --branch
 git fetch origin
 git rev-list --left-right --count origin/main...HEAD
@@ -25,13 +25,13 @@ Expected state before deploy:
 
 Lesson captured 2026-06-11:
 - this project had two local checkouts; one stale checkout had no remote configured and created deployment confusion
-- the canonical repo under `famtastic-sites/` was clean and fully synced to GitHub
+- the canonical repo under `sites/site-famtastic-hosting/` is the source of truth and should stay fully synced to GitHub
 - future GoDaddy deploys should always start by verifying the checkout path and git sync state before touching the server
 
 ## What's DONE
 
 1. **Site built & deployed** — Astro SSR (hybrid) on GoDaddy cPanel
-   - Local repo: `~/famtastic/famtastic-sites/famtastic-hosting/`
+   - Local repo: `~/famtastic/sites/site-famtastic-hosting/`
    - Server docroot: `/home/nineoo/public_html/famtastichosting.com/`
    - Site serves on **HTTPS** at `https://famtastichosting.com` — 200 OK
 

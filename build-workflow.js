@@ -8,7 +8,7 @@ export const meta = {
   ],
 }
 
-const ROOT = '/Users/famtasticfritz/famtastic/famtastic-sites/famtastic-hosting'
+const ROOT = '/Users/famtasticfritz/famtastic/sites/site-famtastic-hosting'
 
 // ─── SHARED CONTEXT ──────────────────────────────────────────────────────────
 
@@ -1111,7 +1111,7 @@ TASKS:
 1. Run: ls src/pages/ src/components/ src/layouts/ src/styles/ public/fonts/ — confirm all expected files exist.
 2. Run: npm run build 2>&1 | head -100 — check for build errors.
 3. If build errors exist, attempt to fix them (missing imports, syntax errors, prop mismatches).
-4. After successful build (or after fixing): run "git -C ${ROOT}/../../ add famtastic-sites/famtastic-hosting/" then commit with message:
+4. After successful build (or after fixing): run "git -C ${ROOT}/../../ add sites/site-famtastic-hosting/" then commit with message:
    "feat: FAMtasticHosting.com — 7-page Astro hosting site"
 5. Report: which pages built successfully, any remaining issues, what was fixed.
 
