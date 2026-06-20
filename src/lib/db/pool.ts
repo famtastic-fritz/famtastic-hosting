@@ -17,6 +17,17 @@
  */
 
 import * as mysql from 'mysql2/promise';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+function readEnv(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Missing environment variable: ${key}`);
+  }
+  return value;
+}
 
 // ─── Lazy pool initialization ─────────────────────────────────────────────────
 // Astro's static-prerender phase imports this module but doesn't need MySQL.
@@ -27,20 +38,12 @@ let _pool: mysql.Pool | null = null;
 
 function getPool(): mysql.Pool {
   if (!_pool) {
-    const env = (key: string): string => {
-      const value = process.env[key];
-      if (!value) {
-        throw new Error(`Missing environment variable: ${key}`);
-      }
-      return value;
-    };
-
     _pool = mysql.createPool({
-      host: env('MYSQL_HOST'),
+      host: readEnv('MYSQL_HOST'),
       port: Number(process.env.MYSQL_PORT) || 3306,
-      database: env('MYSQL_DATABASE'),
-      user: env('MYSQL_USER'),
-      password: env('MYSQL_PASSWORD'),
+      database: readEnv('MYSQL_DATABASE'),
+      user: readEnv('MYSQL_USER'),
+      password: readEnv('MYSQL_PASSWORD'),
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,

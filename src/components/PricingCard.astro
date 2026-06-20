@@ -41,7 +41,7 @@ const posClass = { left: 'plan-card--left', center: 'plan-card--center', right: 
   <ul class="plan-features">
     {features.map(f => <li><span class="feat-dot"></span>{f}</li>)}
   </ul>
-  <a href={ctaHref} class="plan-cta">{ctaText}</a>
+  <a href={ctaHref} class="plan-cta" data-checkout-product-id={productId}>{ctaText}</a>
   {productId && (
     <button
       class="plan-add-to-cart"
@@ -54,36 +54,70 @@ const posClass = { left: 'plan-card--left', center: 'plan-card--center', right: 
 </div>
 
 {productId && (
-  <script>
-    document.querySelectorAll('.plan-add-to-cart').forEach(btn => {
-      btn.addEventListener('click', async function(this: HTMLButtonElement) {
-        const productId = Number(this.dataset.productId);
-        if (!productId) return;
-        this.disabled = true;
-        this.textContent = 'Adding…';
+  <script is:inline>
+    (() => {
+      if (window.__famPlanCartHandlerBound) return;
+      window.__famPlanCartHandlerBound = true;
+
+      async function addProductToCart(productId, element) {
+        const originalText = element.textContent;
+        element.textContent = 'Adding…';
+        element.disabled = true;
+
         try {
           const res = await fetch('/api/cart/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productId, quantity: 1 }),
           });
-          if (res.ok) {
-            this.textContent = '✓ Added!';
-            // Dispatch event so CartButton badge can update
-            window.dispatchEvent(new CustomEvent('fam:cart:updated'));
-            setTimeout(() => {
-              this.textContent = '+ Add to Cart';
-              this.disabled = false;
-            }, 2000);
-          } else {
-            this.textContent = 'Error — try again';
-            this.disabled = false;
-          }
+
+          if (!res.ok) throw new Error('cart-add failed');
+          const cart = await res.json();
+          window.dispatchEvent(new CustomEvent('fam:cart:updated', { detail: cart }));
+          return { ok: true, originalText };
         } catch {
-          this.textContent = 'Error — try again';
-          this.disabled = false;
+          element.textContent = 'Error — try again';
+          element.disabled = false;
+          setTimeout(() => {
+            element.textContent = originalText;
+          }, 2000);
+          return { ok: false, originalText };
         }
+      }
+
+      document.addEventListener('click', async (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+
+        const checkoutLink = target.closest('.plan-cta[data-checkout-product-id]');
+        if (checkoutLink instanceof HTMLAnchorElement) {
+          const productId = Number(checkoutLink.dataset.checkoutProductId);
+          if (!productId) return;
+
+          event.preventDefault();
+          const result = await addProductToCart(productId, checkoutLink);
+          if (!result.ok) return;
+
+          checkoutLink.textContent = 'Opening checkout…';
+          window.location.href = '/checkout';
+          return;
+        }
+
+        const button = target.closest('.plan-add-to-cart');
+        if (!(button instanceof HTMLButtonElement)) return;
+
+        const productId = Number(button.dataset.productId);
+        if (!productId) return;
+
+        const result = await addProductToCart(productId, button);
+        if (!result.ok) return;
+
+        button.textContent = '✓ Added!';
+        setTimeout(() => {
+          button.textContent = '+ Add to Cart';
+          button.disabled = false;
+        }, 2000);
       });
-    });
+    })();
   </script>
 )}

@@ -11,6 +11,7 @@ export const prerender = false;
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import ServiceCard from '../../components/dashboard/ServiceCard.svelte';
 import ContactPhone from '../../components/dashboard/ContactPhone.svelte';
+import { getStorefrontURL } from '../../lib/storefront';
 
 // Auth handled by Astro middleware — user available via Astro.locals.user
 const user = Astro.locals.user as { id: string; email: string; role: string };
@@ -20,6 +21,7 @@ const origin = new URL(Astro.request.url).origin;
 let plans: any[] = [];
 let cPanelUrl = 'https://sg1plcpnl0082.prod.sin2.secureserver.net:2083';
 let fetchError = false;
+const hostingUrl = getStorefrontURL('hosting-starter');
 
 try {
   const res = await fetch(`${origin}/api/customer/hosting`, {
@@ -64,10 +66,8 @@ function planIcon(label: string): 'hosting' | 'domain' | 'email' | 'ssl' | 'buil
       <div class="header-right">
         <ContactPhone variant="inline" client:load />
         <a
-          href="https://store.famtastichosting.com/hosting"
+          href={hostingUrl}
           class="db-btn db-btn--primary db-btn--sm"
-          target="_blank"
-          rel="noopener"
         >
           Upgrade Plan
         </a>
@@ -144,7 +144,7 @@ function planIcon(label: string): 'hosting' | 'domain' | 'email' | 'ssl' | 'buil
       <div class="empty-state">
         <p class="empty-state__body">
           No hosting plans found in your order history.
-          <a href="https://store.famtastichosting.com/hosting" target="_blank" rel="noopener">
+          <a href={hostingUrl}>
             Browse hosting plans →
           </a>
         </p>
@@ -201,10 +201,8 @@ function planIcon(label: string): 'hosting' | 'domain' | 'email' | 'ssl' | 'buil
       </div>
       <div class="upgrade-callout__actions">
         <a
-          href="https://store.famtastichosting.com/hosting"
+          href={hostingUrl}
           class="db-btn db-btn--primary"
-          target="_blank"
-          rel="noopener"
         >
           View Hosting Plans
         </a>

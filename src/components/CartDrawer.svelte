@@ -1,15 +1,23 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  let open = false;
-  let loading = false;
-  let items: Array<{
+  interface CartItem {
     id: number;
     name: string;
     retail_price_cents: number;
     quantity: number;
-  }> = [];
+  }
+
+  interface CartPayload {
+    items?: CartItem[];
+    count?: number;
+    subtotalUSD?: string;
+  }
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  let open = false;
+  let loading = false;
+  let items: CartItem[] = [];
   let subtotalUSD = '$0.00';
   let errorMsg = '';
 
@@ -23,6 +31,13 @@
     open = false;
   }
 
+  function applyCartPayload(data: CartPayload | null | undefined) {
+    items = data?.items ?? [];
+    subtotalUSD = data?.subtotalUSD ?? '$0.00';
+    errorMsg = '';
+    loading = false;
+  }
+
   // ── Data fetching ─────────────────────────────────────────────────────────
   async function fetchCart() {
     loading = true;
@@ -31,8 +46,7 @@
       const res = await fetch('/api/cart');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      items = data.items ?? [];
-      subtotalUSD = data.subtotalUSD ?? '$0.00';
+      applyCartPayload(data);
     } catch (e) {
       errorMsg = 'Could not load cart. Try again.';
     } finally {
@@ -51,8 +65,8 @@
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      items = data.items ?? [];
-      subtotalUSD = data.subtotalUSD ?? '$0.00';
+      applyCartPayload(data);
+      window.dispatchEvent(new CustomEvent('fam:cart:updated', { detail: data }));
     } catch {
       errorMsg = 'Failed to update item.';
     }
@@ -69,7 +83,23 @@
   }
 
   onMount(() => {
-    // Pre-fetch so the count is known on initial open
+    const handleCartUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<CartPayload>;
+      if (customEvent.detail) {
+        applyCartPayload(customEvent.detail);
+        return;
+      }
+
+      if (open) {
+        void fetchCart();
+      }
+    };
+
+    window.addEventListener('fam:cart:updated', handleCartUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener('fam:cart:updated', handleCartUpdated as EventListener);
+    };
   });
 </script>
 

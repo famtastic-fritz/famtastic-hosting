@@ -137,7 +137,8 @@ export async function checkAvailabilityBulk(
   if (!domains.length) return [];
 
   // GoDaddy bulk availability — POST /v1/domains/available
-  const raw = await godaddyFetch<DomainAvailabilityResponse[]>(
+  // Swagger returns an object shape: { domains: [...], errors?: [...] }
+  const raw = await godaddyFetch<{ domains?: DomainAvailabilityResponse[] } | DomainAvailabilityResponse[]>(
     '/domains/available',
     {
       method: 'POST',
@@ -146,7 +147,9 @@ export async function checkAvailabilityBulk(
     }
   );
 
-  return raw.map((item) => ({
+  const items = Array.isArray(raw) ? raw : Array.isArray(raw?.domains) ? raw.domains : [];
+
+  return items.map((item) => ({
     domain: item.domain,
     available: item.available,
     definitive: item.definitive,

@@ -3,16 +3,16 @@
  *
  * Three exported functions:
  *   requireAuth(request)   — reads fam_session cookie, queries MySQL sessions
- *                            table joined with users, returns AuthUser or redirect
+ *                            table joined with users, returns AuthUser or JSON 401
  *   requireAdmin(request)  — same as requireAuth but also checks role='admin',
- *                            redirects to /admin/login if not admin
+ *                            returns JSON 401/403 for API callers
  *   getSession(request)    — returns session without redirecting (optional auth)
  *
  * Session flow:
  *   1. Client sends the `fam_session` httpOnly cookie with every request.
  *   2. We extract the session token from the cookie, query the `sessions`
  *      table (joined with `users`) to validate it and load the user's data.
- *   3. On success we return an AuthUser. On failure we redirect or return null.
+ *   3. On success we return an AuthUser. On failure we return JSON auth errors or null.
  *
  * The `sessions` table is expected to have this schema:
  *   CREATE TABLE sessions (
@@ -26,6 +26,7 @@
  *   );
  */
 
+import type { RowDataPacket } from 'mysql2/promise';
 import { pool } from '../db/pool.js';
 
 // ─── Session cookie name ──────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ export type AuthSession = AuthUser;
 
 // ─── Internal: extract & validate session from cookie ────────────────────────
 
-interface SessionRow {
+interface SessionRow extends RowDataPacket {
   s_id: string;
   s_token: string;
   s_expires_at: Date;
@@ -92,7 +93,7 @@ async function extractSession(request: Request): Promise<AuthUser | null> {
 
 /**
  * Extracts the session from the request cookie and validates it against MySQL.
- * Returns an AuthUser if authenticated, or a redirect Response to /dashboard/login.
+ * Returns an AuthUser if authenticated, or a JSON 401 Response.
  *
  * Usage in an Astro API route:
  *   const authResult = await requireAuth(Astro.request);
@@ -102,7 +103,7 @@ async function extractSession(request: Request): Promise<AuthUser | null> {
 export async function requireAuth(request: Request): Promise<AuthUser | Response> {
   const user = await extractSession(request);
   if (!user) {
-    return Response.redirect(new URL('/dashboard/login', request.url), 302);
+    return unauthorizedResponse();
   }
   return user;
 }
@@ -114,15 +115,15 @@ export { extractSession };
 
 /**
  * Same as requireAuth but additionally enforces role === 'admin'.
- * Redirects to /admin/login if the user is not authenticated or not an admin.
+ * Returns JSON 401/403 errors for API callers.
  */
 export async function requireAdmin(request: Request): Promise<AuthUser | Response> {
   const user = await extractSession(request);
   if (!user) {
-    return Response.redirect(new URL('/admin/login', request.url), 302);
+    return unauthorizedResponse();
   }
   if (user.role !== 'admin') {
-    return Response.redirect(new URL('/admin/login', request.url), 302);
+    return forbiddenResponse();
   }
   return user;
 }

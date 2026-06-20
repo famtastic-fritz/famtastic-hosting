@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import WildLayout from '../layouts/WildLayout.astro';
+import UnifiedLayout from '../layouts/UnifiedLayout.astro';
 import { buildCartSummary } from '../lib/cart/index.js';
 import { getCartSession } from '../lib/cart/cookie.js';
 
@@ -20,7 +20,7 @@ const clientId = import.meta.env.PAYPAL_CLIENT_ID ?? '';
 const paypalEnv = import.meta.env.PAYPAL_ENV ?? 'sandbox';
 ---
 
-<WildLayout title="Checkout — FAMtastic Hosting" description="Complete your purchase securely.">
+<UnifiedLayout title="Checkout — FAMtastic Hosting" description="Complete your purchase securely.">
   <main class="checkout-page">
     <div class="checkout-container">
       <h1 class="checkout-title">Checkout</h1>
@@ -137,7 +137,7 @@ const paypalEnv = import.meta.env.PAYPAL_ENV ?? 'sandbox';
       }
     </script>
   )}
-</WildLayout>
+</UnifiedLayout>
 
 <style>
   .checkout-page {

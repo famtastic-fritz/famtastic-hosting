@@ -1,12 +1,12 @@
 ---
 export const prerender = true;
-import WildLayout from '../layouts/WildLayout.astro'
+import UnifiedLayout from '../layouts/UnifiedLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
 import { getStorefrontURL } from '../lib/storefront'
 ---
 
-<WildLayout
+<UnifiedLayout
   title="Domain Registration — FAMtastic Hosting"
   description=".com from $20/yr. .net, .org, and more. Custom nameservers, WHOIS privacy, and auto-renewal. ICANN-accredited registrar."
   canonicalPath="/domains"
@@ -59,7 +59,7 @@ import { getStorefrontURL } from '../lib/storefront'
         .com from $20/yr. .net, .org, and more. Custom nameservers included. WHOIS stays clean.
       </p>
       <div class="hero-actions">
-        <a href={getStorefrontURL('domain-search')} class="btn-primary">Search Domains</a>
+        <a href="#domain-search" class="btn-primary">Search Domains</a>
         <a href="/contact" class="btn-outline">Contact Us</a>
       </div>
     </div>
@@ -85,6 +85,23 @@ import { getStorefrontURL } from '../lib/storefront'
     </div>
   </div>
 
+  <section id="domain-search" class="domains-search-section" aria-labelledby="domain-search-headline">
+    <div class="domains-label">// live domain lookup</div>
+    <h2 class="domains-headline" id="domain-search-headline">Search the exact domain before you try to buy it.</h2>
+    <p class="domains-subhead">
+      Registration starts with availability. Search your full domain name first, then move forward with registration intent.
+    </p>
+
+    <form id="domain-search-form" class="domain-search-form">
+      <label for="domain-search-input" class="sr-only">Domain name</label>
+      <input id="domain-search-input" name="domain" type="text" placeholder="yourbrand.com" autocomplete="off" spellcheck="false" />
+      <button type="submit">Check Availability</button>
+    </form>
+    <p class="domain-search-help">Use a full domain like yourbrand.com. We’ll also check .net, .org, and .co alongside it.</p>
+    <div id="domain-search-status" class="domain-search-status" hidden></div>
+    <div id="domain-search-results" class="domain-search-results" hidden></div>
+  </section>
+
   <!-- ─── 3. TLD PRICING GRID ───────────────────────────────────── -->
   <section class="domains-pricing-section" id="pricing" aria-labelledby="tld-headline">
     <div class="domains-label">// tld pricing</div>
@@ -98,25 +115,25 @@ import { getStorefrontURL } from '../lib/storefront'
         <div class="tld-ext">.com</div>
         <div class="tld-price">$20/yr</div>
         <div class="tld-desc">The standard. Most recognized domain extension.</div>
-        <button class="dom-add-to-cart" data-product-id="9" type="button">+ Add to Cart</button>
+        <button class="dom-search-shortcut" data-tld="com" type="button">Check .com Availability</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.net</div>
         <div class="tld-price">$25/yr</div>
         <div class="tld-desc">For networks, tech projects, and infrastructure.</div>
-        <button class="dom-add-to-cart" data-product-id="10" type="button">+ Add to Cart</button>
+        <button class="dom-search-shortcut" data-tld="net" type="button">Check .net Availability</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.org</div>
         <div class="tld-price">$22/yr</div>
         <div class="tld-desc">Non-profits, communities, and purpose-driven brands.</div>
-        <button class="dom-add-to-cart" data-product-id="11" type="button">+ Add to Cart</button>
+        <button class="dom-search-shortcut" data-tld="org" type="button">Check .org Availability</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.co</div>
         <div class="tld-price">$35/yr</div>
         <div class="tld-desc">Short, brandable. Popular startup alternative to .com.</div>
-        <button class="dom-add-to-cart" data-product-id="12" type="button">+ Add to Cart</button>
+        <button class="dom-search-shortcut" data-tld="co" type="button">Check .co Availability</button>
       </div>
       <div class="tld-card">
         <div class="tld-ext">.info</div>
@@ -310,38 +327,99 @@ import { getStorefrontURL } from '../lib/storefront'
   />
 
   <script>
-    document.querySelectorAll('.dom-add-to-cart').forEach(btn => {
-      btn.addEventListener('click', async function() {
-        const productId = Number(this.dataset.productId);
-        if (!productId) return;
-        this.disabled = true;
-        this.textContent = 'Adding…';
-        try {
-          const res = await fetch('/api/cart/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId, quantity: 1 }),
-          });
-          if (res.ok) {
-            this.textContent = '✓ Added!';
-            window.dispatchEvent(new CustomEvent('fam:cart:updated'));
-            setTimeout(() => {
-              this.textContent = '+ Add to Cart';
-              this.disabled = false;
-            }, 2000);
-          } else {
-            this.textContent = 'Error — retry';
-            this.disabled = false;
-          }
-        } catch {
-          this.textContent = 'Error — retry';
-          this.disabled = false;
+    function initDomainSearch() {
+      const form = document.getElementById('domain-search-form');
+      const input = document.getElementById('domain-search-input');
+      const status = document.getElementById('domain-search-status');
+      const results = document.getElementById('domain-search-results');
+      if (!(form instanceof HTMLFormElement) || !(input instanceof HTMLInputElement) || !(status instanceof HTMLElement) || !(results instanceof HTMLElement)) return;
+
+      function renderStatus(message, tone = 'info') {
+        status.hidden = false;
+        status.className = `domain-search-status domain-search-status--${tone}`;
+        status.textContent = message;
+      }
+
+      function normalizeDomain(value) {
+        return value.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+      }
+
+      async function runDomainSearch(domain) {
+        const normalized = normalizeDomain(domain);
+        if (!normalized) {
+          renderStatus('Enter a full domain like yourbrand.com.', 'error');
+          results.hidden = true;
+          return;
         }
+
+        renderStatus('Checking live availability…');
+        results.hidden = true;
+
+        const dot = normalized.lastIndexOf('.');
+        const stem = dot > 0 ? normalized.slice(0, dot) : normalized;
+        const suffixes = ['com', 'net', 'org', 'co'];
+        const primaryTld = dot > 0 ? normalized.slice(dot + 1) : 'com';
+        const bulk = suffixes.filter((tld) => tld !== primaryTld).map((tld) => `${stem}.${tld}`).join(',');
+
+        try {
+          const res = await fetch(`/api/godaddy/available?domain=${encodeURIComponent(normalized)}&bulk=${encodeURIComponent(bulk)}`);
+          const payload = await res.json();
+
+          if (!res.ok || !payload.ok) {
+            throw new Error(payload.error || 'Lookup failed');
+          }
+
+          const items = Array.isArray(payload.data) ? payload.data : [payload.data];
+          results.innerHTML = items.map((item) => {
+            const available = Boolean(item.available);
+            const price = item.priceUSD ? `$${Number(item.priceUSD).toFixed(2)}/yr` : 'Unavailable';
+            const state = available ? 'Available' : 'Taken';
+            return `
+              <div class="domain-result-card ${available ? 'is-available' : 'is-taken'}">
+                <div>
+                  <div class="domain-result-name">${item.domain}</div>
+                  <div class="domain-result-meta">${state}${available ? ` · ${price}` : ''}</div>
+                </div>
+                <a href="/contact?domain=${encodeURIComponent(item.domain)}" class="domain-result-cta">${available ? 'Request Registration' : 'Get Help Finding Options'}</a>
+              </div>
+            `;
+          }).join('');
+
+          results.hidden = false;
+          renderStatus('Lookup complete. Use the contact lane to finalize registration intent.', 'success');
+        } catch (error) {
+          renderStatus(error instanceof Error ? error.message : 'Lookup failed. Try again.', 'error');
+          results.hidden = true;
+        }
+      }
+
+      form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        await runDomainSearch(input.value);
       });
-    });
+
+      document.querySelectorAll('.dom-search-shortcut').forEach((button) => {
+        button.addEventListener('click', async function() {
+          const tld = this instanceof HTMLButtonElement ? this.dataset.tld : null;
+          if (!tld) return;
+
+          const current = normalizeDomain(input.value);
+          const stem = current ? current.replace(/\.[^.]+$/, '') : 'yourbrand';
+          input.value = `${stem}.${tld}`;
+          document.getElementById('domain-search')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          await runDomainSearch(input.value);
+        });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDomainSearch, { once: true });
+    } else {
+      initDomainSearch();
+    }
   </script>
 
-</WildLayout>
+</UnifiedLayout>
 
 <style>
   /* ── Domain Pricing Section ─────────────────────────────────── */
@@ -376,6 +454,104 @@ import { getStorefrontURL } from '../lib/storefront'
     line-height: 1.7;
     max-width: 560px;
     margin-bottom: 2.5rem;
+  }
+
+  .domains-search-section {
+    padding: 5rem 3rem;
+    background: var(--pitch);
+    border-top: 1px solid rgba(245,245,240,0.08);
+    border-bottom: 1px solid rgba(245,245,240,0.08);
+  }
+
+  .domain-search-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    max-width: 760px;
+    margin-bottom: 1rem;
+  }
+
+  .domain-search-form input {
+    min-width: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+  }
+
+  .domain-search-form button,
+  .dom-search-shortcut,
+  .domain-result-cta {
+    cursor: pointer;
+  }
+
+  .domain-search-form button,
+  .dom-search-shortcut,
+  .domain-result-cta {
+    background: var(--violet);
+    color: #fff;
+    border: 0;
+    padding: 1rem 1.2rem;
+    font-family: var(--font-mono);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .domain-search-help {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .domain-search-status {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .domain-search-status--error { color: #ff8c8c; }
+  .domain-search-status--success { color: var(--lime); }
+
+  .domain-search-results {
+    display: grid;
+    gap: 1rem;
+    max-width: 860px;
+  }
+
+  .domain-result-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .domain-result-card.is-available {
+    border-color: rgba(132, 204, 22, 0.45);
+  }
+
+  .domain-result-card.is-taken {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .domain-result-name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .domain-result-meta {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
   }
 
   /* ── Bundle Together Section ─────────────────────────────────── */
@@ -497,98 +673,4 @@ import { getStorefrontURL } from '../lib/storefront'
   }
 
   .dom-feature-desc {
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    color: var(--muted);
-    line-height: 1.75;
-    margin: 0;
-  }
 
-  /* ── Email Add-on Callout ─────────────────────────────────────── */
-  .email-callout-section {
-    padding: 5rem 3rem;
-    background: var(--pitch);
-    border-top: 3px solid var(--violet);
-  }
-
-  .email-callout-inner {
-    max-width: 760px;
-  }
-
-  .email-callout-headline {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
-    font-weight: 800;
-    color: var(--text);
-    line-height: 1.2;
-    margin-bottom: 1rem;
-  }
-
-  .email-callout-body {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    color: var(--muted);
-    line-height: 1.75;
-    margin-bottom: 2rem;
-  }
-
-  .email-callout-pricing {
-    margin-top: 1.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-  }
-
-  /* ── Responsive ─────────────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .domains-pricing-section,
-    .bundle-together-section,
-    .email-callout-section {
-      padding: 4rem 1.5rem;
-    }
-
-    .bundle-together-inner {
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-    }
-
-    .dom-features-row {
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-    }
-  }
-
-  @media (max-width: 600px) {
-    .domains-pricing-section,
-    .bundle-together-section,
-    .email-callout-section {
-      padding: 3rem 1.25rem;
-    }
-  }
-
-  /* ── Add-to-Cart buttons on TLD cards ─────────────────────── */
-  .dom-add-to-cart {
-    margin-top: 0.75rem;
-    width: 100%;
-    background: none;
-    border: 1px solid rgba(124, 58, 237, 0.3);
-    color: rgba(124, 58, 237, 0.8);
-    padding: 0.5rem 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
-  }
-  .dom-add-to-cart:hover:not(:disabled) {
-    border-color: var(--violet);
-    color: var(--violet);
-    background: rgba(124, 58, 237, 0.06);
-  }
-  .dom-add-to-cart:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-</style>

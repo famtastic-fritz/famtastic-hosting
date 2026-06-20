@@ -99,7 +99,7 @@
     <div class="field-label-row">
       <label for="password" class="field-label">Password</label>
       {#if !adminMode}
-        <a href="/dashboard/forgot-password" class="field-label-link">Forgot password?</a>
+        <span class="field-label-meta">Need help signing in? Contact support.</span>
       {/if}
     </div>
     <input
@@ -176,12 +176,11 @@
     align-items: baseline;
   }
 
-  .field-label-link {
+  .field-label-meta {
     font-size: 0.8125rem;
-    color: #7c3aed;
+    color: #9090a0;
     text-decoration: none;
   }
-  .field-label-link:hover { text-decoration: underline; }
 
   .field-input {
     width: 100%;

@@ -1,6 +1,6 @@
 ---
 export const prerender = true;
-import WildLayout from '../layouts/WildLayout.astro'
+import UnifiedLayout from '../layouts/UnifiedLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
 import BillingToggle from '../components/BillingToggle.astro'
@@ -8,7 +8,7 @@ import PricingCard from '../components/PricingCard.astro'
 import { getStorefrontURL } from '../lib/storefront'
 ---
 
-<WildLayout
+<UnifiedLayout
   title="Website Builder — FAMtastic Hosting"
   description="Drag-and-drop website builder from $12/mo, or get a custom-designed site from FAMtasticDesigns.com. Same team. Two paths."
   canonicalPath="/builder"
@@ -299,7 +299,7 @@ import { getStorefrontURL } from '../lib/storefront'
     href="https://famtasticthoughts.com"
   />
 
-</WildLayout>
+</UnifiedLayout>
 
 <style>
 /* ── BUILDER FEATURES SECTION ─────────────────────────────── */

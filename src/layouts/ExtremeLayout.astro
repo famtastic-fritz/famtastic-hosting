@@ -1,6 +1,8 @@
 ---
+import ThemeToggle from '../components/ThemeToggle.astro'
 import '../styles/global.css'
 import '../styles/extreme.css'
+import '../styles/wild.css'
 import '../styles/components.css'
 
 interface Props {
@@ -21,6 +23,13 @@ const { title, description } = Astro.props
   <meta property="og:description" content={description} />
 </head>
 <body>
+  <script is:inline>
+    (function() {
+      const saved = localStorage.getItem('famtastic-theme');
+      if (saved === 'hacker') document.documentElement.setAttribute('data-theme', 'hacker');
+    })();
+  </script>
+  <ThemeToggle />
   <div class="crt-scanlines" aria-hidden="true"></div>
   <div class="blend-overlay" aria-hidden="true"></div>
 

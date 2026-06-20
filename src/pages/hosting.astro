@@ -1,6 +1,6 @@
 ---
 export const prerender = true;
-import WildLayout from '../layouts/WildLayout.astro'
+import UnifiedLayout from '../layouts/UnifiedLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
 import BillingToggle from '../components/BillingToggle.astro'
@@ -8,7 +8,7 @@ import PricingCard from '../components/PricingCard.astro'
 import { getStorefrontURL } from '../lib/storefront'
 ---
 
-<WildLayout
+<UnifiedLayout
   title="cPanel Web Hosting — FAMtastic Hosting"
   description="Full cPanel access, SSD storage, and 400+ 1-click installs from $7/mo. Custom nameservers included. No GoDaddy branding."
   canonicalPath="/hosting"
@@ -405,4 +405,4 @@ import { getStorefrontURL } from '../lib/storefront'
     href="https://famtasticthoughts.com"
   />
 
-</WildLayout>
+</UnifiedLayout>

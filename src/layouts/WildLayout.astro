@@ -1,6 +1,7 @@
 ---
 import Nav from '../components/Nav.astro'
 import Footer from '../components/Footer.astro'
+import ThemeToggle from '../components/ThemeToggle.astro'
 import '../styles/global.css'
 import '../styles/wild.css'
 import '../styles/components.css'
@@ -35,6 +36,13 @@ const canonical = `https://famtastichosting.com${canonicalPath}`
   })} />
 </head>
 <body style="background:var(--pitch);color:var(--text);font-family:var(--font-body);">
+  <script is:inline>
+    (function() {
+      const saved = localStorage.getItem('famtastic-theme');
+      if (saved === 'hacker') document.documentElement.setAttribute('data-theme', 'hacker');
+    })();
+  </script>
+  <ThemeToggle />
   <Nav />
   <main>
     <slot />

@@ -52,9 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
     const { items, count, subtotalCents } = await buildCartSummary(sessionId);
     const subtotalUSD = formatUSD(subtotalCents);
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers = buildCartHeaders();
 
     if (isNewSession) {
       headers['Set-Cookie'] = buildCartCookieHeader(sessionId);
@@ -79,6 +77,15 @@ function formatUSD(cents: number): string {
 function jsonError(message: string, status: number): Response {
   return new Response(
     JSON.stringify({ error: message }),
-    { status, headers: { 'Content-Type': 'application/json' } },
+    { status, headers: buildCartHeaders() },
   );
+}
+
+function buildCartHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'private, no-store, no-cache, max-age=0, must-revalidate',
+    Pragma: 'no-cache',
+    Vary: 'Cookie',
+  };
 }

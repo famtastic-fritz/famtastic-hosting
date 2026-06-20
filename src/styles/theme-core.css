@@ -1,0 +1,1051 @@
+/* ============================================================
+   THEME-CORE.CSS
+   Conditional overrides for Purple (default) ↔ Hacker (toggle)
+   Load LAST — after global.css, wild.css, extreme.css, components.css
+   ============================================================ */
+
+/* ─── PURPLE-MODE RESETS (counteract extreme.css globals) ─── */
+
+:root body {
+  background: var(--pitch) !important;
+  color: var(--text) !important;
+  font-family: var(--font-body) !important;
+  transform: none !important;
+  animation: none !important;
+  overflow-x: hidden;
+}
+
+:root ::selection {
+  background: var(--violet) !important;
+  color: #fff !important;
+}
+
+:root a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:root body::after {
+  display: none !important;
+}
+
+:root ::-webkit-scrollbar { width: auto; }
+:root ::-webkit-scrollbar-track { background: transparent; }
+:root ::-webkit-scrollbar-thumb { background: transparent; box-shadow: none; }
+
+/* ─── HACKER-MODE BODY (preserve extreme.css with higher specificity) ─── */
+
+html[data-theme="hacker"] body {
+  background-color: var(--black);
+  color: var(--green);
+  font-family: var(--font-term);
+  transform: perspective(1200px) rotateX(0.3deg);
+  transform-origin: center top;
+  animation: crt-flicker 12s infinite;
+  overflow-x: hidden;
+}
+
+html[data-theme="hacker"] ::selection {
+  background: var(--green);
+  color: var(--black);
+}
+
+/* ─── BUTTON OVERRIDES (extreme.css .btn-primary conflicts with wild.css) ─── */
+
+:root .btn-primary {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--text);
+  color: var(--pitch);
+  border: none;
+  padding: 0.9rem 2.2rem;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, color 0.2s;
+  clip-path: none;
+  position: static;
+  overflow: visible;
+}
+
+:root .btn-primary:hover {
+  background: var(--lime);
+  color: var(--pitch);
+  box-shadow: none;
+  transform: none;
+}
+
+:root .btn-primary::before {
+  display: none;
+}
+
+/* Hacker .btn-primary — let extreme.css win, just ensure specificity */
+html[data-theme="hacker"] .btn-primary {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: var(--green);
+  color: var(--black);
+  border: none;
+  padding: 0.9rem 2.2rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  text-decoration: none;
+  display: inline-block;
+}
+
+html[data-theme="hacker"] .btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--black);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+html[data-theme="hacker"] .btn-primary:hover::before {
+  transform: scaleX(1);
+}
+
+html[data-theme="hacker"] .btn-primary:hover {
+  color: var(--green);
+  box-shadow: 0 0 20px var(--green-glow), 0 0 60px rgba(0,255,65,0.15), inset 0 0 0 1px var(--green);
+  transform: translateY(-2px);
+}
+
+html[data-theme="hacker"] .btn-primary span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── HERO HEADLINE OVERRIDES ─── */
+
+:root .hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6.5vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 2rem;
+  text-shadow: none;
+}
+
+html[data-theme="hacker"] .hero-headline {
+  font-family: var(--font-term);
+  font-size: clamp(1.8rem, 5vw, 4.2rem);
+  color: var(--green);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 20px rgba(0,255,65,0.5), 0 0 60px rgba(0,255,65,0.2);
+}
+
+/* ─── TICKER ITEM OVERRIDES ─── */
+
+:root .ticker-item {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  padding: 0 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+html[data-theme="hacker"] .ticker-item {
+  font-family: var(--font-term);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--green-dim);
+  text-transform: none;
+  font-weight: 400;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ─── NAV LINKS OVERRIDES ─── */
+
+:root .nav-links {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  list-style: none;
+}
+
+html[data-theme="hacker"] .nav-links {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  list-style: none;
+}
+
+/* ─── NAV LOGO OVERRIDES ─── */
+
+:root .nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  position: static;
+  display: inline-block;
+  cursor: pointer;
+}
+
+:root .nav-logo::before,
+:root .nav-logo::after {
+  display: none !important;
+}
+
+html[data-theme="hacker"] .nav-logo {
+  font-family: var(--font-term);
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* ─── OVERLAY VISIBILITY ─── */
+
+.purple-only { display: block; }
+.hacker-only { display: none; }
+
+[data-theme="hacker"] .purple-only { display: none !important; }
+[data-theme="hacker"] .hacker-only { display: block !important; }
+
+/* For flex containers */
+[data-theme="hacker"] .hacker-only-flex { display: flex !important; }
+[data-theme="hacker"] .hacker-only-inline { display: inline !important; }
+[data-theme="hacker"] .hacker-only-inline-flex { display: inline-flex !important; }
+
+/* CRT scanlines */
+.crt-scanlines {
+  display: none;
+}
+[data-theme="hacker"] .crt-scanlines {
+  display: block;
+}
+
+/* Blend overlay */
+.blend-overlay {
+  display: none;
+}
+[data-theme="hacker"] .blend-overlay {
+  display: block;
+}
+
+/* Matrix rain container */
+.matrix-rain {
+  display: none;
+}
+[data-theme="hacker"] .matrix-rain {
+  display: block;
+}
+
+/* ─── HACKER NAV ADDITIONAL STYLES ─── */
+
+.hacker-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+[data-theme="hacker"] .hacker-nav-actions .fam-cart-btn {
+  color: rgba(0, 255, 65, 0.65) !important;
+}
+[data-theme="hacker"] .hacker-nav-actions .fam-cart-btn:hover {
+  color: var(--green) !important;
+  background: rgba(0, 255, 65, 0.08) !important;
+}
+[data-theme="hacker"] .hacker-nav-actions .fam-cart-badge {
+  background: var(--green) !important;
+  color: var(--black) !important;
+}
+
+/* Hacker sign-in link */
+.hacker-signin {
+  font-family: var(--font-term);
+  font-size: 0.75rem;
+  color: var(--green-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+  letter-spacing: 0.08em;
+}
+.hacker-signin:hover {
+  color: var(--green);
+}
+
+/* ─── HERO LAYER OVERRIDES ─── */
+
+html[data-theme="hacker"] .fam-hero-layer--bg {
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, #080808 0%, #000000 100%);
+}
+
+html[data-theme="hacker"] .fam-hero-layer--fx svg {
+  display: none;
+}
+
+html[data-theme="hacker"] .hero-orb {
+  display: none;
+}
+
+/* ─── FOOTER OVERRIDES ─── */
+
+html[data-theme="hacker"] .fam-footer {
+  background: var(--black);
+  border-top: 1px solid rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .fam-footer .footer-logo {
+  display: none;
+}
+
+html[data-theme="hacker"] .fam-footer .footer-sub {
+  color: rgba(0, 255, 65, 0.35);
+  font-family: var(--font-term);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+html[data-theme="hacker"] .fam-footer .footer-links a {
+  color: rgba(0, 255, 65, 0.35);
+  font-family: var(--font-term);
+  font-size: 0.78rem;
+  text-transform: none;
+  letter-spacing: 0.06em;
+}
+
+html[data-theme="hacker"] .fam-footer .footer-links a:hover {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .fam-footer .footer-version {
+  color: rgba(0, 255, 65, 0.25);
+  font-family: var(--font-term);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+/* ─── MOBILE RESPONSIVE ─── */
+
+@media (max-width: 768px) {
+  .hacker-nav-actions { display: none; }
+}
+
+/* ─── FAQ ACCORDION OVERRIDES ─── */
+
+html[data-theme="hacker"] .faq-section {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .faq-label {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .faq-headline {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .faq-q {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .faq-q::after {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .faq-a {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .faq-item {
+  border-bottom-color: rgba(0, 255, 65, 0.15);
+}
+
+/* ─── COMPONENTS.CSS OVERRIDES ─── */
+
+html[data-theme="hacker"] .section-label-sm {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .section-headline {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .how-num {
+  color: var(--green);
+  opacity: 0.15;
+}
+
+html[data-theme="hacker"] .how-title {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .how-desc {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .how-step {
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .product-grid-wrap {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .product-card {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .product-card:hover {
+  border-color: var(--green);
+  transform: translateY(-4px);
+}
+
+html[data-theme="hacker"] .product-card-icon {
+  stroke: var(--green);
+}
+
+html[data-theme="hacker"] .product-card-title {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .product-card-tagline {
+  color: var(--green-dim);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .product-card-desc {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .product-card-link {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .pricing-label {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .pricing-headline {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .plan-card {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .plan-card:hover {
+  box-shadow: 0 32px 80px rgba(0, 255, 65, 0.2);
+}
+
+html[data-theme="hacker"] .plan-card--center {
+  border-color: var(--green);
+  background: rgba(0, 255, 65, 0.05);
+}
+
+html[data-theme="hacker"] .plan-name {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .plan-price {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .plan-features li {
+  color: rgba(0, 255, 65, 0.65);
+  font-family: var(--font-term);
+  border-color: rgba(0, 255, 65, 0.08);
+}
+
+html[data-theme="hacker"] .feat-dot {
+  background: var(--green);
+}
+
+html[data-theme="hacker"] .plan-cta {
+  color: var(--green);
+  border-color: rgba(0, 255, 65, 0.2);
+}
+
+html[data-theme="hacker"] .plan-cta:hover {
+  background: rgba(0, 255, 65, 0.06);
+}
+
+html[data-theme="hacker"] .plan-card--center .plan-cta {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--black);
+}
+
+html[data-theme="hacker"] .plan-card--center .plan-cta:hover {
+  background: var(--green-dim);
+}
+
+/* Billing toggle */
+html[data-theme="hacker"] .billing-option {
+  color: rgba(0, 255, 65, 0.5);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .billing-option.active {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .billing-switch {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.3);
+}
+
+html[data-theme="hacker"] .billing-switch.annual {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+html[data-theme="hacker"] .billing-save-badge {
+  background: rgba(0, 255, 65, 0.12);
+  color: var(--green);
+}
+
+/* Bundle cards */
+html[data-theme="hacker"] .bundle-card {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .bundle-card--featured {
+  border-color: var(--green);
+  background: rgba(0, 255, 65, 0.05);
+}
+
+html[data-theme="hacker"] .bundle-card--designs {
+  border-color: var(--hot);
+  background: rgba(255, 0, 122, 0.05);
+}
+
+html[data-theme="hacker"] .bundle-name {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .bundle-price {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .bundle-includes li {
+  color: rgba(0, 255, 65, 0.65);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .bundle-includes li::before {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .bundle-cta .btn-primary {
+  background: var(--green);
+  color: var(--black);
+}
+
+/* Crossroads */
+html[data-theme="hacker"] .crossroads-section {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .crossroads-card {
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .crossroads-card-title {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .crossroads-body {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .crossroads-bullets li {
+  color: rgba(0, 255, 65, 0.65);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .crossroads-bottom {
+  background: var(--black);
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .crossroads-bottom p {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+/* Domain */
+html[data-theme="hacker"] .tld-card {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .tld-card:hover {
+  border-color: var(--green);
+}
+
+html[data-theme="hacker"] .tld-ext {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .tld-price {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .tld-desc {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+/* Designs showcase */
+html[data-theme="hacker"] .designs-showcase {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .designs-tier {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .designs-tier-name {
+  color: var(--green-dim);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .designs-tier-price {
+  color: var(--green);
+}
+
+/* How it works */
+html[data-theme="hacker"] .how-it-works-section {
+  background: var(--void);
+}
+
+/* Stats section */
+html[data-theme="hacker"] .stats-section {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .stat-number {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .stat-number.accent-violet {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .stat-number.accent-lime {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .stat-label {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .stat-detail {
+  color: rgba(0, 255, 65, 0.3);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .stat-row {
+  border-color: rgba(0, 255, 65, 0.08);
+}
+
+/* Pricing section */
+html[data-theme="hacker"] .pricing-section {
+  background: var(--black);
+}
+
+/* Trust bar */
+html[data-theme="hacker"] .trust-bar {
+  background: var(--black);
+  border-color: rgba(0, 255, 65, 0.08);
+}
+
+html[data-theme="hacker"] .trust-val {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .trust-val.t-violet {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .trust-val.t-lime {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .trust-label {
+  color: rgba(0, 255, 65, 0.4);
+  font-family: var(--font-term);
+}
+
+/* Design bridge */
+html[data-theme="hacker"] .design-bridge {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .db-label {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .db-headline {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .db-body {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .btn-hot {
+  background: var(--hot);
+  color: var(--text);
+}
+
+/* FAM Thoughts strip */
+html[data-theme="hacker"] .fam-thoughts-strip {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .fts-label {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .fts-headline {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .fts-link {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+html[data-theme="hacker"] .fts-link:hover {
+  background: rgba(0, 255, 65, 0.1);
+}
+
+/* Upsell section */
+html[data-theme="hacker"] .upsell-section {
+  background: var(--green);
+}
+
+html[data-theme="hacker"] .upsell-eyebrow {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="hacker"] .upsell-headline {
+  color: var(--black);
+}
+
+html[data-theme="hacker"] .btn-dark {
+  background: var(--black);
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .btn-dark:hover {
+  background: var(--void);
+}
+
+/* Features section */
+html[data-theme="hacker"] .features-section {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .features-label {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .feature-item {
+  border-color: rgba(0, 255, 65, 0.08);
+}
+
+html[data-theme="hacker"] .feature-icon-wrap {
+  border-color: rgba(0, 255, 65, 0.3);
+}
+
+html[data-theme="hacker"] .feature-icon-wrap svg {
+  stroke: var(--green);
+}
+
+html[data-theme="hacker"] .feature-title {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .feature-desc {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .features-left {
+  border-color: rgba(0, 255, 65, 0.08);
+}
+
+html[data-theme="hacker"] .spec-key {
+  color: var(--green-dim);
+}
+
+html[data-theme="hacker"] .spec-value {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] .spec-desc {
+  color: rgba(0, 255, 65, 0.3);
+  font-family: var(--font-term);
+}
+
+/* Hero prompt */
+html[data-theme="hacker"] .hero-prompt {
+  color: var(--green-dim);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .hero-prompt .cursor {
+  background: var(--green);
+}
+
+/* Hero sub */
+html[data-theme="hacker"] .hero-sub {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+/* Hero actions */
+html[data-theme="hacker"] .hero-actions .btn-outline {
+  border-color: rgba(0, 255, 65, 0.35);
+  color: var(--green);
+  font-family: var(--font-term);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  padding: 0.9rem 2.2rem;
+  clip-path: none;
+  background: transparent;
+  transition: border-color 0.2s, color 0.2s;
+  position: static;
+  overflow: visible;
+}
+
+html[data-theme="hacker"] .hero-actions .btn-outline:hover {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: none;
+  transform: none;
+}
+
+html[data-theme="hacker"] .hero-actions .btn-outline::before {
+  display: none;
+}
+
+/* Ticker strip */
+html[data-theme="hacker"] .ticker-strip {
+  background: var(--green);
+}
+
+html[data-theme="hacker"] .ticker-dot {
+  background: var(--black);
+}
+
+/* Plan card hover */
+html[data-theme="hacker"] .plan-card:hover {
+  box-shadow: 0 32px 80px rgba(0, 255, 65, 0.2);
+}
+
+/* Card deck hover dimming */
+html[data-theme="hacker"] .plan-card {
+  transition: transform 0.45s cubic-bezier(0.23,1,0.32,1), box-shadow 0.45s, opacity 0.3s;
+}
+
+/* Add to cart button */
+html[data-theme="hacker"] .plan-add-to-cart {
+  border-color: rgba(0, 255, 65, 0.3);
+  color: rgba(0, 255, 65, 0.8);
+}
+
+html[data-theme="hacker"] .plan-add-to-cart:hover:not(:disabled) {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0, 255, 65, 0.06);
+}
+
+/* Contact form */
+html[data-theme="hacker"] .contact-form input,
+html[data-theme="hacker"] .contact-form textarea,
+html[data-theme="hacker"] .contact-form select {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.25);
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .contact-form label {
+  color: var(--green-dim);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .contact-form button[type="submit"] {
+  background: var(--green);
+  color: var(--black);
+  font-family: var(--font-term);
+}
+
+/* Checkout form */
+html[data-theme="hacker"] .checkout-form input,
+html[data-theme="hacker"] .checkout-form select {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.25);
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .checkout-form label {
+  color: var(--green-dim);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .checkout-form button {
+  background: var(--green);
+  color: var(--black);
+  font-family: var(--font-term);
+}
+
+/* Cart drawer */
+html[data-theme="hacker"] .cart-drawer {
+  background: var(--void);
+  border-color: rgba(0, 255, 65, 0.25);
+}
+
+html[data-theme="hacker"] .cart-drawer h3 {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .cart-item {
+  border-color: rgba(0, 255, 65, 0.15);
+}
+
+html[data-theme="hacker"] .cart-item-name {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .cart-item-price {
+  color: var(--green-dim);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .cart-total {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .cart-empty {
+  color: var(--green-dim);
+  font-family: var(--font-term);
+}
+
+/* Order confirmation */
+html[data-theme="hacker"] .order-confirmation {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .order-confirmation h1 {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .order-confirmation p {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+/* Thank you */
+html[data-theme="hacker"] .thank-you {
+  background: var(--void);
+}
+
+html[data-theme="hacker"] .thank-you h1 {
+  color: var(--green);
+  font-family: var(--font-term);
+}
+
+html[data-theme="hacker"] .thank-you p {
+  color: rgba(0, 255, 65, 0.55);
+  font-family: var(--font-term);
+}
+
+/* ─── EXTREME LAYOUT CONTENT OVERRIDES (for non-server pages in hacker mode) ─── */
+
+/* These ensure that when a purple page is viewed in hacker mode,
+   the content still looks reasonably hacker-themed. */
+
+html[data-theme="hacker"] main h1,
+html[data-theme="hacker"] main h2,
+html[data-theme="hacker"] main h3 {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] main p {
+  color: rgba(0, 255, 65, 0.65);
+}
+
+html[data-theme="hacker"] main a {
+  color: var(--green);
+}
+
+html[data-theme="hacker"] main a:hover {
+  color: var(--green-dim);
+}
+
+/* Ensure the purple nav's cart button looks good in purple mode */
+:root .fam-cart-btn {
+  color: rgba(245, 245, 240, 0.65) !important;
+}
+:root .fam-cart-btn:hover {
+  color: rgba(245, 245, 240, 0.95) !important;
+  background: rgba(245, 245, 240, 0.06) !important;
+}
+:root .fam-cart-badge {
+  background: #7c3aed !important;
+  color: #fff !important;
+}

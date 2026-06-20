@@ -42,16 +42,18 @@ if ($response === false) {
 }
 
 // Parse and forward response headers
-if (isset($http_response_header)) {
-    foreach ($http_response_header as $header) {
-        if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/', $header, $m)) {
-            http_response_code((int)$m[1]);
-        } elseif (strpos($header, ':') !== false) {
-            $lc = strtolower(trim(substr($header, 0, strpos($header, ':'))));
-            // Skip hop-by-hop headers
-            if (!in_array($lc, ['transfer-encoding', 'content-length', 'connection'])) {
-                header($header);
-            }
+$responseHeaders = function_exists('http_get_last_response_headers')
+    ? http_get_last_response_headers()
+    : ($http_response_header ?? []);
+
+foreach ($responseHeaders as $header) {
+    if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/', $header, $m)) {
+        http_response_code((int)$m[1]);
+    } elseif (strpos($header, ':') !== false) {
+        $lc = strtolower(trim(substr($header, 0, strpos($header, ':'))));
+        // Skip hop-by-hop headers
+        if (!in_array($lc, ['transfer-encoding', 'content-length', 'connection'])) {
+            header($header);
         }
     }
 }

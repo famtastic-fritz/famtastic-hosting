@@ -1,6 +1,6 @@
 ---
 export const prerender = true;
-import WildLayout from '../layouts/WildLayout.astro'
+import UnifiedLayout from '../layouts/UnifiedLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
 import BillingToggle from '../components/BillingToggle.astro'
@@ -8,7 +8,7 @@ import PricingCard from '../components/PricingCard.astro'
 import { getStorefrontURL } from '../lib/storefront'
 ---
 
-<WildLayout
+<UnifiedLayout
   title="Managed WordPress Hosting — FAMtastic Hosting"
   description="Managed WordPress from $12/mo. Daily backups, malware scanning, staging, and custom nameservers. No GoDaddy branding. 24/7 white-label support."
   canonicalPath="/wordpress"
@@ -373,4 +373,4 @@ import { getStorefrontURL } from '../lib/storefront'
     href="https://famtasticthoughts.com"
   />
 
-</WildLayout>
+</UnifiedLayout>

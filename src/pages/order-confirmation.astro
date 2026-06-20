@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import WildLayout from '../layouts/WildLayout.astro';
+import UnifiedLayout from '../layouts/UnifiedLayout.astro';
 
 const url   = new URL(Astro.request.url);
 const orderId   = url.searchParams.get('orderId')   ?? '';
@@ -9,7 +9,7 @@ const amount    = url.searchParams.get('amount')    ?? '';
 const paypalRef = url.searchParams.get('paypal')    ?? '';
 ---
 
-<WildLayout
+<UnifiedLayout
   title="Order Confirmed — FAMtastic Hosting"
   description="Your FAMtastic Hosting order was received. We'll be in touch shortly."
 >
@@ -51,7 +51,7 @@ const paypalRef = url.searchParams.get('paypal')    ?? '';
       <a href="/dashboard" class="btn-primary">Go to My Dashboard</a>
     </div>
   </main>
-</WildLayout>
+</UnifiedLayout>
 
 <style>
   .confirm-page {

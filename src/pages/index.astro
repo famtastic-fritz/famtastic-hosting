@@ -1,13 +1,61 @@
 ---
-export const prerender = true;
-import WildLayout from '../layouts/WildLayout.astro'
+export const prerender = false;
+
+import UnifiedLayout from '../layouts/UnifiedLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
 import BillingToggle from '../components/BillingToggle.astro'
 import PricingCard from '../components/PricingCard.astro'
+import { getPageContent, getValue } from '../lib/content.js'
+
+const pageContent = await getPageContent('index');
+
+const hero = {
+  prompt: getValue(pageContent, 'hero', 'prompt', '// famtastichosting.com'),
+  headline1: getValue(pageContent, 'hero', 'headline_line1', 'Your domain.'),
+  headline2: getValue(pageContent, 'hero', 'headline_line2', 'Your brand.'),
+  headline3: getValue(pageContent, 'hero', 'headline_line3', 'Handled.'),
+  subheadline: getValue(pageContent, 'hero', 'subheadline', 'Premium hosting from $7/mo. Custom nameservers. Your brand on everything.'),
+  primaryCta: getValue(pageContent, 'hero', 'primary_cta', 'Explore Plans'),
+  primaryUrl: getValue(pageContent, 'hero', 'primary_cta_url', '#products'),
+  secondaryCta: getValue(pageContent, 'hero', 'secondary_cta', 'Contact Us'),
+  secondaryUrl: getValue(pageContent, 'hero', 'secondary_cta_url', '/contact'),
+};
+
+const trust = {
+  item1: getValue(pageContent, 'trust_bar', 'item_1', '99.9% Uptime'),
+  item2: getValue(pageContent, 'trust_bar', 'item_2', '1,000+ Sites Hosted'),
+  item3: getValue(pageContent, 'trust_bar', 'item_3', 'Based in Miami, FL'),
+};
+
+const story1 = {
+  title: getValue(pageContent, 'story_1', 'title', 'Hosting that stays out of your way'),
+  body: getValue(pageContent, 'story_1', 'body', 'You have a business to run. The last thing you need is a control panel that fights back or support that takes days. We built FAMtastic Hosting for people who want their site online, fast, with a brand that looks like theirs — not a reseller sticker.'),
+  cta: getValue(pageContent, 'story_1', 'cta', 'See the difference'),
+  ctaUrl: getValue(pageContent, 'story_1', 'cta_url', '/hosting'),
+};
+
+const story2 = {
+  title: getValue(pageContent, 'story_2', 'title', 'Your brand on every touchpoint'),
+  body: getValue(pageContent, 'story_2', 'body', 'Custom nameservers. White-label support. SSL included. From the first click to the first invoice, your customers see you — not the wholesale provider behind the curtain.'),
+};
+
+const crossDesigns = {
+  title: getValue(pageContent, 'cross_promo_designs', 'title', 'Need a site to go with your hosting?'),
+  body: getValue(pageContent, 'cross_promo_designs', 'body', 'A lot of our clients came to us for hosting and left with a site they are proud of. FAMtastic Designs builds custom sites, logos, and brand packages for businesses that want to stand out.'),
+  cta: getValue(pageContent, 'cross_promo_designs', 'cta', 'Talk to a designer'),
+  ctaUrl: getValue(pageContent, 'cross_promo_designs', 'cta_url', 'https://famtasticdesigns.com'),
+};
+
+const crossThoughts = {
+  title: getValue(pageContent, 'cross_promo_thoughts', 'title', 'Running a site? Learn how to grow it.'),
+  body: getValue(pageContent, 'cross_promo_thoughts', 'body', 'FAMtastic Thoughts publishes real guides on hosting, design, domains, and running a business online. No fluff. No sales pitch. Just useful answers.'),
+  cta: getValue(pageContent, 'cross_promo_thoughts', 'cta', 'Read the latest'),
+  ctaUrl: getValue(pageContent, 'cross_promo_thoughts', 'cta_url', 'https://famtasticthoughts.com'),
+};
 ---
 
-<WildLayout
+<UnifiedLayout
   title="FAMtastic Hosting — Premium WordPress & Web Hosting"
   description="Custom nameservers, no GoDaddy branding, and white-label support from $7/mo. WordPress hosting, cPanel, VPS, domains, and more."
   canonicalPath="/"
@@ -65,19 +113,30 @@ import PricingCard from '../components/PricingCard.astro'
 
     <!-- CONTENT layer -->
     <div class="fam-hero-layer fam-hero-layer--content">
-      <div class="hero-prompt">// famtastichosting.com<span class="cursor"></span></div>
+      <div class="hero-prompt">{hero.prompt}<span class="cursor"></span></div>
       <h1 class="hero-headline">
-        Your domain.<br/>Your brand.<br/><span class="hl-invisible">Handled.</span>
+        {hero.headline1}<br/>{hero.headline2}<br/><span class="hl-invisible">{hero.headline3}</span>
       </h1>
-      <p class="hero-sub">Premium hosting from $7/mo. Custom nameservers. Your brand on everything.</p>
+      <p class="hero-sub">{hero.subheadline}</p>
       <div class="hero-actions">
-        <a href="#products" class="btn-primary">Explore Plans</a>
-        <a href="/contact" class="btn-outline">Contact Us</a>
+        <a href={hero.primaryUrl} class="btn-primary">{hero.primaryCta}</a>
+        <a href={hero.secondaryUrl} class="btn-outline">{hero.secondaryCta}</a>
       </div>
     </div>
   </section>
 
-  <!-- ── 2. TICKER STRIP ─────────────────────────────────────── -->
+  <!-- ── 2. TRUST BAR ────────────────────────────────────────── -->
+  <section class="trust-bar" aria-label="Trust signals">
+    <div class="trust-bar-inner">
+      <span class="trust-item">{trust.item1}</span>
+      <span class="trust-dot" aria-hidden="true"></span>
+      <span class="trust-item">{trust.item2}</span>
+      <span class="trust-dot" aria-hidden="true"></span>
+      <span class="trust-item">{trust.item3}</span>
+    </div>
+  </section>
+
+  <!-- ── 3. TICKER STRIP ─────────────────────────────────────── -->
   <div class="ticker-strip" aria-hidden="true">
     <div class="ticker-inner">
       <!-- Set A -->
@@ -99,34 +158,31 @@ import PricingCard from '../components/PricingCard.astro'
     </div>
   </div>
 
-  <!-- ── 3. STATS SECTION ────────────────────────────────────── -->
-  <section class="stats-section" aria-label="Key statistics">
-    <div class="stats-grid">
-      <div class="stat-row">
-        <div class="stat-number accent-lime">99.9%</div>
-        <div>
-          <div class="stat-label">Uptime SLA</div>
-          <div class="stat-detail">Industry-leading reliability guarantee</div>
-        </div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-number accent-violet">500+</div>
-        <div>
-          <div class="stat-label">Active sites hosted</div>
-          <div class="stat-detail">Growing every month</div>
-        </div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-number">$7</div>
-        <div>
-          <div class="stat-label">Starting price</div>
-          <div class="stat-detail">For shared hosting, billed monthly</div>
-        </div>
-      </div>
+  <!-- ── 4. STORY SECTIONS ───────────────────────────────────── -->
+  <section class="story-section story-section--left">
+    <div class="story-content">
+      <div class="section-label-sm">// why famtastic</div>
+      <h2 class="section-headline">{story1.title}</h2>
+      <p class="story-body">{story1.body}</p>
+      <a href={story1.ctaUrl} class="btn-outline">{story1.cta}</a>
+    </div>
+    <div class="story-visual" aria-hidden="true">
+      <div class="story-orb"></div>
     </div>
   </section>
 
-  <!-- ── 4. PRODUCT GRID ────────────────────────────────────── -->
+  <section class="story-section story-section--right">
+    <div class="story-visual story-visual--lime" aria-hidden="true">
+      <div class="story-orb story-orb--lime"></div>
+    </div>
+    <div class="story-content">
+      <div class="section-label-sm">// white label</div>
+      <h2 class="section-headline">{story2.title}</h2>
+      <p class="story-body">{story2.body}</p>
+    </div>
+  </section>
+
+  <!-- ── 5. PRODUCT GRID ────────────────────────────────────── -->
   <section class="product-grid-wrap" id="products" aria-labelledby="products-headline">
     <div class="pricing-label">// the products</div>
     <h2 class="pricing-headline" id="products-headline">Everything your site needs. Under one roof.</h2>
@@ -219,7 +275,17 @@ import PricingCard from '../components/PricingCard.astro'
     </div>
   </section>
 
-  <!-- ── 5. FEATURED PRICING ────────────────────────────────── -->
+  <!-- ── 6. CROSS-PROMO: DESIGNS ─────────────────────────────── -->
+  <section class="cross-promo cross-promo--designs" aria-labelledby="cp-designs-headline">
+    <div class="cross-promo-inner">
+      <div class="cross-promo-label">// from the famtastic universe</div>
+      <h2 class="cross-promo-headline" id="cp-designs-headline">{crossDesigns.title}</h2>
+      <p class="cross-promo-body">{crossDesigns.body}</p>
+      <a href={crossDesigns.ctaUrl} class="btn-hot" rel="noopener">{crossDesigns.cta} &rarr;</a>
+    </div>
+  </section>
+
+  <!-- ── 7. FEATURED PRICING ────────────────────────────────── -->
   <section class="pricing-section" aria-labelledby="pricing-headline">
     <div class="pricing-label">// starter pricing</div>
     <h2 class="pricing-headline" id="pricing-headline">Prices that make sense. No gotchas.</h2>
@@ -294,7 +360,7 @@ import PricingCard from '../components/PricingCard.astro'
     </div>
   </section>
 
-  <!-- ── 6. HOW IT WORKS ────────────────────────────────────── -->
+  <!-- ── 8. HOW IT WORKS ────────────────────────────────────── -->
   <section class="how-it-works-section" aria-labelledby="how-headline">
     <div class="section-label-sm">// how it works</div>
     <h2 class="section-headline" id="how-headline">Up and running in 10 minutes.</h2>
@@ -332,14 +398,165 @@ import PricingCard from '../components/PricingCard.astro'
     </div>
   </section>
 
-  <!-- ── 7. DESIGN BRIDGE ───────────────────────────────────── -->
+  <!-- ── 9. CROSS-PROMO: THOUGHTS ────────────────────────────── -->
+  <section class="cross-promo cross-promo--thoughts" aria-labelledby="cp-thoughts-headline">
+    <div class="cross-promo-inner">
+      <div class="cross-promo-label">// learn as you grow</div>
+      <h2 class="cross-promo-headline" id="cp-thoughts-headline">{crossThoughts.title}</h2>
+      <p class="cross-promo-body">{crossThoughts.body}</p>
+      <a href={crossThoughts.ctaUrl} class="btn-outline" rel="noopener">{crossThoughts.cta} &rarr;</a>
+    </div>
+  </section>
+
+  <!-- ── 10. DESIGN BRIDGE ───────────────────────────────────── -->
   <DesignBridge variant="default" />
 
-  <!-- ── 8. FAM THOUGHTS ────────────────────────────────────── -->
+  <!-- ── 11. FAM THOUGHTS STRIP ──────────────────────────────── -->
   <FAMThoughts
     headline="Learn how to grow your site — not just host it."
     cta="Read FAMtastic Thoughts"
     href="https://famtasticthoughts.com"
   />
 
-</WildLayout>
+</UnifiedLayout>
+
+<style>
+  /* Trust bar */
+  .trust-bar {
+    border-top: 1px solid rgba(124, 58, 237, 0.15);
+    border-bottom: 1px solid rgba(124, 58, 237, 0.15);
+    background: rgba(124, 58, 237, 0.05);
+    padding: 1rem 0;
+  }
+  .trust-bar-inner {
+    max-width: var(--content-max, 1200px);
+    margin: 0 auto;
+    padding: 0 var(--space-md, 1.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .trust-item {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.85rem;
+    color: rgba(245, 245, 240, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .trust-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(132, 204, 22, 0.8);
+  }
+
+  /* Story sections */
+  .story-section {
+    max-width: var(--content-max, 1200px);
+    margin: 0 auto;
+    padding: 5rem var(--space-md, 1.5rem);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  .story-section--right {
+    direction: rtl;
+  }
+  .story-section--right > * {
+    direction: ltr;
+  }
+  .story-content {
+    max-width: 540px;
+  }
+  .story-body {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: rgba(245, 245, 240, 0.7);
+    margin: 1.25rem 0 1.75rem;
+  }
+  .story-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+  }
+  .story-orb {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(124, 58, 237, 0.45), rgba(124, 58, 237, 0.05) 70%);
+    box-shadow: 0 0 80px rgba(124, 58, 237, 0.25);
+    animation: storyFloat 6s ease-in-out infinite;
+  }
+  .story-orb--lime {
+    background: radial-gradient(circle at 30% 30%, rgba(132, 204, 22, 0.35), rgba(132, 204, 22, 0.05) 70%);
+    box-shadow: 0 0 80px rgba(132, 204, 22, 0.18);
+  }
+  @keyframes storyFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-16px); }
+  }
+
+  /* Cross promos */
+  .cross-promo {
+    padding: 5rem var(--space-md, 1.5rem);
+  }
+  .cross-promo--designs {
+    background: linear-gradient(180deg, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0.02) 100%);
+    border-top: 1px solid rgba(124, 58, 237, 0.15);
+    border-bottom: 1px solid rgba(124, 58, 237, 0.15);
+  }
+  .cross-promo--thoughts {
+    background: linear-gradient(180deg, rgba(245, 166, 35, 0.06) 0%, rgba(245, 166, 35, 0.01) 100%);
+    border-top: 1px solid rgba(245, 166, 35, 0.12);
+    border-bottom: 1px solid rgba(245, 166, 35, 0.12);
+  }
+  .cross-promo-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .cross-promo-label {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(245, 245, 240, 0.45);
+    margin-bottom: 1rem;
+  }
+  .cross-promo-headline {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+  .cross-promo-body {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: rgba(245, 245, 240, 0.7);
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 768px) {
+    .story-section {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      padding: 3.5rem var(--space-md, 1.5rem);
+    }
+    .story-section--right .story-visual {
+      order: -1;
+    }
+    .story-orb {
+      width: 160px;
+      height: 160px;
+    }
+    .trust-bar-inner {
+      gap: 0.5rem;
+    }
+    .trust-item {
+      font-size: 0.7rem;
+    }
+  }
+</style>

@@ -1,17 +1,16 @@
 ---
 export const prerender = true;
-import ExtremeLayout from '../layouts/ExtremeLayout.astro'
+import UnifiedLayout from '../layouts/UnifiedLayout.astro'
 import { getStorefrontURL } from '../lib/storefront'
 ---
 
-<ExtremeLayout
+<UnifiedLayout defaultTheme="hacker"
   title="Dedicated Server Hosting — FAMtastic Hosting"
   description="NVMe SSD, dedicated CPU and RAM, no shared resources from $37/mo. Custom nameservers. White-label support 24/7."
 >
 
   <!-- ─── HERO: TERMINAL BOOT SEQUENCE ─────────────────────────── -->
   <section style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--void);position:relative;overflow:hidden;padding:6rem 2rem 4rem;" aria-label="Hero">
-    <div id="matrixRain" style="position:absolute;inset:0;overflow:hidden;" aria-hidden="true"></div>
 
     <!-- ghost character -->
     <div style="position:absolute;right:-0.05em;top:50%;transform:translateY(-50%);font-family:var(--font-term);font-size:20vw;color:var(--green);opacity:0.04;line-height:1;pointer-events:none;user-select:none;letter-spacing:-0.04em;" aria-hidden="true">SRV</div>
@@ -40,8 +39,8 @@ import { getStorefrontURL } from '../lib/storefront'
       </p>
 
       <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-        <a href="#plans" style="font-family:var(--font-term);background:var(--green);color:var(--black);padding:0.85rem 2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;transition:background 0.15s;">./view-plans</a>
-        <a href="/contact" style="font-family:var(--font-term);border:1px solid var(--green);color:var(--green);padding:0.85rem 2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;transition:color 0.15s;">./contact-us</a>
+        <a href="#plans" style="font-family:var(--font-term);background:var(--green);color:var(--black);padding:0.85rem 2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;transition:background 0.15s;">View Server Plans</a>
+        <a href="/contact" style="font-family:var(--font-term);border:1px solid var(--green);color:var(--green);padding:0.85rem 2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;transition:color 0.15s;">Talk to a Human</a>
       </div>
     </div>
   </section>
@@ -158,7 +157,7 @@ import { getStorefrontURL } from '../lib/storefront'
             <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ Free SSL certificate</li>
             <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green-dim);">→ 24/7 white-label support</li>
           </ul>
-          <a href={getStorefrontURL('servers-launch')} style="margin-top:auto;font-family:var(--font-term);border:1px solid var(--green);color:var(--green);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">./launch --plan=launch</a>
+          <a href="/checkout" class="srv-checkout" data-product-id="7" style="margin-top:auto;font-family:var(--font-term);border:1px solid var(--green);color:var(--green);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">Choose Launch Plan</a>
           <button class="srv-add-to-cart" data-product-id="7" type="button" style="font-family:var(--font-term);background:none;border:1px solid rgba(0,255,65,0.3);color:rgba(0,255,65,0.6);padding:0.6rem 1.5rem;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;text-align:center;width:100%;transition:all 0.15s;">+ Add to Cart</button>
         </div>
 
@@ -178,7 +177,7 @@ import { getStorefrontURL } from '../lib/storefront'
             <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Custom nameservers</li>
             <li style="font-family:var(--font-term);font-size:0.75rem;color:var(--green);">→ Priority white-label support</li>
           </ul>
-          <a href={getStorefrontURL('servers-expand')} style="margin-top:auto;font-family:var(--font-term);background:var(--green);color:var(--black);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">./launch --plan=expand</a>
+          <a href="/checkout" class="srv-checkout" data-product-id="8" style="margin-top:auto;font-family:var(--font-term);background:var(--green);color:var(--black);padding:0.85rem 1.5rem;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;text-align:center;transition:all 0.15s;">Choose Expand Plan</a>
           <button class="srv-add-to-cart" data-product-id="8" type="button" style="font-family:var(--font-term);background:none;border:1px solid rgba(0,255,65,0.5);color:rgba(0,255,65,0.8);padding:0.6rem 1.5rem;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;text-align:center;width:100%;transition:all 0.15s;">+ Add to Cart</button>
         </div>
 
@@ -246,36 +245,74 @@ import { getStorefrontURL } from '../lib/storefront'
   </div>
 
 
-  <script>
-    document.querySelectorAll('.srv-add-to-cart').forEach(btn => {
-      btn.addEventListener('click', async function() {
-        const productId = Number(this.dataset.productId);
-        if (!productId) return;
-        this.disabled = true;
-        this.textContent = 'Adding…';
-        try {
-          const res = await fetch('/api/cart/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId, quantity: 1 }),
-          });
-          if (res.ok) {
-            this.textContent = '✓ Added!';
-            window.dispatchEvent(new CustomEvent('fam:cart:updated'));
+  <script is:inline>
+    (() => {
+      if (window.__famServerCheckoutBound) return;
+      window.__famServerCheckoutBound = true;
+
+      async function addServerProduct(productId) {
+        const res = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, quantity: 1 }),
+        });
+
+        if (!res.ok) throw new Error('cart-add failed');
+
+        const cart = await res.json();
+        window.dispatchEvent(new CustomEvent('fam:cart:updated', { detail: cart }));
+        return cart;
+      }
+
+      document.addEventListener('click', async (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+
+        const checkoutLink = target.closest('.srv-checkout');
+        if (checkoutLink instanceof HTMLAnchorElement) {
+          const productId = Number(checkoutLink.dataset.productId);
+          if (!productId) return;
+
+          event.preventDefault();
+          const originalText = checkoutLink.textContent;
+          checkoutLink.textContent = 'Opening checkout…';
+          checkoutLink.style.pointerEvents = 'none';
+
+          try {
+            await addServerProduct(productId);
+            window.location.href = '/checkout';
+          } catch {
+            checkoutLink.textContent = 'Error — retry';
+            checkoutLink.style.pointerEvents = '';
             setTimeout(() => {
-              this.textContent = '+ Add to Cart';
-              this.disabled = false;
+              checkoutLink.textContent = originalText;
             }, 2000);
-          } else {
-            this.textContent = 'Error — try again';
-            this.disabled = false;
           }
+          return;
+        }
+
+        const addButton = target.closest('.srv-add-to-cart');
+        if (!(addButton instanceof HTMLButtonElement)) return;
+
+        const productId = Number(addButton.dataset.productId);
+        if (!productId) return;
+
+        addButton.disabled = true;
+        addButton.textContent = 'Adding…';
+
+        try {
+          await addServerProduct(productId);
+          addButton.textContent = '✓ Added!';
+          setTimeout(() => {
+            addButton.textContent = '+ Add to Cart';
+            addButton.disabled = false;
+          }, 2000);
         } catch {
-          this.textContent = 'Error — try again';
-          this.disabled = false;
+          addButton.textContent = 'Error — try again';
+          addButton.disabled = false;
         }
       });
-    });
+    })();
   </script>
 
-</ExtremeLayout>
+</UnifiedLayout>

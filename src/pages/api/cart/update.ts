@@ -38,7 +38,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
     return new Response(
       JSON.stringify({ items, count, subtotalUSD }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
+      { status: 200, headers: buildCartHeaders() },
     );
   } catch (err) {
     console.error('[cart/update PUT]', err);
@@ -53,6 +53,15 @@ function formatUSD(cents: number): string {
 function jsonError(message: string, status: number): Response {
   return new Response(
     JSON.stringify({ error: message }),
-    { status, headers: { 'Content-Type': 'application/json' } },
+    { status, headers: buildCartHeaders() },
   );
+}
+
+function buildCartHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'private, no-store, no-cache, max-age=0, must-revalidate',
+    Pragma: 'no-cache',
+    Vary: 'Cookie',
+  };
 }

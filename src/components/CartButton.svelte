@@ -2,26 +2,44 @@
   import { onMount } from 'svelte';
   import CartDrawer from './CartDrawer.svelte';
 
+  interface CartPayload {
+    count?: number;
+  }
+
   let count = 0;
   let drawerRef: CartDrawer;
+
+  function applyCartPayload(data: CartPayload | null | undefined) {
+    count = data?.count ?? 0;
+  }
 
   async function refreshCount() {
     try {
       const res = await fetch('/api/cart');
       if (res.ok) {
         const data = await res.json();
-        count = data.count ?? 0;
+        applyCartPayload(data);
       }
     } catch {
       // ignore — badge stays at 0
     }
   }
 
+  function handleCartUpdated(event: Event) {
+    const customEvent = event as CustomEvent<CartPayload>;
+    if (customEvent.detail) {
+      applyCartPayload(customEvent.detail);
+      return;
+    }
+
+    void refreshCount();
+  }
+
   onMount(() => {
     refreshCount();
-    window.addEventListener('fam:cart:updated', refreshCount);
+    window.addEventListener('fam:cart:updated', handleCartUpdated as EventListener);
     return () => {
-      window.removeEventListener('fam:cart:updated', refreshCount);
+      window.removeEventListener('fam:cart:updated', handleCartUpdated as EventListener);
     };
   });
 

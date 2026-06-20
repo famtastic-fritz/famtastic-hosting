@@ -1,12 +1,12 @@
 ---
 export const prerender = true;
-import WildLayout from '../layouts/WildLayout.astro'
+import UnifiedLayout from '../layouts/UnifiedLayout.astro'
 import DesignBridge from '../components/DesignBridge.astro'
 import FAMThoughts from '../components/FAMThoughts.astro'
 import { getStorefrontURL } from '../lib/storefront'
 ---
 
-<WildLayout
+<UnifiedLayout
   title="Hosting Bundles & Packages — FAMtastic Hosting"
   description="Domain, WordPress hosting, email, SSL, and custom design bundled from $299/yr. One decision. One team. One bill."
   canonicalPath="/bundles"
@@ -104,7 +104,7 @@ import { getStorefrontURL } from '../lib/storefront'
         </ul>
         <div class="bundle-savings">Save $34 vs buying separately</div>
         <div class="bundle-cta">
-          <a href={getStorefrontURL('bundle-small-biz-starter')} class="plan-cta">Get Started</a>
+          <a href="/contact?bundle=small-biz-starter" class="plan-cta">Request This Bundle</a>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ import { getStorefrontURL } from '../lib/storefront'
         </ul>
         <div class="bundle-savings">Save 15% vs buying separately</div>
         <div class="bundle-cta">
-          <a href={getStorefrontURL('bundle-wordpress-launch')} class="plan-cta">Launch WordPress</a>
+          <a href="/contact?bundle=wordpress-launch" class="plan-cta">Request This Bundle</a>
         </div>
       </div>
 
@@ -145,7 +145,7 @@ import { getStorefrontURL } from '../lib/storefront'
         </ul>
         <div class="bundle-savings">Save $26/mo vs buying separately</div>
         <div class="bundle-cta">
-          <a href={getStorefrontURL('bundle-growth-hosting')} class="plan-cta">Get Growth Hosting</a>
+          <a href="/contact?bundle=growth-hosting" class="plan-cta">Request This Bundle</a>
         </div>
       </div>
 
@@ -347,7 +347,7 @@ import { getStorefrontURL } from '../lib/storefront'
     href="https://famtasticthoughts.com"
   />
 
-</WildLayout>
+</UnifiedLayout>
 
 <style>
   /* ─── BUNDLES SECTION ───────────────────────────────────── */

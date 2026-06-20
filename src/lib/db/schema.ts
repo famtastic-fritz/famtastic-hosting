@@ -19,6 +19,7 @@ export const tables = {
   contact_submissions: 'contact_submissions',
   admin_settings: 'admin_settings',
   godaddy_renewals: 'godaddy_renewals',
+  page_content: 'page_content',
 } as const;
 
 // ─── Column names ────────────────────────────────────────────────────────────
@@ -100,6 +101,16 @@ export const cols = {
     renewal_date: 'renewal_date',
     auto_renew: 'auto_renew',
     notified: 'notified',
+    created_at: 'created_at',
+    updated_at: 'updated_at',
+  },
+
+  page_content: {
+    id: 'id',
+    page: 'page',
+    section: 'section',
+    key_name: 'key_name',
+    value_text: 'value_text',
     created_at: 'created_at',
     updated_at: 'updated_at',
   },
