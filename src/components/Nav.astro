@@ -20,7 +20,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/'
       <a href={l.href} class={`nav-link${currentPath === l.href ? ' nav-link--active' : ''}`}>{l.label}</a>
     ))}
     <a href="/dashboard/login" class="nav-link nav-link--account">Sign In</a>
-    <a href="/contact" class="nav-cta">Talk to a Human</a>
+    <a href="/contact" class="nav-cta">24/7 Support</a>
     <CartButton client:load />
   </div>
   <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
@@ -28,7 +28,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/'
 <div class="mobile-nav" id="mobileNav">
   {links.map(l => <a href={l.href} class="nav-link">{l.label}</a>)}
   <a href="/dashboard/login" class="nav-link">Sign In</a>
-  <a href="/contact" class="nav-cta" style="margin-top:0.5rem;display:inline-block;">Talk to a Human</a>
+  <a href="/contact" class="nav-cta" style="margin-top:0.5rem;display:inline-block;">24/7 Support</a>
 </div>
 <script>
   const btn = document.getElementById('mobileMenuBtn');

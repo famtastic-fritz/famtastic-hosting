@@ -29,20 +29,20 @@ const user = Astro.locals.user as { id: string; email: string; role: string };
       <div>
         <h1 class="db-page-title">Support</h1>
         <p class="db-page-subtitle">
-          We're here 24/7. Call, send a message, or browse the resources below.
+          Get 24/7 support. Call, send a message, or browse the resources below.
         </p>
       </div>
     </div>
   </div>
 
-  <!-- TALK TO A HUMAN — primary CTA, visually dominant -->
+  <!-- 24/7 SUPPORT CTA — primary CTA, visually dominant -->
   <section class="talk-to-human" aria-labelledby="phone-heading">
     <div class="talk-to-human__inner">
       <div class="talk-to-human__text">
-        <h2 id="phone-heading" class="talk-to-human__title">Talk to a Human</h2>
+        <h2 id="phone-heading" class="talk-to-human__title">24/7 Support</h2>
         <p class="talk-to-human__desc">
-          Real people answer this number. No call trees, no bots.
-          Available 24 hours a day, 7 days a week.
+          Call anytime for hosting, domains, email, or billing help.
+          Have your customer number ready.
         </p>
         <ul class="talk-to-human__can-help" aria-label="How we can help">
           <li>Domain registration and transfers</li>
@@ -64,19 +64,19 @@ const user = Astro.locals.user as { id: string; email: string; role: string };
   <section class="db-section" aria-labelledby="resources-heading">
     <h2 id="resources-heading" class="db-section-title">Quick Resources</h2>
     <div class="resources-grid">
-      <a href="https://dcc.godaddy.com/manage/dns" class="resource-card" target="_blank" rel="noopener">
+      <a href="/dashboard/domains" class="resource-card">
         <div class="resource-card__icon" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
             <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
           </svg>
         </div>
         <div>
-          <div class="resource-card__title">DNS Manager</div>
-          <div class="resource-card__desc">Edit DNS records for your domains</div>
+          <div class="resource-card__title">Domain Manager</div>
+          <div class="resource-card__desc">Manage domains, DNS, and nameservers</div>
         </div>
       </a>
 
-      <a href="https://login.secureserver.net/" class="resource-card" target="_blank" rel="noopener">
+      <a href="/dashboard/email" class="resource-card">
         <div class="resource-card__icon" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -84,12 +84,12 @@ const user = Astro.locals.user as { id: string; email: string; role: string };
           </svg>
         </div>
         <div>
-          <div class="resource-card__title">Webmail</div>
-          <div class="resource-card__desc">Access your email inbox in browser</div>
+          <div class="resource-card__title">Email</div>
+          <div class="resource-card__desc">Access webmail and manage mailboxes</div>
         </div>
       </a>
 
-      <a href="https://sg1plcpnl0082.prod.sin2.secureserver.net:2083" class="resource-card" target="_blank" rel="noopener">
+      <a href="/dashboard/hosting" class="resource-card">
         <div class="resource-card__icon" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
             <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
@@ -101,7 +101,7 @@ const user = Astro.locals.user as { id: string; email: string; role: string };
         </div>
       </a>
 
-      <a href="https://account.godaddy.com/billing" class="resource-card" target="_blank" rel="noopener">
+      <a href="/dashboard/billing" class="resource-card">
         <div class="resource-card__icon" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
@@ -113,15 +113,16 @@ const user = Astro.locals.user as { id: string; email: string; role: string };
         </div>
       </a>
 
-      <a href="https://dcc.godaddy.com/manage/domains" class="resource-card" target="_blank" rel="noopener">
-        <div class="resource-card__icon" aria-hidden="true">
+      <a href="https://famtasticthoughts.com" class="resource-card resource-card--thoughts" target="_blank" rel="noopener">
+        <div class="resource-card__icon resource-card__icon--accent" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
         </div>
         <div>
-          <div class="resource-card__title">Domain Manager</div>
-          <div class="resource-card__desc">Renewals, transfers, nameservers</div>
+          <div class="resource-card__title">Knowledge Base</div>
+          <div class="resource-card__desc">Hosting guides and tutorials</div>
         </div>
       </a>
 
@@ -187,7 +188,7 @@ const user = Astro.locals.user as { id: string; email: string; role: string };
 </DashboardLayout>
 
 <style>
-  /* Talk to a Human section */
+  /* 24/7 Support CTA section */
   .talk-to-human {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.06) 0%, var(--db-bg-card) 60%);
     border: 1px solid rgba(34, 197, 94, 0.25);

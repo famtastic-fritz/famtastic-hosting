@@ -20,7 +20,7 @@ const DEFAULTS: Record<string, PageContent> = {
       subheadline: 'Premium hosting from $7/mo. Custom nameservers. Your brand on everything.',
       primary_cta: 'Explore Plans',
       primary_cta_url: '#products',
-      secondary_cta: 'Contact Us',
+      secondary_cta: '24/7 Support',
       secondary_cta_url: '/contact',
     },
     trust_bar: {

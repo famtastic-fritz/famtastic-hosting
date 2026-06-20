@@ -27,7 +27,7 @@ INSERT INTO `page_content` (`page`, `section`, `key_name`, `value_text`) VALUES
   ('index', 'hero', 'subheadline', 'Premium hosting from $7/mo. Custom nameservers. Your brand on everything.'),
   ('index', 'hero', 'primary_cta', 'Explore Plans'),
   ('index', 'hero', 'primary_cta_url', '#products'),
-  ('index', 'hero', 'secondary_cta', 'Contact Us'),
+  ('index', 'hero', 'secondary_cta', '24/7 Support'),
   ('index', 'hero', 'secondary_cta_url', '/contact'),
 
   ('index', 'trust_bar', 'item_1', '99.9% Uptime'),
