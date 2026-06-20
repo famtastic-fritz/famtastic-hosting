@@ -6,6 +6,10 @@ import { getCartSession } from '../../../lib/cart/cookie.js';
 import { capturePayPalOrder, assertValidPayPalOrderId } from '../../../lib/paypal/client.js';
 import { query, withTransaction } from '../../../lib/db/pool.js';
 import { getSession } from '../../../lib/auth/middleware.js';
+import {
+  sendAdminOrderNotification,
+  sendCustomerReceipt,
+} from '../../../lib/email/resend.js';
 import type { PoolConnection, RowDataPacket } from 'mysql2/promise';
 
 // ─── POST /api/checkout/capture-order ────────────────────────────────────────
@@ -121,7 +125,7 @@ export const POST: APIRoute = async ({ request }) => {
   } catch { /* auth is optional */ }
 
   const godaddyBase = `PAYPAL-${paypalOrderId}`;
-  let firstInsertId: string | null = null;
+  const orderIds: string[] = [];
   let dbError: Error | null = null;
 
   // Write orders + mark snapshot captured in one transaction (prevents replay)
@@ -147,12 +151,12 @@ export const POST: APIRoute = async ({ request }) => {
 
         const productId = item.product_id ?? null;
         const [result] = await conn.execute(
-          `INSERT INTO orders (user_id, product_id, amount_cents, status, godaddy_order_id)
-           VALUES (?, ?, ?, 'processing', ?)`,
-          [userId, productId, amountCents, rowRef],
+          `INSERT INTO orders (user_id, payer_email, product_id, amount_cents, status, godaddy_order_id)
+           VALUES (?, ?, ?, ?, 'processing', ?)`,
+          [userId, capture.payerEmail ?? null, productId, amountCents, rowRef],
         );
         const res = result as { insertId: number };
-        if (!firstInsertId) firstInsertId = String(res.insertId);
+        orderIds.push(String(res.insertId));
       }
     });
   } catch (err) {
@@ -205,6 +209,41 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
+  // Notify admin and customer (best-effort; failures are logged but not blocking)
+  if (orderIds.length > 0) {
+    const emailItems = items.map((i) => ({
+      name: i.name,
+      quantity: i.quantity,
+      priceUSD: i.retail_price_cents / 100,
+    }));
+
+    try {
+      await sendAdminOrderNotification({
+        orderIds,
+        paypalOrderId,
+        payerEmail: capture.payerEmail ?? 'unknown',
+        amountUSD: capture.amountCaptured,
+        items: emailItems,
+      });
+    } catch (err) {
+      console.error('[checkout/capture-order] admin notification failed:', err);
+    }
+
+    if (capture.payerEmail) {
+      try {
+        await sendCustomerReceipt({
+          to: capture.payerEmail,
+          orderIds,
+          paypalOrderId,
+          amountUSD: capture.amountCaptured,
+          items: emailItems,
+        });
+      } catch (err) {
+        console.error('[checkout/capture-order] customer receipt failed:', err);
+      }
+    }
+  }
+
   // Clear cart (best-effort — cart is already superseded by the snapshot)
   try {
     await clearCart(snap.session_id);
@@ -215,7 +254,7 @@ export const POST: APIRoute = async ({ request }) => {
   return json(
     {
       success: true,
-      orderId: firstInsertId,
+      orderId: orderIds[0] ?? null,
       paypalOrderId,
       amountCaptured: capture.amountCaptured,
     },

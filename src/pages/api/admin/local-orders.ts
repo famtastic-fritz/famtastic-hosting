@@ -3,6 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { query } from '../../../lib/db/pool.js';
 import { requireAdmin } from '../../../lib/auth/middleware.js';
+import { sendCustomerOrderActive } from '../../../lib/email/resend.js';
 import type { RowDataPacket } from 'mysql2';
 
 // ─── GET /api/admin/local-orders ─────────────────────────────────────────────
@@ -12,6 +13,7 @@ import type { RowDataPacket } from 'mysql2';
 interface OrderRow extends RowDataPacket {
   id: number;
   user_id: string | null;
+  payer_email: string | null;
   user_email: string | null;
   product_id: number;
   product_name: string;
@@ -82,6 +84,32 @@ export const PUT: APIRoute = async ({ request }) => {
     `UPDATE orders SET status = ? WHERE id = ?`,
     [status, orderId],
   );
+
+  // Notify customer when their order becomes active
+  if (status === 'active') {
+    try {
+      const [rows] = await query<OrderRow[]>(
+        `SELECT o.id, o.payer_email, u.email AS user_email, p.name AS product_name, o.amount_cents
+         FROM orders o
+         LEFT JOIN users u ON u.id = o.user_id
+         LEFT JOIN products p ON p.id = o.product_id
+         WHERE o.id = ?`,
+        [orderId],
+      );
+      const order = rows[0];
+      const to = order?.payer_email ?? order?.user_email;
+      if (to && order) {
+        await sendCustomerOrderActive({
+          to,
+          orderId: String(order.id),
+          productName: order.product_name ?? 'FAMtastic Hosting services',
+          amountUSD: (order.amount_cents / 100).toFixed(2),
+        });
+      }
+    } catch (err) {
+      console.error('[admin/local-orders] active notification failed:', err);
+    }
+  }
 
   return json({ success: true, orderId, status }, 200);
 };
