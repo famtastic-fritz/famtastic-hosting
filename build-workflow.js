@@ -8,7 +8,7 @@ export const meta = {
   ],
 }
 
-const ROOT = '/Users/famtasticfritz/famtastic/sites/site-famtastic-hosting'
+const ROOT = '/Users/famtastic-fritz/famtastic/sites/site-famtastic-hosting'
 
 // ─── SHARED CONTEXT ──────────────────────────────────────────────────────────
 
