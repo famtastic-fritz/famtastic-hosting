@@ -1,0 +1,13 @@
+{
+  "schema": "famtastic.hosting-preflight.v1",
+  "checked_at": "2026-09-12T22:01:22.828Z",
+  "site_id": "tighten-up-your-locs",
+  "manifest_sha256": "7ce63eca241f6a2983c55f6dacb1781b329277b87b49d13f780fbf664b7e4efc",
+  "domain": "tightenupyourlocs.com",
+  "document_root": "/home/nineoo/customer-sites/tighten-up-your-locs/public",
+  "domain_state": "create",
+  "mailboxes": [],
+  "blockers": ["domain_ownership_unverified"],
+  "provider_writes": 0,
+  "unproven": ["registrar_ownership", "public_dns", "website_deployment", "email_delivery", "tls_and_renewal", "analytics_collection"]
+}

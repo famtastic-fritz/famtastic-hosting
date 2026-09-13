@@ -4,3 +4,9 @@ node_modules/
 .env
 .claude/
 .shay-goal-*.md
+
+# Runtime provisioning secrets/approvals are not source artifacts.
+provisioning/private/
+provisioning/receipts/
+*.key
+*.pem

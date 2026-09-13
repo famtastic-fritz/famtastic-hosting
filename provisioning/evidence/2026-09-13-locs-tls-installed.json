@@ -1,0 +1,14 @@
+{
+  "schema": "famtastic.hosting-tls-evidence.v1",
+  "domain": "tightenupyourlocs.com",
+  "installed_at": "2026-09-13T07:11:22.571Z",
+  "provider_install_accepted": true,
+  "fingerprint_sha256": "E2:EA:D8:A9:25:B0:6F:99:97:7B:84:6A:7D:B8:32:BF:45:D4:E1:6E:2A:AC:19:0F:18:E5:E1:8C:51:41:AE:6B",
+  "expires_at": "2026-12-12T06:11:17.000Z",
+  "public_tls_verified_at": "2026-09-13T07:14:55Z",
+  "public_tls_hostnames": ["tightenupyourlocs.com", "www.tightenupyourlocs.com"],
+  "http_status": 403,
+  "website_deployed": false,
+  "renewal_installation_verified": false,
+  "customer_launch_complete": false
+}

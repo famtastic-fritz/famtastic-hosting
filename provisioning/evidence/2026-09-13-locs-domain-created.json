@@ -1,0 +1,13 @@
+{
+  "schema": "famtastic.hosting-step.v1",
+  "checked_at": "2026-09-13T07:04:39.783Z",
+  "site_id": "tighten-up-your-locs",
+  "manifest_sha256": "3c078cc22ef631352dcf4df7614c18491625ef73d1d0b53f92e182136602f310",
+  "operation": "domain",
+  "events": ["domain_created"],
+  "customer_launch_complete": false,
+  "verified_document_root": "/home/nineoo/customer-sites/tighten-up-your-locs/public",
+  "verified_vhost_ip": "107.180.51.234",
+  "registrant_changed": false,
+  "new_purchase": false
+}

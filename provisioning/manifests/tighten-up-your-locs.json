@@ -1,0 +1,44 @@
+{
+  "schema": "famtastic.hosting-provision.v1",
+  "site_id": "tighten-up-your-locs",
+  "customer_ref": "drupal:customer:11",
+  "request_ref": "drupal:request:12",
+  "domain": "tightenupyourlocs.com",
+  "domain_control": {
+    "status": "verified",
+    "domain": "tightenupyourlocs.com",
+    "operator": "Fritz / FAMtastic",
+    "verified_at": "2026-09-13T07:02:00Z",
+    "evidence_ref": "provisioning/evidence/2026-09-13-locs-control-reassessment.md"
+  },
+  "domain_ownership": {
+    "status": "unverified",
+    "evidence_ref": null,
+    "registration_confirmed": true,
+    "registration_receipt": "4183505895",
+    "registrant_state": "operator_contact_pending_customer_approval",
+    "note": "Purchase confirmed for USD 11.79 on 2026-09-12. Actual registrar Contact Info is FAMtastic/Fritz, not Shay. Owner confirmation requested; customer registrant ownership is not yet verified."
+  },
+  "hosting": {
+    "account": "nineoo",
+    "main_domain": "famtasticinc.com",
+    "subdomain_label": "tighten-up-your-locs",
+    "document_root": "customer-sites/tighten-up-your-locs/public"
+  },
+  "mailboxes": [],
+  "mailbox_selection_status": "needs_owner_choice",
+  "deployment_status": "owner_approved_selected_artifact_pending_release_verification",
+  "analytics_status": "property_and_stream_created_collection_unverified",
+  "analytics": {
+    "provider": "ga4",
+    "property_id": "553918564",
+    "stream_id": "15767069359",
+    "measurement_id": "G-V8M437DWV0",
+    "stream_url": "https://tightenupyourlocs.com",
+    "reporting_timezone": "America/New_York",
+    "currency": "USD",
+    "enhanced_measurement": false,
+    "tag_installed": false,
+    "collection_verified": false
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "famtastic.provisioning-evidence.v1",
+  "classification": "live_read_only_preflight_and_local_tests",
+  "site_id": "tighten-up-your-locs",
+  "checked_at": "2026-09-12T19:56:23.149Z",
+  "manifest_sha256": "51b795f3ab6002e9ae3a9f5c07f1c7e173de26a122b829b28c1222b446a5f152",
+  "provider_inventory_authenticated": true,
+  "hosting_account_matches": true,
+  "main_domain_matches": true,
+  "planned_root_collision": false,
+  "domain_state": "create",
+  "blockers": ["domain_ownership_unverified"],
+  "provider_writes": 0,
+  "tests": {"command": "node --test scripts/provisioning/cpanel.test.mjs", "passed": 16, "failed": 0},
+  "purchase_completed": false,
+  "domain_provisioned_by_this_tool": false,
+  "email_provisioned_by_this_tool": false,
+  "tls_installed_by_this_tool": false,
+  "customer_launch_complete": false,
+  "unproven": ["registrar_ownership", "provider_write_path", "public_dns", "website_deployment", "email_delivery", "tls_and_renewal", "analytics_collection", "unattended_worker"]
+}
