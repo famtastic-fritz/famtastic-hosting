@@ -63,3 +63,15 @@ Authoritative mail DNS, outbound/inbound delivery, customer credential access, a
 - Customer must complete the provider's password-setting link. Provider acceptance is proven; customer inbox delivery and completion are not observable from the operator account. No claim that she already signed in.
 - Operator private receipt: `customer-invitation-receipt.json` in the existing private customer-mail directory.
 - Official references: https://docs.cpanel.net/cpanel/preferences/user-manager/ and https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-merge_service_account and https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-create_user .
+
+## DKIM discovery correction — final read-only check
+
+The EmailAuth feature rejection did **not** establish that DKIM is unavailable. `DNS/parse_zone` successfully returned a `default._domainkey` TXT record from cPanel's local, non-authoritative zone. Its existing public key parses as RSA2048; complete TXT SHA256 `85e157aad410831c7a64a57b370051e993e2d0e16bfe748a89a2a45e8e167a9b`. Authoritative ns43 had no matching TXT at this check. No private key inspected.
+
+The original controlled Gmail receipt had no DKIM-Signature. Therefore publishing the existing public key is a supported next step, but does not itself prove outbound signing or inbox placement. No additional DNS mutation or test message was made in this discovery pass. Earlier blanket DKIM-unavailable wording is superseded by this narrower finding: EmailAuth interface unavailable; local public key exists; authoritative record missing; signing unproven.
+
+## Corrective authentication test — 08:42 UTC
+
+Main published the exact existing public key. Both authoritative nameservers were rechecked and matched. One separately authorized corrective message was sent to Fritz only at08:42:55Z, SMTP queue `1x5fna-0000000ABRp-3OfD`, Message-ID `<locs-auth-83722a25-5ebf-412d-8ae1-e7e2bebecab4@tightenupyourlocs.com>`, Gmail ID `1a099effccb71aed`.
+
+Result: SPF=pass and DMARC=pass, but **no DKIM-Signature**, and Gmail again classified it SPAM. The public DKIM record is now installed, while the shared-host/relay outgoing signing path remains unproven. Do not claim that publishing the key fixed signing or inbox placement. No more corrective sends performed; no labels changed. This is distinct from the FAMtastic Designs transactional transport used for the launch notification.
