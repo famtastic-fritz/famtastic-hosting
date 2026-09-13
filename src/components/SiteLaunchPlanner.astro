@@ -1,0 +1,67 @@
+<section class="db-card launch-planner" aria-labelledby="launch-planner-title">
+  <div class="launch-planner__copy">
+    <p class="db-text-mono db-text-sm">FAMTASTIC.SITE-LAUNCH.V1</p>
+    <h2 id="launch-planner-title">Site launch planner</h2>
+    <p>Build the exact payment → domain → shared hosting → DNS → SSL → email → verification contract before any provider change occurs.</p>
+  </div>
+  <form id="site-launch-form" class="launch-planner__form">
+    <label>Site key<input name="site_key" required pattern="[a-z0-9-]+" placeholder="tighten-up-your-locs" /></label>
+    <label>Domain<input name="domain" required placeholder="example.com" inputmode="url" /></label>
+    <label>Document root<input name="document_root" required placeholder="public_html/sites/tighten-up-your-locs" /></label>
+    <label>Mailbox (optional)<input name="mailbox" placeholder="hello@example.com" inputmode="email" /></label>
+    <label>Forward mailbox to (optional)<input name="forwarding_to" placeholder="owner@gmail.com" inputmode="email" /></label>
+    <label class="launch-planner__check"><input name="purchase_domain" type="checkbox" /> Domain must be purchased</label>
+    <button class="db-btn db-btn--primary" type="submit">Build launch plan</button>
+  </form>
+  <div id="site-launch-result" aria-live="polite"></div>
+</section>
+
+<script>
+  const form = document.querySelector('#site-launch-form');
+  const result = document.querySelector('#site-launch-result');
+  const escapeHtml = (value: string) => value.replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char] || char);
+  form?.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement) || !(result instanceof HTMLElement)) return;
+    const data = new FormData(form);
+    result.textContent = 'Building the no-side-effect launch plan…';
+    const siteKey = String(data.get('site_key') || '');
+    try {
+      const response = await fetch('/api/admin/fulfillment/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          site_key: siteKey,
+          domain: data.get('domain'),
+          document_root: data.get('document_root') || `public_html/sites/${siteKey}`,
+          domain_mode: data.get('purchase_domain') ? 'purchase' : 'existing',
+          domain_purchase_authorized: false,
+          mailbox: data.get('mailbox'),
+          forwarding_to: data.get('forwarding_to'),
+          payment: { status: 'unverified' },
+          artifact: { verified: false, commit: '' },
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.message || 'Plan unavailable');
+      const plan = payload.plan;
+      result.innerHTML = `<div class="db-alert ${plan.executable ? 'db-alert--success' : 'db-alert--warning'}"><strong>${plan.executable ? 'Ready for authorized execution' : 'Blocked safely'}</strong><br>${plan.blockers.length ? escapeHtml(plan.blockers.join(' · ')) : 'All required evidence is present.'}</div><ol class="launch-planner__steps">${plan.steps.map((step: { label: string; status: string; irreversible: boolean }) => `<li><strong>${escapeHtml(step.label)}</strong><span>${escapeHtml(step.status)}${step.irreversible ? ' · irreversible' : ''}</span></li>`).join('')}</ol>`;
+    } catch (error) {
+      result.innerHTML = `<div class="db-alert db-alert--warning" role="alert">${escapeHtml(error instanceof Error ? error.message : 'Plan unavailable')}</div>`;
+    }
+  });
+</script>
+
+<style>
+  .launch-planner { padding: clamp(1rem, 3vw, 2rem); margin-bottom: 1.5rem; }
+  .launch-planner__copy { max-width: 52rem; }
+  .launch-planner__form { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; align-items: end; margin-top: 1.25rem; }
+  .launch-planner label { display: grid; gap: .4rem; font-weight: 650; }
+  .launch-planner input { min-height: 44px; border: 1px solid var(--db-border, #3b3b44); border-radius: .55rem; padding: .7rem .8rem; background: var(--db-surface, #131318); color: inherit; }
+  .launch-planner__check { grid-template-columns: auto 1fr !important; align-items: center; align-self: center; }
+  .launch-planner__check input { width: 44px; height: 44px; }
+  .launch-planner__steps { display: grid; gap: .65rem; padding: 0; list-style: none; }
+  .launch-planner__steps li { display: flex; justify-content: space-between; gap: 1rem; padding: .8rem; border: 1px solid var(--db-border, #3b3b44); border-radius: .55rem; }
+  .launch-planner__steps span { color: var(--db-text-secondary, #a4a4af); text-align: right; }
+  @media (max-width: 520px) { .launch-planner__steps li { display: grid; } .launch-planner__steps span { text-align: left; } }
+</style>

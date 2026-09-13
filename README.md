@@ -2,6 +2,14 @@
 
 Branded front-end and customer portal for the FAMtastic Hosting reseller business.
 
+## Site-launch fulfillment component
+
+The admin provisioning screen now includes the reusable
+`famtastic.site-launch.v1` planner for the $199 shared-hosting flow. It produces
+an exact payment → artifact → domain → isolated document root → DNS → SSL →
+mailbox/forwarding → verification contract and fails closed before provider
+changes. See [FULFILLMENT-COMPONENT.md](FULFILLMENT-COMPONENT.md).
+
 Live site:
 - https://famtastichosting.com
 

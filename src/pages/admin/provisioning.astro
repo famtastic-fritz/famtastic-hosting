@@ -11,6 +11,7 @@
 export const prerender = false;
 
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import SiteLaunchPlanner from '../../components/SiteLaunchPlanner.astro';
 import { requireAdmin } from '../../lib/auth/middleware.js';
 
 const auth = await requireAdmin(Astro.request);
@@ -56,6 +57,7 @@ try {
   userName={auth.email}
   userId={Number(auth.id)}
 >
+  <SiteLaunchPlanner />
   <div class="db-page-header">
     <div class="db-page-header__row">
       <div>
