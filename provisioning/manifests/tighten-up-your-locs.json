@@ -27,7 +27,7 @@
   },
   "mailboxes": [{"local_part":"hello","quota_mb":1024,"password_env":"LOCS_HELLO_PASSWORD"}],
   "mailbox_selection_status": "created_smtp_imap_and_roundtrip_verified_native_customer_invitation_accepted",
-  "deployment_status": "approved_artifact_public_http200_final_owner_workflow_qa_in_progress",
+  "deployment_status": "approved_artifact_public_hashes_owner_workflow_scheduled_alert_and_launch_notices_verified",
   "analytics_status": "consented_live_collection_and_ga4_realtime_verified",
   "analytics": {
     "provider": "ga4",
