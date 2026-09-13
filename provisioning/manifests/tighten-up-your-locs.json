@@ -12,12 +12,12 @@
     "evidence_ref": "provisioning/evidence/2026-09-13-locs-control-reassessment.md"
   },
   "domain_ownership": {
-    "status": "unverified",
-    "evidence_ref": null,
+    "status": "verified",
+    "evidence_ref": "provisioning/evidence/2026-09-13-locs-registrant-updated.md",
     "registration_confirmed": true,
     "registration_receipt": "4183505895",
-    "registrant_state": "operator_contact_pending_customer_approval",
-    "note": "Purchase confirmed for USD 11.79 on 2026-09-12. Actual registrar Contact Info is FAMtastic/Fritz, not Shay. Owner confirmation requested; customer registrant ownership is not yet verified."
+    "registrant_state": "customer_name_organization_address_verified_operator_contact_retained",
+    "note": "Fritz explicitly authorized the registrant update September13. Registrar saved and reloaded customer name, organization and verified billing address. Existing FAMtastic management email and phone retained; privacy remains on. No purchase or account transfer."
   },
   "hosting": {
     "account": "nineoo",
@@ -25,10 +25,10 @@
     "subdomain_label": "tighten-up-your-locs",
     "document_root": "customer-sites/tighten-up-your-locs/public"
   },
-  "mailboxes": [],
-  "mailbox_selection_status": "needs_owner_choice",
-  "deployment_status": "owner_approved_selected_artifact_pending_release_verification",
-  "analytics_status": "property_and_stream_created_collection_unverified",
+  "mailboxes": [{"local_part":"hello","quota_mb":1024,"password_env":"LOCS_HELLO_PASSWORD"}],
+  "mailbox_selection_status": "created_smtp_imap_and_roundtrip_verified_native_customer_invitation_accepted",
+  "deployment_status": "approved_artifact_public_http200_final_owner_workflow_qa_in_progress",
+  "analytics_status": "consented_live_collection_and_ga4_realtime_verified",
   "analytics": {
     "provider": "ga4",
     "property_id": "553918564",
@@ -38,7 +38,7 @@
     "reporting_timezone": "America/New_York",
     "currency": "USD",
     "enhanced_measurement": false,
-    "tag_installed": false,
-    "collection_verified": false
+    "tag_installed": true,
+    "collection_verified": true
   }
 }
