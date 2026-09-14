@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "contract_version": "1.0.0",
+  "format": "source_repository",
+  "site_id": "site-famtastic-hosting",
+  "business_name": "FAMtastic Hosting",
+  "business_owner": {
+    "name": "FAMtastic Hosting"
+  },
+  "builder": {
+    "name": "FAMtastic Designs",
+    "url": "https://famtasticdesigns.com"
+  },
+  "target": "existing_host_unchanged",
+  "repository": {
+    "mode": "create_or_existing",
+    "url": "https://github.com/famtastic-fritz/famtastic-hosting",
+    "branch": "main",
+    "state": "remote_verified"
+  },
+  "design_contract_sha256": "26c8041d0432f77ec94dcba32e1da07c6f7df1562d352541895b7637f6a79059",
+  "generated_by": "site-foundation",
+  "installed_recipes": [
+    {
+      "id": "site-foundation",
+      "version": "1.0.0"
+    }
+  ],
+  "canonical_url": null,
+  "publication": {
+    "state": "unchanged_not_reverified",
+    "release_receipt": null
+  },
+  "migration": {
+    "source_revision": "fb16391ed7226753d320e6adea9e1782693b4b66",
+    "provider_actions": false,
+    "data_actions": false
+  }
+}

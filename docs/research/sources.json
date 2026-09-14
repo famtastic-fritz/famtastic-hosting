@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "type": "original_repository_source",
+      "repository": "https://github.com/famtastic-fritz/famtastic-hosting",
+      "revision": "fb16391ed7226753d320e6adea9e1782693b4b66",
+      "retrieved_at": "2026-09-14",
+      "finding": "Preserve authored business implementation and records while backfilling independent source governance. Source observation is not new owner, rights or production approval."
+    },
+    {
+      "type": "approved_implementation_plan",
+      "task_id": "01a097f9-4915-7640-b92f-abd74a1e49ca",
+      "date": "2026-09-14",
+      "archive_url": "https://drive.google.com/file/d/1rzYD2Wo3OJBZ_IVJ9EbQ03TDbt4w4UUO/view"
+    }
+  ]
+}

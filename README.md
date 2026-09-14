@@ -8,8 +8,10 @@ Live site:
 Git remote:
 - git@github.com:famtastic-fritz/famtastic-hosting.git
 
-Canonical local checkout:
-- `~/famtastic/sites/site-famtastic-hosting`
+Canonical local checkout (reconciled 2026-09-14):
+- `~/Development/FAMtastic-Repos/site-famtastic-hosting`
+
+Read `.famtastic/site-manifest.json`, `AGENTS.md` and `design.md`. Run `npm ci`, `npm test`, and `npm run build` without neighboring FAMtastic checkouts. `npm test` verifies the source-repository contract; authenticated database/provider behavior still requires separately authorized integration tests. This source reconciliation did not redeploy or migrate production.
 
 Important:
 - There is also a duplicate local checkout at `~/famtastic/famtastic-hosting`.
@@ -20,7 +22,7 @@ Important:
 
 For this project, truth order is:
 1. GitHub `famtastic-fritz/famtastic-hosting`
-2. Canonical local checkout at `~/famtastic/sites/site-famtastic-hosting`
+2. Canonical local checkout at `~/Development/FAMtastic-Repos/site-famtastic-hosting`
 3. Live GoDaddy server state
 
 Server hotfixes are an emergency path only. If something is changed on the server, the repo must be updated immediately so the next deploy does not wipe it out.
@@ -30,7 +32,7 @@ Server hotfixes are an emergency path only. If something is changed on the serve
 Run this before every deployment:
 
 ```bash
-cd ~/famtastic/sites/site-famtastic-hosting
+cd ~/Development/FAMtastic-Repos/site-famtastic-hosting
 git status --short --branch
 git fetch origin
 git rev-list --left-right --count origin/main...HEAD
@@ -48,7 +50,7 @@ If you are not clean, stop and resolve git state first. Do not deploy from an am
 ## Deploy
 
 ```bash
-cd ~/famtastic/sites/site-famtastic-hosting
+cd ~/Development/FAMtastic-Repos/site-famtastic-hosting
 ./deploy.sh
 ```
 
