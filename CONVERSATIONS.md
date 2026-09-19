@@ -10,3 +10,7 @@ Private-by-default customer source ownership, complete agent/design/research/pro
 ## Verified private archive
 
 [Readable redacted conversation](https://drive.google.com/file/d/1rzYD2Wo3OJBZ_IVJ9EbQ03TDbt4w4UUO/view), cutoff 2026-09-14T18:29:20Z, 164 visible messages. Owner-only permissions and exact raw bytes were verified. SHA-256: `7abd9ae684338f3781a1749c40166ca554ab0938b5ace94075fedd8f03a9ea6c`. Hidden reasoning, tool output, credentials and attachments are excluded. Later source receipts are recorded separately in the ecosystem migration ledger.
+
+## 2026-09-18 — Creator credit v1
+
+Owner authorized credit implementation, main merges and existing-surface retrofits after parent MBSH96 release 0653d920d20fe82aa429be7901adcd8544b7be65. New customer launches, state changes and outbound messages remain excluded. No Drive mirror is claimed.
